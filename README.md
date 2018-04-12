@@ -1,2 +1,2 @@
 # SM1vm
-Tiny embedable Stack Machine
+Tiny embeddable Stack Machine
