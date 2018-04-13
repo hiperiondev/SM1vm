@@ -1,1 +1,4 @@
-/Release/
+.cproject
+Release/
+.project
+.settings/

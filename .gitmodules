@@ -1,0 +1,3 @@
+[submodule "assembler/customasm"]
+	path = assembler/customasm
+	url = https://github.com/hiperiondev/customasm.git
