@@ -51,7 +51,7 @@ uint8_t sm1_mem_load(uint16_t addr, vm_t* vm) {
 /////////////////////////////////////////////////////////////////////////////////////
 
 int main() {
-	vm_t *vm     =     (vm_t *) malloc(sizeof(vm_t));
+	vm_t *vm     = (vm_t *) malloc(sizeof(vm_t));
 	vm->RAM      = (uint16_t *) malloc(sizeof(uint8_t) * RAM_SIZE);
 	vm->rs       = (uint16_t *) malloc(sizeof(uint16_t) * RS_SIZE);
 	vm->ds       = (uint16_t *) malloc(sizeof(uint16_t) * DS_SIZE);
@@ -92,5 +92,3 @@ int main() {
 #endif
 	}
 }
-
-
