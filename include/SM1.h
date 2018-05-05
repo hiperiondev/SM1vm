@@ -32,8 +32,8 @@
 #define ARG_LIT(x)  (x & 0x7fff)        /* literal */
 
 #define ALU_OP(x)   ((x & 0x1F00) >> 8) /* alu operation */
-#define ALU_DS(x)	(x & 0x03)          /* alu data stack */
-#define ALU_RS(x)	((x >> 2) & 0x03)   /* alu return stack */
+#define ALU_DS(x)   (x & 0x03)          /* alu data stack */
+#define ALU_RS(x)   ((x >> 2) & 0x03)   /* alu return stack */
 
 /////////////////////////////////////////////////////////////////////////////////////
 
@@ -59,8 +59,8 @@ enum {
 	ALU_OP_T      = 0,  /* T */
 	ALU_OP_N      = 1,  /* N */
 	ALU_OP_R      = 2,  /* top of return stack */
-	ALU_OP_GET = 3,  /* load from address */
-	ALU_OP_PUT = 4,  /* store to address */
+	ALU_OP_GET    = 3,  /* load from address */
+	ALU_OP_PUT    = 4,  /* store to address */
 	ALU_OP_DPLUS  = 5,  /* double cell addition */
 	ALU_OP_DMUL   = 6,  /* double cell multiply */
 	ALU_OP_AND    = 7,  /* bitwise AND */
@@ -116,26 +116,26 @@ typedef struct {
 	int16_t  dp;       /* data stack pointer */
 	int16_t  rp;       /* return stack pointer*/
 	uint16_t pc;       /* program counter */
-    uint16_t t;        /* top of data stack */
+        uint16_t t;        /* top of data stack */
 	uint16_t t_ext;    /* external top of data stack */
 	uint16_t n_ext;    /* external second element of data stack */
 	uint8_t  status;   /*  0=SNDTN
-                        *  1=RCVTN
-                        *  2=RCVQT [0:T_ext only (not modify N) | 1:T_ext and N_ext] ,
+                            *  1=RCVTN
+                            *  2=RCVQT [0:T_ext only (not modify N) | 1:T_ext and N_ext] ,
 	                    *  3=IRQ - Interrupt (similar to INTR on 8085)
-                        *  4=MASK IRQ
-                        *  5=NOT USED
-                        *  6=NOT USED
-                        *  7=NOT USED
+                            *  4=MASK IRQ
+                            *  5=NOT USED
+                            *  6=NOT USED
+                            *  7=NOT USED
 	                    */
 	uint16_t *RAM;     /* ram */
-  //uint16_t *ROM;     /* rom */
+      //uint16_t *ROM;     /* rom */
 	uint16_t *rs;      /* return stack */
 	uint16_t *ds;      /* data stack */
 	uint16_t RAM_size; /* ram size */
-  //uint16_t ROM_size; /* rom size */
-	uint16_t  ds_size;  /* data stack size */
-	uint16_t  rs_size;  /* return stack size */
+      //uint16_t ROM_size; /* rom size */
+	uint16_t  ds_size; /* data stack size */
+	uint16_t  rs_size; /* return stack size */
 
 } vm_t;
 
@@ -275,12 +275,6 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 			alu_result = vm->ds[--vm->dp];
 			break; //TODO Revisar
 		case ALU_OP_DPLUS:
-			/*
-			 d = (ud_t) t + (ud_t) n;
-		     T = d >> 16;
-			 m[sp] = d;
-			 n = d;
-			 */
 			DBG_PRINT("ALU_OP_DPLUS) ");
 			d = (uint32_t)t + (uint32_t)n;
 			alu_result = d;
