@@ -132,10 +132,12 @@ typedef struct {
       //uint16_t *ROM;     /* rom */
         uint16_t *rs;      /* return stack */
         uint16_t *ds;      /* data stack */
+#ifdef UNDER_OVER
         uint16_t RAM_size; /* ram size */
       //uint16_t ROM_size; /* rom size */
         uint16_t ds_size;  /* data stack size */
         uint16_t rs_size;  /* return stack size */
+#endif
 
 } vm_t;
 

@@ -12,7 +12,7 @@
 
 //#define DEBUG 1
 //#define MANUAL_STEP
-#define UNDER_OVER
+//#define UNDER_OVER
 
 #define DS_SIZE  65535
 #define RS_SIZE  65535
@@ -28,7 +28,6 @@ uint8_t sm1_mem_put(uint16_t addr, uint16_t value, vm_t* vm) {
 }
 
 uint16_t sm1_mem_get(uint16_t addr, vm_t* vm) {
-        //DBG_PRINT("[MEMGET(%04x):%04x]", addr, vm->RAM[addr]);
         return vm->RAM[addr];
 }
 
@@ -41,7 +40,6 @@ uint8_t sm1_mem_load(uint16_t addr, vm_t* vm) {
         while (fread(&data, sizeof(uint16_t), 1, RAM) == 1) {
                 vm->RAM[addr++] = data;
         }
-        //DBG_PRINT("length=%u\n", addr);
         fclose(RAM);
 
         return RC_OK;
@@ -61,16 +59,22 @@ int main() {
 
 #ifdef DEBUG
         int step_counter = 0;
+
+        DBG_PRINT("RESET...\n");
 #endif
-
-        printf("RESET...\n");
         sm1_reset(vm);
-
-        printf("LOAD...\n");
-        if (sm1_mem_load(0x0000, vm) == RC_ERROR)
-                printf("...Can't load file!\n");
-
-        printf("START...\n");
+#ifdef DEBUG
+        DBG_PRINT("LOAD...\n");
+#endif
+        if (sm1_mem_load(0x0000, vm) == RC_ERROR) {
+#ifdef DEBUG
+        	DBG_PRINT("...Can't load file!\n");
+#endif
+            exit(1);
+        }
+#ifdef DEBUG
+        DBG_PRINT("START...\n");
+#endif
         while (1) {
                 uint16_t word = sm1_mem_get(vm->pc, vm);
                 result = sm1_step(word, vm);
@@ -78,13 +82,17 @@ int main() {
                 DBG_PRINT("step:%d\n", step_counter++);
 #endif
                 if (vm->status & ST_SNDTN) {
-                        printf("%c", (char) vm->t_ext);
-                        vm->status &= ~ST_SNDTN;
+#ifdef DEBUG
+                	DBG_PRINT("%c", (char) vm->t_ext);
+#endif
+                	vm->status &= ~ST_SNDTN;
                 }
 
                 if (result != RC_OK) {
-                        printf("EXCEPTION: %02x\n", result);
-                        exit(1);
+#ifdef DEBUG
+                	DBG_PRINT("EXCEPTION: %02x\n", result);
+#endif
+                    exit(1);
                 }
 #ifdef MANUAL_STEP
                 getchar();
