@@ -1,6 +1,8 @@
 /*
  * main.c
  *
+ *  License: GNU GPL V3
+ *
  *  Created on: 6 abr. 2018
  *      Author: emiliano gonzalez (egonzalez.hiperion@gmail.com)
  */
