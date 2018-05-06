@@ -160,13 +160,15 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #endif
         static const uint16_t delta[] = { 0, 1, -2, -1 };
 
-// TODO IRQ
-/*
         if ((vm->status & ST_IRQ) && (vm->status & ST_IMK)) {
+#ifdef DEBUG
                 DBG_PRINT("IRQ    (%04x)\n",ARG(vm->t_ext));
+#endif
 #ifdef UNDER_OVER
                 if (vm->rp == vm->ds_size) {
+#ifdef DEBUG
                         DBG_PRINT("RC_RS_OVER_FLOW\n");
+#endif
                         return RC_RS_OVER_FLOW;
                 }
 #endif
@@ -175,7 +177,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                 vm->status &= ~ST_IRQ;
                 return RC_OK;
         }
-*/
+
         if (word & OP_LIT) {
 #ifdef DEBUG
                 DBG_PRINT("OP_LIT (%04x)\n",ARG_LIT(word));
