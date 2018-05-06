@@ -157,8 +157,10 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
         ,vm->pc, vm->dp, vm->rp, vm->rs[vm->rp], vm->t, vm->ds[vm->dp], vm->ds[vm->dp-1], vm->ds[vm->dp-2], word);
 #endif
         static const uint16_t delta[] = { 0, 1, -2, -1 };
+
+// TODO IRQ
 /*
-        if ((vm->status & ST_IRQ) && (vm->status & ST_IMK)) { // TODO IRQ
+        if ((vm->status & ST_IRQ) && (vm->status & ST_IMK)) {
                 DBG_PRINT("IRQ    (%04x)\n",ARG(vm->t_ext));
 #ifdef UNDER_OVER
                 if (vm->rp == vm->ds_size) {
