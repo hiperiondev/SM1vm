@@ -52,9 +52,11 @@ int main() {
         vm->RAM      = (uint16_t *) malloc(sizeof(uint8_t)  * RAM_SIZE);
         vm->rs       = (uint16_t *) malloc(sizeof(uint16_t) * RS_SIZE);
         vm->ds       = (uint16_t *) malloc(sizeof(uint16_t) * DS_SIZE);
+#ifdef UNDER_OVER
         vm->ds_size  = DS_SIZE;
         vm->rs_size  = RS_SIZE;
         vm->RAM_size = RAM_SIZE;
+#endif
         uint8_t result;
 
 #ifdef DEBUG

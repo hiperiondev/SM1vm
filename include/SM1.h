@@ -121,7 +121,7 @@ typedef struct {
         uint16_t n_ext;    /* external second element of data stack */
         uint8_t  status;   /*  0=SNDTN
                             *  1=RCVTN
-                            *  2=RCVQT [0:T_ext only (not modify N) | 1:T_ext and N_ext] ,
+                            *  2=NOT USED
                             *  3=IRQ - Interrupt (similar to INTR on 8085)
                             *  4=MASK IRQ
                             *  5=NOT USED
@@ -296,7 +296,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #endif
                         sm1_mem_put(t>>1, n, vm);
                         alu_result = vm->ds[--vm->dp];
-                        break; //TODO Revisar
+                        break; //TODO Check
                 case ALU_OP_DPLUS:
 #ifdef DEBUG
                         DBG_PRINT("ALU_OP_DPLUS) ");
@@ -362,13 +362,13 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                         DBG_PRINT("ALU_OP_UCMP) ");
 #endif
                         alu_result = -(n < t);
-                        break; //TODO Revisar
+                        break; //TODO Check
                 case ALU_OP_CMP:
 #ifdef DEBUG
                         DBG_PRINT("ALU_OP_CMP) ");
 #endif
                         alu_result = -((int16_t)n < (int16_t)t);
-                        break; //TODO Revisar
+                        break; //TODO Check
                 case ALU_OP_RSHIFT:
 #ifdef DEBUG
                         DBG_PRINT("ALU_OP_RSHIFT) ");
@@ -426,11 +426,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                         if (!(vm->status & ST_RCVTN))
                                 break;
                         alu_result = vm->t_ext;
-                        //if (vm->status & ST_RCVQT) {
-                        //      n = vm->n_ext;
-                        //      vm->status &= ~ST_RCVTN;
-                        //}
-                        break; //TODO
+                        break;
                 case ALU_OP_UMOD:
 #ifdef DEBUG
                         DBG_PRINT("ALU_OP_UMOD) ");
@@ -441,7 +437,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                                 t = d % t;
                                 n = t;
                         } else {
-                                //TODO
+                               //TODO Exception
                         }
                         break;
                 case ALU_OP_MOD:
@@ -453,9 +449,9 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                                 t = (int16_t)n % t;
                                 n = t;
                         } else {
-                                //TODO
+                               //TODO Exception
                         }
-                        break; //TODO Revisar
+                        break; //TODO Check
                 case ALU_OP_BYE:
 #ifdef DEBUG
                         DBG_PRINT("ALU_OP_BYE) ");
@@ -485,19 +481,19 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #ifdef DEBUG
                         DBG_PRINT("/ALU_F_N2T ");
 #endif
-                        vm->t = vm->ds[vm->dp];   //TODO Revisar
+                        vm->t = vm->ds[vm->dp];
                 }
                 if (word & ALU_F_T2R) {
 #ifdef DEBUG
                         DBG_PRINT("/ALU_F_T2R ");
 #endif
-                        vm->rs[vm->rp] = vm->t;   //TODO Revisar
+                        vm->rs[vm->rp] = vm->t;
                 }
                 if (word & ALU_F_T2N) {
 #ifdef DEBUG
                         DBG_PRINT("/ALU_F_T2N ");
 #endif
-                        vm->ds[vm->dp] = vm->t;   //TODO Revisar
+                        vm->ds[vm->dp] = vm->t;
                 }
 #ifdef UNDER_OVER
                 if (vm->rp == vm->RAM_size) {
@@ -511,7 +507,6 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                 DBG_PRINT("[delta_dp:%d/delta_rp:%d/alu:%04x]",delta[ALU_DS(word)],delta[ALU_RS(word)],alu_result);
 #endif
                 vm->t = alu_result;
-                //vm->pc++;
 #ifdef DEBUG
                 DBG_PRINT("\n");
 #endif
