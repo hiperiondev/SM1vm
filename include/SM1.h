@@ -149,26 +149,16 @@ static inline void sm1_reset(vm_t* vm) {
         vm->pc = 0;
         vm->dp = 0;
         vm->rp = 0;
-#ifdef CLEAR_STACKS
-        uint16_t cnt;
-        for (cnt = 0;cnt < DS_SIZE;cnt++) {
-                vm->ds[cnt] = 0;
-        }
-        for (cnt = 0;cnt < RS_SIZE;cnt++) {
-                vm->rs[cnt] = 0;
-        }
-#endif
 }
 
 static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
-        //DBG_PRINT("[pc:%04x/dp:%02x/rp:%02x/rs[rp]:%04x/t:%04x/n:%04x/t_ext:%04x/n_ext:%04x/status:%02x] step(%04x):"
-        //              ,vm->pc, vm->dp, vm->rp, vm->rs[vm->rp], vm->t, vm->ds[vm->dp],vm->t_ext, vm->n_ext, vm->status, word);
-        DBG_PRINT("[pc:%04x/dp:%02x/rp:%02x/rs[rp]:%04x/t:%04x/n:%04x/n-1:%04x/n-2:%04x] step(%04x):"
-                        ,vm->pc, vm->dp, vm->rp, vm->rs[vm->rp], vm->t, vm->ds[vm->dp], vm->ds[vm->dp-1], vm->ds[vm->dp-2], word);
-
+#ifdef DEBUG
+	    DBG_PRINT("[pc:%04x/dp:%02x/rp:%02x/rs[rp]:%04x/t:%04x/n:%04x/n-1:%04x/n-2:%04x] step(%04x):"
+        ,vm->pc, vm->dp, vm->rp, vm->rs[vm->rp], vm->t, vm->ds[vm->dp], vm->ds[vm->dp-1], vm->ds[vm->dp-2], word);
+#endif
         static const uint16_t delta[] = { 0, 1, -2, -1 };
 /*
-        if ((vm->status & ST_IRQ) && (vm->status & ST_IMK)) { // TODO
+        if ((vm->status & ST_IRQ) && (vm->status & ST_IMK)) { // TODO IRQ
                 DBG_PRINT("IRQ    (%04x)\n",ARG(vm->t_ext));
 #ifdef UNDER_OVER
                 if (vm->rp == vm->ds_size) {
@@ -183,14 +173,20 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
         }
 */
         if (word & OP_LIT) {
+#ifdef DEBUG
                 DBG_PRINT("OP_LIT (%04x)\n",ARG_LIT(word));
+#endif
 #ifdef UNDER_OVER
                 if (vm->dp == vm->ds_size) {
+#ifdef DEBUG
                         DBG_PRINT("RC_DS_OVER_FLOW\n");
+#endif
                         return RC_DS_OVER_FLOW;
                 }
                 if (vm->pc == vm->RAM_size) {
+#ifdef DEBUG
                         DBG_PRINT("RC_PC_OVER_FLOW\n");
+#endif
                         return RC_PC_OVER_FLOW;
                 }
 #endif
@@ -201,10 +197,14 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
         }
         switch (OP(word)) {
         case OP_JZ:
+#ifdef DEBUG
                 DBG_PRINT("OP_JZ  (%04x)\n",ARG(word));
+#endif
 #ifdef UNDER_OVER
                 if (vm->dp == 0) {
+#ifdef DEBUG
                         DBG_PRINT("RC_RS_UNDER_FLOW\n");
+#endif
                         return RC_RS_UNDER_FLOW;
                 }
 #endif
@@ -212,20 +212,28 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                 vm->t  = vm->ds[vm->dp--];
 #ifdef UNDER_OVER
                 if (vm->pc > vm->RAM_size) {
+#ifdef DEBUG
                         DBG_PRINT("RC_PC_OVER_FLOW\n");
+#endif
                         return RC_PC_OVER_FLOW;
                 }
 #endif
                 break;
         case OP_JMP:
+#ifdef DEBUG
                 DBG_PRINT("OP_JMP (%04x)\n",ARG(word));
+#endif
                 vm->pc = ARG(word);
                 break;
         case OP_CALL:
+#ifdef DEBUG
                 DBG_PRINT("OP_CALL(%04x)\n",ARG(word));
+#endif
 #ifdef UNDER_OVER
                 if (vm->rp == vm->rs_size) {
+#ifdef DEBUG
                         DBG_PRINT("RC_RS_OVER_FLOW\n");
+#endif
                         return RC_RS_OVER_FLOW;
                 }
 #endif
@@ -233,8 +241,9 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                 vm->pc = ARG(word);
                 break;
         case OP_ALU: {
+#ifdef DEBUG
                 DBG_PRINT("OP_ALU (");
-
+#endif
                 uint32_t d;
                 uint16_t t, n, r, alu_result;
                 t = vm->t;
@@ -255,111 +264,161 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 
                 switch (ALU_OP(word)) {
                 case ALU_OP_T:
+#ifdef DEBUG
                         DBG_PRINT("ALU_OP_T) ");
+#endif
                         break;
                 case ALU_OP_N:
+#ifdef DEBUG
                         DBG_PRINT("ALU_OP_N) ");
+#endif
                         alu_result = n;
                         break;
                 case ALU_OP_R:
+#ifdef DEBUG
                         DBG_PRINT("ALU_OP_R) ");
+#endif
                         alu_result = r;
                         break;
                 case ALU_OP_GET:
+#ifdef DEBUG
                         DBG_PRINT("ALU_OP_GET)  ");
+#endif
                         alu_result = sm1_mem_get(t>>1, vm);
                         break;
                 case ALU_OP_PUT:
+#ifdef DEBUG
                         DBG_PRINT("ALU_OP_PUT) ");
+#endif
                         sm1_mem_put(t>>1, n, vm);
                         alu_result = vm->ds[--vm->dp];
                         break; //TODO Revisar
                 case ALU_OP_DPLUS:
+#ifdef DEBUG
                         DBG_PRINT("ALU_OP_DPLUS) ");
-                        d = (uint32_t)t + (uint32_t)n;
-                        alu_result = d;
+#endif
+                        d = (uint32_t)t + n;
+                        alu_result = d >> 16;
                         vm->ds[vm->dp] = d;
                         n = d;
                         break;
                 case ALU_OP_DMUL:
+#ifdef DEBUG
                         DBG_PRINT("ALU_OP_DMUL) ");
-                        d = (uint32_t) t * (uint32_t) n;
-                        n = d;
+#endif
+                        d = (uint32_t) t * n;
+                        n = d >> 16;
                         vm->ds[vm->dp] = d;
                         alu_result = d;
                         break;
                 case ALU_OP_AND:
+#ifdef DEBUG
                         DBG_PRINT("ALU_OP_AND) ");
+#endif
                         alu_result &= n;
                         break;
                 case ALU_OP_OR:
+#ifdef DEBUG
                         DBG_PRINT("ALU_OP_OR) ");
+#endif
                         alu_result |= n;
                         break;
                 case ALU_OP_XOR:
+#ifdef DEBUG
                         DBG_PRINT("ALU_OP_XOR) ");
+#endif
                         alu_result ^= n;
                         break;
                 case ALU_OP_NEG:
+#ifdef DEBUG
                         DBG_PRINT("ALU_OP_NEG) ");
+#endif
                         alu_result = ~t;
                         break;
                 case ALU_OP_DEC:
+#ifdef DEBUG
                         DBG_PRINT("ALU_OP_DEC) ");
+#endif
                         --alu_result;
                         break;
                 case ALU_OP_EQ0:
+#ifdef DEBUG
                         DBG_PRINT("ALU_OP_EQ0) ");
+#endif
                         alu_result = -(t == 0);
                         break;
                 case ALU_OP_EQ:
+#ifdef DEBUG
                         DBG_PRINT("ALU_OP_EQ) ");
+#endif
                         alu_result = -(t == n);
                         break;
                 case ALU_OP_UCMP:
+#ifdef DEBUG
                         DBG_PRINT("ALU_OP_UCMP) ");
+#endif
                         alu_result = -(n < t);
                         break; //TODO Revisar
                 case ALU_OP_CMP:
+#ifdef DEBUG
                         DBG_PRINT("ALU_OP_CMP) ");
+#endif
                         alu_result = -((int16_t)n < (int16_t)t);
                         break; //TODO Revisar
                 case ALU_OP_RSHIFT:
+#ifdef DEBUG
                         DBG_PRINT("ALU_OP_RSHIFT) ");
+#endif
                         alu_result = (n >> t);
                         break;
                 case ALU_OP_LSHIFT:
+#ifdef DEBUG
                         DBG_PRINT("ALU_OP_LSHIFT) ");
+#endif
                         alu_result = (n << t);
                         break;
                 case ALU_OP_SP:
+#ifdef DEBUG
                         DBG_PRINT("ALU_OP_SP) ");
+#endif
                         alu_result = vm->dp << 1;
                         break;
                 case ALU_OP_RS:
+#ifdef DEBUG
                         DBG_PRINT("ALU_OP_RS) ");
+#endif
                         alu_result = vm->rp << 1;
                         break;
                 case ALU_OP_SETSP:
+#ifdef DEBUG
                         DBG_PRINT("ALU_OP_SETSP) ");
+#endif
                         vm->dp = t >> 1;
                         break;
                 case ALU_OP_SETRP:
+#ifdef DEBUG
                         DBG_PRINT("ALU_OP_RP) ");
+#endif
                         vm->rp = t >> 1;
                         break;
                 case ALU_OP_ST:
+#ifdef DEBUG
                         DBG_PRINT("ALU_OP_ST) ");
+#endif
                         alu_result = vm->status;
                         break;
                 case ALU_OP_TX:
+#ifdef DEBUG
                         DBG_PRINT("ALU_OP_TX) ");
+#endif
                         vm->t_ext = t;
                         vm->n_ext = n;
                         vm->status |= ST_SNDTN;
                         break; //TODO
                 case ALU_OP_RX:
+#ifdef DEBUG
                         DBG_PRINT("ALU_OP_RX) ");
+#endif
                         if (!(vm->status & ST_RCVTN))
                                 break;
                         alu_result = vm->t_ext;
@@ -369,35 +428,46 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                         //}
                         break; //TODO
                 case ALU_OP_UMOD:
+#ifdef DEBUG
                         DBG_PRINT("ALU_OP_UMOD) ");
+#endif
                         if (t) {
-                                alu_result = n / t;
-                                t = n % t;
+                        	    d = vm->ds[--vm->dp]|((uint32_t)n<<16);
+                                alu_result = d / t;
+                                t = d % t;
                                 n = t;
                         } else {
                                 //TODO
                         }
                         break;
                 case ALU_OP_MOD:
+#ifdef DEBUG
                         DBG_PRINT("ALU_OP_MOD) ");
+#endif
                         if (t) {
-                                alu_result = (int16_t)n / (int16_t)t;
-                                t = (int16_t)n % (int16_t)t;
+                                alu_result = (int16_t)n / t;
+                                t = (int16_t)n % t;
                                 n = t;
                         } else {
                                 //TODO
                         }
                         break; //TODO Revisar
                 case ALU_OP_BYE:
+#ifdef DEBUG
                         DBG_PRINT("ALU_OP_BYE) ");
+#endif
                         return RC_BYE;
                         break;
                 case ALU_OP_SETST:
+#ifdef DEBUG
                         DBG_PRINT("ALU_OP_SETST) ");
+#endif
                         vm->status &= t;
                         break;
                 default:
+#ifdef DEBUG
                         DBG_PRINT("RC_OP_UNKNOWN\n");
+#endif
                         return RC_OP_UNKNOWN;
                 }
 
@@ -408,48 +478,65 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                 if(r2p) DBG_PRINT("/ALU_F_R2P ");
 #endif
                 if (word & ALU_F_N2T) {
+#ifdef DEBUG
                         DBG_PRINT("/ALU_F_N2T ");
+#endif
                         vm->t = vm->ds[vm->dp];   //TODO Revisar
                 }
                 if (word & ALU_F_T2R) {
+#ifdef DEBUG
                         DBG_PRINT("/ALU_F_T2R ");
+#endif
                         vm->rs[vm->rp] = vm->t;   //TODO Revisar
                 }
                 if (word & ALU_F_T2N) {
+#ifdef DEBUG
                         DBG_PRINT("/ALU_F_T2N ");
+#endif
                         vm->ds[vm->dp] = vm->t;   //TODO Revisar
                 }
 #ifdef UNDER_OVER
                 if (vm->rp == vm->RAM_size) {
+#ifdef DEBUG
                         DBG_PRINT("RC_PC_OVER_FLOW\n");
+#endif
                         return RC_PC_OVER_FLOW;
                 }
 #endif
-
+#ifdef DEBUG
                 DBG_PRINT("[delta_dp:%d/delta_rp:%d/alu:%04x]",delta[ALU_DS(word)],delta[ALU_RS(word)],alu_result);
-
+#endif
                 vm->t = alu_result;
                 //vm->pc++;
-
+#ifdef DEBUG
                 DBG_PRINT("\n");
+#endif
         }
         }
 
 #ifdef UNDER_OVER
         if (vm->rp > vm->rs_size) {
+#ifdef DEBUG
                 DBG_PRINT("RC_RS_OVER_FLOW_end\n");
+#endif
                 return RC_RS_OVER_FLOW;
         }
         if (vm->dp > vm->ds_size) {
+#ifdef DEBUG
                 DBG_PRINT("RC_DS_OVER_FLOW_end\n");
+#endif
                 return RC_DS_OVER_FLOW;
         }
         if (vm->dp < 0) {
+#ifdef DEBUG
                 DBG_PRINT("RC_DS_UNDER_FLOW_end\n");
+#endif
                 return RC_DS_UNDER_FLOW;
         }
         if (vm->rp < 0) {
+#ifdef DEBUG
                 DBG_PRINT("RC_RS_UNDER_FLOW_end\n");
+#endif
                 return RC_RS_UNDER_FLOW;
         }
 #endif

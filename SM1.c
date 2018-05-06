@@ -13,7 +13,6 @@
 //#define DEBUG 1
 //#define MANUAL_STEP
 #define UNDER_OVER
-//#define CLEAR_STACKS
 
 #define DS_SIZE  65535
 #define RS_SIZE  65535
