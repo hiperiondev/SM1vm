@@ -4,7 +4,7 @@
  *  License: GNU GPL V3
  *
  *  Created on: 6 abr. 2018
- *      Author: emiliano gonzalez (egonzalez.hiperion@gmail.com)
+ *  Author: Emiliano Augusto Gonzalez (egonzalez.hiperion@gmail.com)
  */
 
 #include <stdlib.h>
@@ -33,19 +33,6 @@ uint16_t sm1_mem_get(uint16_t addr, vm_t* vm) {
         return vm->RAM[addr];
 }
 
-uint8_t sm1_mem_load(uint16_t addr, vm_t* vm) {
-        FILE *RAM;
-        RAM = fopen("forth/eforth.rom", "r");
-        if (RAM == NULL)
-                return RC_ERROR;
-        uint16_t data;
-        while (fread(&data, sizeof(uint16_t), 1, RAM) == 1) {
-                vm->RAM[addr++] = data;
-        }
-        fclose(RAM);
-
-        return RC_OK;
-}
 
 /////////////////////////////////////////////////////////////////////////////////////
 
@@ -60,22 +47,29 @@ int main() {
         vm->RAM_size = RAM_SIZE;
 #endif
         uint8_t result;
-
 #ifdef DEBUG
         int step_counter = 0;
 
         DBG_PRINT("RESET...\n");
 #endif
-        sm1_reset(vm);
+	vm->pc = 0;
+	vm->dp = 0;
+	vm->rp = 0;
 #ifdef DEBUG
         DBG_PRINT("LOAD...\n");
 #endif
-        if (sm1_mem_load(0x0000, vm) == RC_ERROR) {
+	FILE *RAM;
+	int addr = 0x0000;
+	RAM = fopen("forth/eforth.rom", "r");
 #ifdef DEBUG
+	if (RAM == NULL)
         	DBG_PRINT("...Can't load file!\n");
 #endif
-            exit(1);
-        }
+	uint16_t data;
+	while (fread(&data, sizeof(uint16_t), 1, RAM) == 1) {
+		vm->RAM[addr++] = data;
+	}
+	fclose(RAM);
 #ifdef DEBUG
         DBG_PRINT("START...\n");
 #endif

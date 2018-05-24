@@ -4,7 +4,7 @@
  *  License: GNU GPL V3
  *
  *  Created on: 6 abr. 2018
- *      Author: emiliano gonzalez (egonzalez.hiperion@gmail.com)
+ *  Author: Emiliano Augusto Gonzalez (egonzalez.hiperion@gmail.com)
  */
 
 #ifndef __SM1_H__
@@ -30,7 +30,7 @@
 /////////////////////////////////////////////////////////////////////////////////////
 
 #define OP(x)       (x & 0xe000)        /* operand */
-#define ARG(x)      (x & 0x1fff)        /* argument of operand */
+#define ARG_OP(x)   (x & 0x1fff)        /* argument of operand */
 #define ARG_LIT(x)  (x & 0x7fff)        /* literal */
 
 #define ALU_OP(x)   ((x & 0x1F00) >> 8) /* alu operation */
@@ -124,7 +124,7 @@ typedef struct {
         uint8_t  status;   /*  0=SNDTN
                             *  1=RCVTN
                             *  2=NOT USED
-                            *  3=IRQ - Interrupt (similar to INTR on 8085)
+                            *  3=IRQ - Interrupt (similar to INTR on Intel 8085)
                             *  4=MASK IRQ
                             *  5=NOT USED
                             *  6=NOT USED
@@ -147,13 +147,6 @@ typedef struct {
 
 static  uint8_t sm1_mem_put  (uint16_t addr, uint16_t value, vm_t*);
 static uint16_t sm1_mem_get  (uint16_t addr, vm_t*);
-static  uint8_t sm1_mem_load (uint16_t addr, vm_t*);
-
-static inline void sm1_reset(vm_t* vm) {
-        vm->pc = 0;
-        vm->dp = 0;
-        vm->rp = 0;
-}
 
 static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #ifdef DEBUG
@@ -164,7 +157,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 
         if ((vm->status & ST_IRQ) && (vm->status & ST_IMK)) {
 #ifdef DEBUG
-                DBG_PRINT("IRQ    (%04x)\n",ARG(vm->t_ext));
+                DBG_PRINT("IRQ    (%04x)\n",ARG_OP(vm->t_ext));
 #endif
 #ifdef UNDER_OVER
                 if (vm->rp == vm->ds_size) {
@@ -175,7 +168,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                 }
 #endif
                 vm->rs[++vm->rp] = vm->pc + 1;
-                vm->pc = ARG(vm->t_ext);
+                vm->pc = ARG_OP(vm->t_ext);
                 vm->status &= ~ST_IRQ;
                 return RC_OK;
         }
@@ -216,7 +209,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                         return RC_RS_UNDER_FLOW;
                 }
 #endif
-                vm->pc = !vm->t ? ARG(word) : vm->pc + 1;
+                vm->pc = !vm->t ? ARG_OP(word) : vm->pc + 1;
                 vm->t  = vm->ds[vm->dp--];
 #ifdef UNDER_OVER
                 if (vm->pc > vm->RAM_size) {
@@ -231,11 +224,11 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #ifdef DEBUG
                 DBG_PRINT("OP_JMP (%04x)\n",ARG(word));
 #endif
-                vm->pc = ARG(word);
+                vm->pc = ARG_OP(word);
                 break;
         case OP_CALL:
 #ifdef DEBUG
-                DBG_PRINT("OP_CALL(%04x)\n",ARG(word));
+                DBG_PRINT("OP_CALL(%04x)\n",ARG_OP(word));
 #endif
 #ifdef UNDER_OVER
                 if (vm->rp == vm->rs_size) {
@@ -246,7 +239,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                 }
 #endif
                 vm->rs[++vm->rp] = (vm->pc +1) << 1;
-                vm->pc = ARG(word);
+                vm->pc = ARG_OP(word);
                 break;
         case OP_ALU: {
 #ifdef DEBUG
