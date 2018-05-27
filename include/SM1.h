@@ -155,7 +155,9 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #endif
         static const uint16_t delta[] = { 0, 1, -2, -1 };
 
-        if ((vm->status & ST_IRQ) && (vm->status & ST_IMK)) {
+        vm->pc++;
+
+        if ((vm->status & ST_IRQ) && !(vm->status & ST_IMK)) {
 #ifdef DEBUG
                 DBG_PRINT("IRQ    (%04x)\n",ARG_OP(vm->t_ext));
 #endif
@@ -193,7 +195,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #endif
                 vm->ds[++vm->dp] = vm->t;
                 vm->t = ARG_LIT(word);
-                vm->pc++;
+                //vm->pc++;
                 return RC_OK;
         }
         switch (OP(word)) {
@@ -209,7 +211,8 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                         return RC_RS_UNDER_FLOW;
                 }
 #endif
-                vm->pc = !vm->t ? ARG_OP(word) : vm->pc + 1;
+                //vm->pc = !vm->t ? ARG_OP(word) : vm->pc + 1;
+                vm->pc = !vm->t ? ARG_OP(word) : vm->pc;
                 vm->t  = vm->ds[vm->dp--];
 #ifdef UNDER_OVER
                 if (vm->pc > vm->RAM_size) {
@@ -238,7 +241,8 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                         return RC_RS_OVER_FLOW;
                 }
 #endif
-                vm->rs[++vm->rp] = (vm->pc +1) << 1;
+                //vm->rs[++vm->rp] = (vm->pc + 1) << 1;
+                vm->rs[++vm->rp] = vm->pc << 1;
                 vm->pc = ARG_OP(word);
                 break;
         case OP_ALU: {
@@ -249,7 +253,6 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                 uint16_t t, n, r, alu_result;
                 t = vm->t;
                 n = vm->ds[vm->dp];
-                r = vm->rs[vm->rp];
                 alu_result = t;
 #ifdef DEBUG
                 uint8_t r2p = 0;
@@ -259,9 +262,9 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #ifdef DEBUG
                         r2p = 1;
 #endif
-                } else {
-                        vm->pc++;
-                }
+                } //else {
+                  //      vm->pc++;
+                //}
 
                 switch (ALU_OP(word)) {
                 case ALU_OP_T:
@@ -469,16 +472,13 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                 }
 
                 vm->dp += delta[ALU_DS(word)];
-                vm->rp -= delta[ALU_RS(word)];
+                vm->rp += delta[ALU_RS(word)];
 
+                if (word & ALU_F_T2N) {
 #ifdef DEBUG
-                if(r2p) DBG_PRINT("/ALU_F_R2P ");
+                        DBG_PRINT("/ALU_F_T2N ");
 #endif
-                if (word & ALU_F_N2T) {
-#ifdef DEBUG
-                        DBG_PRINT("/ALU_F_N2T ");
-#endif
-                        vm->t = vm->ds[vm->dp];
+                        vm->ds[vm->dp] = vm->t;
                 }
                 if (word & ALU_F_T2R) {
 #ifdef DEBUG
@@ -486,12 +486,17 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #endif
                         vm->rs[vm->rp] = vm->t;
                 }
-                if (word & ALU_F_T2N) {
+                if (word & ALU_F_N2T) {
 #ifdef DEBUG
-                        DBG_PRINT("/ALU_F_T2N ");
+                        DBG_PRINT("/ALU_F_N2T ");
 #endif
-                        vm->ds[vm->dp] = vm->t;
+                        vm->t = vm->ds[vm->dp];
+                } else {
+                	    vm->t = alu_result;
                 }
+#ifdef DEBUG
+                if(r2p) DBG_PRINT("/ALU_F_R2P ");
+#endif
 #ifdef UNDER_OVER
                 if (vm->rp == vm->RAM_size) {
 #ifdef DEBUG
@@ -503,7 +508,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #ifdef DEBUG
                 DBG_PRINT("[delta_dp:%d/delta_rp:%d/alu:%04x]",delta[ALU_DS(word)],delta[ALU_RS(word)],alu_result);
 #endif
-                vm->t = alu_result;
+               // vm->t = alu_result;
 #ifdef DEBUG
                 DBG_PRINT("\n");
 #endif
