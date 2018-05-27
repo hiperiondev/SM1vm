@@ -110,7 +110,7 @@ enum {
         ST_RCVTN = 0x02, /* receive */
         ST_RCVQT = 0x04, /* receive quantity*/
         ST_IRQ   = 0x08, /* interrupt */
-        ST_IMK   = 0x0f  /* interrupt mask */
+        ST_IMK   = 0x10  /* interrupt mask */
 };
 
 // Registers
@@ -199,7 +199,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
         switch (OP(word)) {
         case OP_JZ:
 #ifdef DEBUG
-                DBG_PRINT("OP_JZ  (%04x)\n",ARG(word));
+                DBG_PRINT("OP_JZ  (%04x)\n",ARG_OP(word));
 #endif
 #ifdef UNDER_OVER
                 if (vm->dp == 0) {
@@ -222,7 +222,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                 break;
         case OP_JMP:
 #ifdef DEBUG
-                DBG_PRINT("OP_JMP (%04x)\n",ARG(word));
+                DBG_PRINT("OP_JMP (%04x)\n",ARG_OP(word));
 #endif
                 vm->pc = ARG_OP(word);
                 break;
