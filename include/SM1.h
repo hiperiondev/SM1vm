@@ -82,7 +82,7 @@ enum {
         ALU_OP_SETRP  = 21, /* set R stack depth */
         ALU_OP_ST     = 22, /* get status */
         ALU_OP_TX     = 23, /* send T and N */
-        ALU_OP_RX     = 24, /* receive T and N */
+        ALU_OP_RX     = 24, /* receive T */
         ALU_OP_UMOD   = 26, /* u/mod */
         ALU_OP_MOD    = 27, /* /mod */
         ALU_OP_BYE    = 28, /* return */
