@@ -469,7 +469,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                 }
 
                 vm->dp += delta[ALU_DS(word)];
-                vm->rp += delta[ALU_RS(word)];
+                vm->rp -= delta[ALU_RS(word)];
 
 #ifdef DEBUG
                 if(r2p) DBG_PRINT("/ALU_F_R2P ");
