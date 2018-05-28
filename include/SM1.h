@@ -100,6 +100,7 @@ enum {
         RC_OP_UNKNOWN    = 0x06, /* operator unknown */
         RC_ROM_WRITE     = 0x07, /* rom write */
         RC_MEM_OVERFLOW  = 0x08, /* out of memory access */
+		RC_IRQ           = 0x09, /* irq execute */
         RC_ERROR         = 0xFE, /* generic error */
         RC_BYE           = 0xFF  /* exit */
 };
@@ -173,7 +174,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                 vm->rs[++vm->rp] = vm->pc + 1;
                 vm->pc = ARG_OP(vm->t_ext);
                 vm->status &= ~ST_IRQ;
-                return RC_OK;
+                return RC_IRQ;
         }
 ////////// Literal
         if (word & OP_LIT) {
@@ -196,7 +197,6 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #endif
                 vm->ds[++vm->dp] = vm->t;
                 vm->t = ARG_LIT(word);
-                //vm->pc++;
                 return RC_OK;
         }
         switch (OP(word)) {
