@@ -157,6 +157,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 
         vm->pc++;
 
+////////// IRQ
         if ((vm->status & ST_IRQ) && !(vm->status & ST_IMK)) {
 #ifdef DEBUG
                 DBG_PRINT("IRQ    (%04x)\n",ARG_OP(vm->t_ext));
@@ -174,7 +175,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                 vm->status &= ~ST_IRQ;
                 return RC_OK;
         }
-
+////////// Literal
         if (word & OP_LIT) {
 #ifdef DEBUG
                 DBG_PRINT("OP_LIT (%04x)\n",ARG_LIT(word));
@@ -199,6 +200,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                 return RC_OK;
         }
         switch (OP(word)) {
+////////// 0Branch
         case OP_JZ:
 #ifdef DEBUG
                 DBG_PRINT("OP_JZ  (%04x)\n",ARG_OP(word));
@@ -211,7 +213,6 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                         return RC_RS_UNDER_FLOW;
                 }
 #endif
-                //vm->pc = !vm->t ? ARG_OP(word) : vm->pc + 1;
                 vm->pc = !vm->t ? ARG_OP(word) : vm->pc;
                 vm->t  = vm->ds[vm->dp--];
 #ifdef UNDER_OVER
@@ -223,12 +224,14 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                 }
 #endif
                 break;
+////////// Jump
         case OP_JMP:
 #ifdef DEBUG
                 DBG_PRINT("OP_JMP (%04x)\n",ARG_OP(word));
 #endif
                 vm->pc = ARG_OP(word);
                 break;
+////////// Call
         case OP_CALL:
 #ifdef DEBUG
                 DBG_PRINT("OP_CALL(%04x)\n",ARG_OP(word));
@@ -241,11 +244,11 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                         return RC_RS_OVER_FLOW;
                 }
 #endif
-                //vm->rs[++vm->rp] = (vm->pc + 1) << 1;
                 vm->rs[++vm->rp] = vm->pc << 1;
                 vm->pc = ARG_OP(word);
                 break;
         case OP_ALU: {
+////////// ALU
 #ifdef DEBUG
                 DBG_PRINT("OP_ALU (");
 #endif
@@ -262,10 +265,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #ifdef DEBUG
                         r2p = 1;
 #endif
-                } //else {
-                  //      vm->pc++;
-                //}
-
+                }
                 switch (ALU_OP(word)) {
                 case ALU_OP_T:
 #ifdef DEBUG
@@ -497,6 +497,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #ifdef DEBUG
                 if(r2p) DBG_PRINT("/ALU_F_R2P ");
 #endif
+
 #ifdef UNDER_OVER
                 if (vm->rp == vm->RAM_size) {
 #ifdef DEBUG
@@ -507,9 +508,6 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #endif
 #ifdef DEBUG
                 DBG_PRINT("[delta_dp:%d/delta_rp:%d/alu:%04x]",delta[ALU_DS(word)],delta[ALU_RS(word)],alu_result);
-#endif
-               // vm->t = alu_result;
-#ifdef DEBUG
                 DBG_PRINT("\n");
 #endif
         }
