@@ -257,6 +257,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                 t = vm->t;
                 n = vm->ds[vm->dp];
                 alu_result = t;
+                r = vm->rs[vm->rp];
 #ifdef DEBUG
                 uint8_t r2p = 0;
 #endif
