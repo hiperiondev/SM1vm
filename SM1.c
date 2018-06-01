@@ -60,7 +60,7 @@ int main() {
 #endif
 	FILE *RAM;
 	int addr = 0x0000;
-	RAM = fopen("forth/eforth.rom", "r");
+	RAM = fopen("/tmp/eforth.rom", "r");
 #ifdef DEBUG
 	if (RAM == NULL)
         	DBG_PRINT("...Can't load file!\n");
@@ -73,6 +73,7 @@ int main() {
 #ifdef DEBUG
         DBG_PRINT("START...\n");
 #endif
+       vm->pc = vm->RAM[0];
         while (1) {
                 uint16_t word = sm1_mem_get(vm->pc, vm);
                 result = sm1_step(word, vm);
@@ -80,9 +81,9 @@ int main() {
                 DBG_PRINT("step:%d\n", step_counter++);
 #endif
                 if (vm->status & ST_SNDTN) {
-#ifdef DEBUG
+//#ifdef DEBUG
                 	DBG_PRINT("%c", (char) vm->t_ext);
-#endif
+//#endif
                 	vm->status &= ~ST_SNDTN;
                 }
 
