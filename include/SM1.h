@@ -172,8 +172,8 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                 }
 #endif
                 vm->rs[++vm->rp] = vm->pc + 1;
-                vm->pc = ARG_OP(vm->t_ext);
-                vm->status &= ~ST_IRQ;
+                vm->pc           = ARG_OP(vm->t_ext);
+                vm->status      &= ~ST_IRQ;
                 return RC_IRQ;
         }
 ////////// Literal
@@ -196,7 +196,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                 }
 #endif
                 vm->ds[++vm->dp] = vm->t;
-                vm->t = ARG_LIT(word);
+                vm->t            = ARG_LIT(word);
                 return RC_OK;
         }
         switch (OP(word)) {
@@ -245,19 +245,18 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                 }
 #endif
                 vm->rs[++vm->rp] = vm->pc << 1;
-                vm->pc = ARG_OP(word);
+                vm->pc           = ARG_OP(word);
                 break;
         case OP_ALU: {
 ////////// ALU
 #ifdef DEBUG
                 DBG_PRINT("OP_ALU (");
 #endif
-                uint32_t d;
-                uint16_t t, n, r, alu_result;
-                t = vm->t;
-                n = vm->ds[vm->dp];
-                alu_result = t;
-                r = vm->rs[vm->rp];
+                uint16_t t   = vm->t;
+                uint16_t n   = vm->ds[vm->dp];
+                uint16_t r   = vm->rs[vm->rp];
+                uint16_t alu = t;
+                uint32_t aux = 0;
 #ifdef DEBUG
                 uint8_t r2p = 0;
 #endif
@@ -277,122 +276,122 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #ifdef DEBUG
                         DBG_PRINT("ALU_OP_N) ");
 #endif
-                        alu_result = n;
+                        alu = n;
                         break;
                 case ALU_OP_R:
 #ifdef DEBUG
                         DBG_PRINT("ALU_OP_R) ");
 #endif
-                        alu_result = r;
+                        alu = r;
                         break;
                 case ALU_OP_GET:
 #ifdef DEBUG
                         DBG_PRINT("ALU_OP_GET)  ");
 #endif
-                        alu_result = sm1_mem_get(t>>1, vm);
+                        alu = sm1_mem_get(t>>1, vm);
                         break;
                 case ALU_OP_PUT:
 #ifdef DEBUG
                         DBG_PRINT("ALU_OP_PUT) ");
 #endif
                         sm1_mem_put(t>>1, n, vm);
-                        alu_result = vm->ds[--vm->dp];
+                        alu = vm->ds[--vm->dp];
                         break; //TODO Check
                 case ALU_OP_DPLUS:
 #ifdef DEBUG
                         DBG_PRINT("ALU_OP_DPLUS) ");
 #endif
-                        d = (uint32_t)t + n;
-                        alu_result = d >> 16;
-                        vm->ds[vm->dp] = d;
-                        n = d;
+                        aux            = (uint32_t)t + n;
+                        alu            = aux >> 16;
+                        vm->ds[vm->dp] = aux;
+                        n              = aux;
                         break;
                 case ALU_OP_DMUL:
 #ifdef DEBUG
                         DBG_PRINT("ALU_OP_DMUL) ");
 #endif
-                        d = (uint32_t) t * n;
-                        n = d >> 16;
-                        vm->ds[vm->dp] = d;
-                        alu_result = d;
+                        aux            = (uint32_t) t * n;
+                        n              = aux >> 16;
+                        vm->ds[vm->dp] = aux;
+                        alu            = aux;
                         break;
                 case ALU_OP_AND:
 #ifdef DEBUG
                         DBG_PRINT("ALU_OP_AND) ");
 #endif
-                        alu_result &= n;
+                        alu &= n;
                         break;
                 case ALU_OP_OR:
 #ifdef DEBUG
                         DBG_PRINT("ALU_OP_OR) ");
 #endif
-                        alu_result |= n;
+                        alu |= n;
                         break;
                 case ALU_OP_XOR:
 #ifdef DEBUG
                         DBG_PRINT("ALU_OP_XOR) ");
 #endif
-                        alu_result ^= n;
+                        alu ^= n;
                         break;
                 case ALU_OP_NEG:
 #ifdef DEBUG
                         DBG_PRINT("ALU_OP_NEG) ");
 #endif
-                        alu_result = ~t;
+                        alu = ~t;
                         break;
                 case ALU_OP_DEC:
 #ifdef DEBUG
                         DBG_PRINT("ALU_OP_DEC) ");
 #endif
-                        --alu_result;
+                        --alu;
                         break;
                 case ALU_OP_EQ0:
 #ifdef DEBUG
                         DBG_PRINT("ALU_OP_EQ0) ");
 #endif
-                        alu_result = -(t == 0);
+                        alu = -(t == 0);
                         break;
                 case ALU_OP_EQ:
 #ifdef DEBUG
                         DBG_PRINT("ALU_OP_EQ) ");
 #endif
-                        alu_result = -(t == n);
+                        alu = -(t == n);
                         break;
                 case ALU_OP_UCMP:
 #ifdef DEBUG
                         DBG_PRINT("ALU_OP_UCMP) ");
 #endif
-                        alu_result = -(n < t);
+                        alu = -(n < t);
                         break; //TODO Check
                 case ALU_OP_CMP:
 #ifdef DEBUG
                         DBG_PRINT("ALU_OP_CMP) ");
 #endif
-                        alu_result = -((int16_t)n < (int16_t)t);
+                        alu = -((int16_t)n < (int16_t)t);
                         break; //TODO Check
                 case ALU_OP_RSHIFT:
 #ifdef DEBUG
                         DBG_PRINT("ALU_OP_RSHIFT) ");
 #endif
-                        alu_result = (n >> t);
+                        alu = (n >> t);
                         break;
                 case ALU_OP_LSHIFT:
 #ifdef DEBUG
                         DBG_PRINT("ALU_OP_LSHIFT) ");
 #endif
-                        alu_result = (n << t);
+                        alu = (n << t);
                         break;
                 case ALU_OP_SP:
 #ifdef DEBUG
                         DBG_PRINT("ALU_OP_SP) ");
 #endif
-                        alu_result = vm->dp << 1;
+                        alu = vm->dp << 1;
                         break;
                 case ALU_OP_RS:
 #ifdef DEBUG
                         DBG_PRINT("ALU_OP_RS) ");
 #endif
-                        alu_result = vm->rp << 1;
+                        alu = vm->rp << 1;
                         break;
                 case ALU_OP_SETSP:
 #ifdef DEBUG
@@ -410,14 +409,14 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #ifdef DEBUG
                         DBG_PRINT("ALU_OP_ST) ");
 #endif
-                        alu_result = vm->status;
+                        alu = vm->status;
                         break;
                 case ALU_OP_TX:
 #ifdef DEBUG
                         DBG_PRINT("ALU_OP_TX) ");
 #endif
-                        vm->t_ext = t;
-                        vm->n_ext = n;
+                        vm->t_ext   = t;
+                        vm->n_ext   = n;
                         vm->status |= ST_SNDTN;
                         break; //TODO
                 case ALU_OP_RX:
@@ -426,17 +425,17 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #endif
                         if (!(vm->status & ST_RCVTN))
                                 break;
-                        alu_result = vm->t_ext;
+                        alu = vm->t_ext;
                         break;
                 case ALU_OP_UMOD:
 #ifdef DEBUG
                         DBG_PRINT("ALU_OP_UMOD) ");
 #endif
                         if (t) {
-                        	    d = vm->ds[--vm->dp]|((uint32_t)n<<16);
-                                alu_result = d / t;
-                                t = d % t;
-                                n = t;
+                        	    aux = vm->ds[--vm->dp]|((uint32_t)n<<16);
+                                alu = aux / t;
+                                t   = aux % t;
+                                n   = t;
                         } else {
                                //TODO Exception
                         }
@@ -446,9 +445,9 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                         DBG_PRINT("ALU_OP_MOD) ");
 #endif
                         if (t) {
-                                alu_result = (int16_t)n / t;
-                                t = (int16_t)n % t;
-                                n = t;
+                                alu = (int16_t)n / t;
+                                t   = (int16_t)n % t;
+                                n   = t;
                         } else {
                                //TODO Exception
                         }
@@ -493,7 +492,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #endif
                         vm->t = vm->ds[vm->dp];
                 } else {
-                	    vm->t = alu_result;
+                	    vm->t = alu;
                 }
 #ifdef DEBUG
                 if(r2p) DBG_PRINT("/ALU_F_R2P ");
@@ -508,7 +507,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                 }
 #endif
 #ifdef DEBUG
-                DBG_PRINT("[delta_dp:%d/delta_rp:%d/alu:%04x]",delta[ALU_DS(word)],delta[ALU_RS(word)],alu_result);
+                DBG_PRINT("[delta_dp:%d/delta_rp:%aux/alu:%04x]",delta[ALU_DS(word)],delta[ALU_RS(word)],alu);
                 DBG_PRINT("\n");
 #endif
         }
