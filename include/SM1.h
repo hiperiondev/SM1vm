@@ -33,7 +33,7 @@
 #define ARG_OP(x)   (x & 0x1fff)        /* argument of operand */
 #define ARG_LIT(x)  (x & 0x7fff)        /* literal */
 
-#define ALU_OP(x)   ((x & 0x1F00) >> 8) /* alu operation */
+#define ALU_OP(x)   ((x >> 8) & 0x1F)   /* alu operation */
 #define ALU_DS(x)   (x & 0x03)          /* alu data stack */
 #define ALU_RS(x)   ((x >> 2) & 0x03)   /* alu return stack */
 
@@ -80,13 +80,13 @@ enum {
         ALU_OP_RS     = 19, /* R stack depth */
         ALU_OP_SETSP  = 20, /* set stack depth */
         ALU_OP_SETRP  = 21, /* set R stack depth */
-        ALU_OP_ST     = 22, /* get status */
+        ALU_OP_ST     = 22, /* get status & T*/
         ALU_OP_TX     = 23, /* send T and N */
         ALU_OP_RX     = 24, /* receive T */
         ALU_OP_UMOD   = 26, /* u/mod */
         ALU_OP_MOD    = 27, /* /mod */
         ALU_OP_BYE    = 28, /* return */
-        ALU_OP_SETST  = 29  /* set status */
+        ALU_OP_SETST  = 29  /* set status or T*/
 };
 
 // Return Condition
@@ -100,7 +100,7 @@ enum {
         RC_OP_UNKNOWN    = 0x06, /* operator unknown */
         RC_ROM_WRITE     = 0x07, /* rom write */
         RC_MEM_OVERFLOW  = 0x08, /* out of memory access */
-		RC_IRQ           = 0x09, /* irq execute */
+        RC_IRQ           = 0x09, /* irq execute */
         RC_ERROR         = 0xFE, /* generic error */
         RC_BYE           = 0xFF  /* exit */
 };
@@ -409,7 +409,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #ifdef DEBUG
                         DBG_PRINT("ALU_OP_ST) ");
 #endif
-                        alu = vm->status;
+                        alu = vm->status & t;
                         break;
                 case ALU_OP_TX:
 #ifdef DEBUG
@@ -490,7 +490,8 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #ifdef DEBUG
                         DBG_PRINT("/ALU_F_N2T ");
 #endif
-                        vm->t = vm->ds[vm->dp];
+                        //vm->t = vm->ds[vm->dp];
+                        vm->t = n;
                 } else {
                 	    vm->t = alu;
                 }
@@ -505,10 +506,6 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #endif
                         return RC_PC_OVER_FLOW;
                 }
-#endif
-#ifdef DEBUG
-                DBG_PRINT("[delta_dp:%d/delta_rp:%aux/alu:%04x]",delta[ALU_DS(word)],delta[ALU_RS(word)],alu);
-                DBG_PRINT("\n");
 #endif
         }
         }
