@@ -1,3 +1,4 @@
+( SM1 Cross Compiler )
 
 \   Usage gforth cross.fs <machine.fs> <program.fs>
 \
@@ -18,23 +19,23 @@ variable lst        \ .lst output file handle
 
 131072 allocate throw constant tflash       \ bytes, target flash
 131072 allocate throw constant _tbranches   \ branch targets, cells
-tflash      31072 erase
-_tbranches  131072 erase
+tflash      31072 0 fill
+_tbranches  131072 0 fill
 : tbranches cells _tbranches + ;
 
-variable tdp    0 tdp !         \ Data pointer
-variable tcp    0 tcp !         \ Code pointer
+variable tdp    0 tdp !
 : there     tdp @ ;
 : islegal   ;
 : tc!       islegal tflash + c! ;
 : tc@       islegal tflash + c@ ;
 : tw!       islegal tflash + w! ;
-: tw@       islegal tflash + w@ ;
+: t!        islegal tflash + l! ;
 : t@        islegal tflash + uw@ ;
 : twalign   tdp @ 1+ -2 and tdp ! ;
+: talign    tdp @ 3 + -4 and tdp ! ;
 : tc,       there tc! 1 tdp +! ;
+: t,        there t!  4 tdp +! ;
 : tw,       there tw! tcell tdp +! ;
-: tcode,    tdp @ tw! tcell tdp +! ;
 : org       tdp ! ;
 
 wordlist constant target-wordlist
@@ -45,7 +46,7 @@ next-arg included       \ include the machine.fs
 
 ( Language basics for target )
 
-warnings off
+warnings on
 :: ( postpone ( ;
 :: \ postpone \ ;
 
@@ -60,19 +61,11 @@ warnings off
 : literal
     \ dup $f rshift over $e rshift xor 1 and throw
     dup h# 8000 and if
-        h# ffff xor recurse
-        ALU_NEG alu
-    else
-        h# 8000 or tcode,
-    then
-;
-
-: literal
-    dup $8000 and if
+        \ h# ffff xor recurse
         invert recurse
-        ALU_NEG alu
+        ~t alu
     else
-        $8000 or tcode,
+        h# 8000 or tw,
     then
 ;
 
@@ -88,51 +81,34 @@ variable link 0 link !
 
 :: header
     twalign there
-    \ cr ." link is " link @ .
+    cr ." link is " link @ .
     link @ tw,
     link !
     bl parse
-    \ cr ." at " there . 2dup type tcp @ .
     dup tc,
     bounds do
         i c@ tc,
     loop
     twalign
 ;
-
-:: header-imm
-    twalign there
-    link @ 1+ tw,
-    link !
-    bl parse
-    dup tc,
-    bounds do
-        i c@ tc,
-    loop
-    twalign
-;
-
-variable wordstart
 
 :: :
     hex
-    there s>d
+    codeptr s>d
     <# bl hold # # # # #>
     lst @ write-file throw
     wordstr lst @ write-line throw
 
-    there wordstart !
     create  codeptr ,
     does>   @ scall
-
 ;
 
 :: :noname
 ;
 
 :: ,
-    twalign
-    tw,
+    talign
+    t,
 ;
 
 :: allot
@@ -158,21 +134,17 @@ variable wordstart
 ;
 
 :: ;
-    tdp @ wordstart @ = if
-        s" exit" evaluate
-    else
-        tdp @ 2 - shortcut \ true if shortcut applied
-        tdp @ 0 do
-            i tbranches @ tdp @ = if
-                i tbranches @ shortcut and
-            then
-        loop
-        0= if   \ not all shortcuts worked
-            s" exit" evaluate
+    there 2 - shortcut      \ true if shortcut applied
+    there 0 do
+        i tbranches @ there = if
+            i tbranches @ shortcut and
         then
+    loop    
+    0= if   \ not all shortcuts worked
+        cr ." not all shortcuts worked"
+        s" exit" evaluate
     then
 ;
-
 :: ;fallthru ;
 
 :: jmp
@@ -185,25 +157,9 @@ variable wordstart
 ;
 
 :: create
-    twalign
+    talign
     create there ,
     does>   @ literal
-;
-
-:: inline:
-    parse-name evaluate
-    \ tcp @ tw! tcell tcp +! ;
-    tdp @ 2 - >r
-    r@ tw@ $8000 or r> tw!
-    s" w," evaluate
-;
-
-\ usage "<variable> @i"
-\ replaces the variable with an inline fetch using a high-call
-\
-:: @i
-    tdp @ 2 - >r
-    r@ tw@ $2000 + 2/ $4000 or r> tw!
 ;
 
 ( Switching between target and meta )
@@ -215,7 +171,7 @@ variable wordstart
 
 : t'        bl parse target-wordlist search-wordlist 0= throw >body @ ;
 
-( eforth's way of handling constants )
+( eforth's way of handling constants         JCB 13:12 09/03/10)
 
 : sign>number   ( c-addr1 u1 -- ud2 c-addr2 u2 )
     0. 2swap
@@ -256,17 +212,13 @@ warnings on
 ( Conditionals )
 
 : resolve ( orig -- )
-    tdp @ over tbranches ! \ forward reference from orig to this loc
-    dup t@ tdp @ 2/ or swap tw!
+    there over tbranches ! \ forward reference from orig to this loc
+    dup t@ there 2/ or swap tw!
 ;
 
 :: if
-    tdp @
+    there
     0 0branch
-;
-
-:: DOUBLE
-    tdp @ 2/ 1+ scall
 ;
 
 :: then
@@ -274,12 +226,12 @@ warnings on
 ;
 
 :: else
-    tdp @
-    0 ubranch 
+    there
+    0 ubranch
     swap resolve
 ;
 
-:: begin tdp @ ;
+:: begin there ;
 
 :: again ( dest -- )
     2/ ubranch
@@ -288,7 +240,7 @@ warnings on
     2/ 0branch
 ;
 :: while
-    tdp @
+    there
     0 0branch
 ;
 :: repeat
@@ -304,33 +256,7 @@ warnings on
         1-
     repeat
 ;
-
-( Strings )
-
-: >str ( c-addr u -- str ) \ a new u char string from c-addr
-    dup cell+ allocate throw dup >r
-    2dup ! cell+    \ write size into first cell
-                    ( c-addr u saddr )
-    swap cmove r>
-;
-: str@  dup cell+ swap @ ;
-: str! ( str c-addr -- c-addr' ) \ copy str to c-addr
-    >r str@ r>
-    2dup + >r swap
-    cmove r>
-;
-: +str ( str2 str1 -- str3 )
-    over @ over @ + cell+ allocate throw >r
-    over @ over @ + r@ !
-    r@ cell+ str! str! drop r>
-;
-
-: example
-    s"  sailor" >str
-    s" hello" >str
-    +str str@ type
-;
-
+include strings.fs
 next-arg 2dup .trim >str constant prefix.
 : .suffix  ( c-addr u -- c-addr u ) \ e.g. "bar" -> "foo.bar"
     >str prefix. +str str@
@@ -339,17 +265,20 @@ next-arg 2dup .trim >str constant prefix.
 : out-suffix ( s -- h ) \ Create an output file h with suffix s
     >str
     prefix. +str
-    s" build/" >str +str str@
+    s" ./build/" >str +str str@
     create-output-file
 ;
+
 :noname
     s" lst" out-suffix lst !
-; execute
-
+;
+execute
 
 target included                         \ include the program.fs
 
-[ tdp @ 0 org ] main quit [ org ]
+\ [ tdp @ 0 org ] bootloader main [ org ]
+[ tdp @ 0 org ] main [ org ]
+
 meta
 
 decimal
@@ -358,25 +287,12 @@ decimal
     s" hex" out-suffix to file
 
     hex
-    4096 0 do
+    1024 0 do
         tflash i 2* + w@
         s>d <# # # # # #> file write-line throw
     loop
     file close-file
 ;
-: dumpall.32
-    s" hex" out-suffix to file
-
-    hex
-    8192 0 do
-        tflash i 4 * + @
-        s>d <# # # # # # # # # #> file write-line throw
-    loop
-    file close-file
-;
 
 dumpall.16
-." tdp " tdp @ .
-." tcp " tcp @ .
-
 bye

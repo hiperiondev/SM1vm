@@ -12,9 +12,9 @@
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-//#define DEBUG 1
-//#define MANUAL_STEP
-//#define UNDER_OVER
+#define DEBUG 1
+#define MANUAL_STEP
+#define UNDER_OVER
 
 #define DS_SIZE  65535
 #define RS_SIZE  65535
@@ -81,9 +81,9 @@ int main() {
                 DBG_PRINT("step:%d\n", step_counter++);
 #endif
                 if (vm->status & ST_SNDTN) {
-//#ifdef DEBUG
+#ifdef DEBUG
                 	DBG_PRINT("%c", (char) vm->t_ext);
-//#endif
+#endif
                 	vm->status &= ~ST_SNDTN;
                 }
 
