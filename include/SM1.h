@@ -109,7 +109,7 @@ enum {
 enum {
         ST_SNDTN = 0x01, /* send */
         ST_RCVTN = 0x02, /* receive */
-        ST_RCVQT = 0x04, /* receive quantity*/
+        ST_CARRY = 0x04, /* carry bit*/
         ST_IRQ   = 0x08, /* interrupt */
         ST_IMK   = 0x10  /* interrupt mask */
 };
@@ -124,7 +124,7 @@ typedef struct {
         uint16_t n_ext;    /* external second element of data stack */
         uint8_t  status;   /*  0=SNDTN
                             *  1=RCVTN
-                            *  2=NOT USED
+                            *  2=CARRY BIT
                             *  3=IRQ - Interrupt (similar to INTR on Intel 8085)
                             *  4=MASK IRQ
                             *  5=NOT USED
@@ -373,13 +373,22 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #ifdef DEBUG
                         DBG_PRINT("ALU_OP_RSHIFT) ");
 #endif
+                        aux = (vm->status & ST_CARRY) << 13;
+                        vm->status &= ~ST_CARRY;
+                        vm->status |= (n & 0x0001) << 2; // Carry
                         alu = (n >> t);
+                        alu |= aux;
+
                         break;
                 case ALU_OP_LSHIFT:
 #ifdef DEBUG
                         DBG_PRINT("ALU_OP_LSHIFT) ");
 #endif
+                        aux = (vm->status & ST_CARRY) >> 2;
+                        vm->status &= ~ST_CARRY;
+                        vm->status |= (n & 0x8000) >> 13; // Carry
                         alu = (n << t);
+                        alu |= aux;
                         break;
                 case ALU_OP_SP:
 #ifdef DEBUG
