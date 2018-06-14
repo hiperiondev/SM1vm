@@ -111,7 +111,8 @@ enum {
         ST_RCVTN = 0x02, /* receive */
         ST_CARRY = 0x04, /* carry bit*/
         ST_IRQ   = 0x08, /* interrupt */
-        ST_IMK   = 0x10  /* interrupt mask */
+        ST_IMK   = 0x10, /* interrupt mask */
+		ST_RSVD  = 0x80  /* reserverd */
 };
 
 // Registers
@@ -129,7 +130,7 @@ typedef struct {
                             *  4=MASK IRQ
                             *  5=NOT USED
                             *  6=NOT USED
-                            *  7=NOT USED
+                            *  7=RESERVED
                             */
         uint16_t *RAM;     /* ram */
       //uint16_t *ROM;     /* rom */
@@ -302,6 +303,13 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                         DBG_PRINT("ALU_OP_DPLUS) ");
 #endif
                         aux            = (uint32_t)t + n;
+                        /* carry */
+                        aux            += (vm->status & ST_CARRY) >> 2;
+                        vm->status     &= ~ST_RSVD;
+                        vm->status     |= (vm->status & ST_CARRY) << 5;
+                        vm->status     &= ~ST_CARRY;
+                        vm->status     |= (uint32_t)(t > 0xffffffff - (n + (vm->status & ST_CARRY) >> 7))? ST_CARRY:0;
+                        /*********/
                         alu            = aux >> 16;
                         vm->ds[vm->dp] = aux;
                         n              = aux;
@@ -374,21 +382,25 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                         DBG_PRINT("ALU_OP_RSHIFT) ");
 #endif
                         aux = (vm->status & ST_CARRY) << 13;
+                        /* carry */
                         vm->status &= ~ST_CARRY;
-                        vm->status |= (n & 0x0001) << 2; // Carry
+                        vm->status |= (n & 0x0001) << 2;
+                        /*********/
                         alu = (n >> t);
-                        alu |= aux;
+                        alu |= aux; // carry
 
                         break;
                 case ALU_OP_LSHIFT:
 #ifdef DEBUG
                         DBG_PRINT("ALU_OP_LSHIFT) ");
 #endif
+                        /* carry */
                         aux = (vm->status & ST_CARRY) >> 2;
                         vm->status &= ~ST_CARRY;
-                        vm->status |= (n & 0x8000) >> 13; // Carry
+                        vm->status |= (n & 0x8000) >> 13;
+                        /*********/
                         alu = (n << t);
-                        alu |= aux;
+                        alu |= aux; // carry
                         break;
                 case ALU_OP_SP:
 #ifdef DEBUG
