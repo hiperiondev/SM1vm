@@ -169,15 +169,23 @@ typedef struct {
         uint16_t t;        /* top of data stack */
         uint16_t t_ext;    /* external top of data stack */
         uint16_t n_ext;    /* external second element of data stack */
-        uint8_t  status;   /* status register
-                            *  0=SNDTN          / vm data transmission
-                            *  1=RCVTN          / external data receive
-                            *  2=CARRY          / carry or overflow
-                            *  3=IRQ            / interrupt (similar to INTR on Intel 8085)
-                            *  4=IMK            / interrupt mask
-                            *  5=NOT USED       / not defined
-                            *  6=EXCEPTION      / alu exception
-                            *  7=RESERVED       / reserved
+        uint16_t status;   /*  status register
+                            *   0=SNDTN          / vm data transmission
+                            *   1=RCVTN          / external data receive
+                            *   2=CARRY          / carry or overflow
+                            *   3=IRQ            / interrupt (similar to INTR on Intel 8085)
+                            *   4=IMK            / interrupt mask
+                            *   5=NOT USED       / not defined
+                            *   6=EXCEPTION      / alu exception
+                            *   7=RESERVED       / reserved
+                            *   8=NOT USED       / not defined
+                            *   9=NOT USED       / not defined
+                            *  10=NOT USED       / not defined
+                            *  11=NOT USED       / not defined
+                            *  12=NOT USED       / not defined
+                            *  13=NOT USED       / not defined
+                            *  14=NOT USED       / not defined
+                            *  15=NOT USED       / not defined
                             */
 #ifdef EXTRAREGS
         uint16_t w;        /* w register */
