@@ -125,24 +125,25 @@ typedef struct {
         uint16_t t;        /* top of data stack */
         uint16_t t_ext;    /* external top of data stack */
         uint16_t n_ext;    /* external second element of data stack */
-        uint8_t  status;   /*  0=SNDTN
-                            *  1=RCVTN
-                            *  2=CARRY BIT
-                            *  3=IRQ - Interrupt (similar to INTR on Intel 8085)
-                            *  4=MASK IRQ
-                            *  5=NOT USED
-                            *  6=ALU EXCEPTION
-                            *  7=RESERVED
+        uint8_t  status;   /* status register
+                            *  0=SNDTN          / vm data transmission
+                            *  1=RCVTN          / external data receive
+                            *  2=CARRY          / carry or overflow
+                            *  3=IRQ            / interrupt (similar to INTR on Intel 8085)
+                            *  4=IMK            / interrupt mask
+                            *  5=NOT USED       / *
+                            *  6=EXCEPTION      / alu exception
+                            *  7=RESERVED       / reserved
                             */
-        uint16_t *RAM;     /* ram */
-      //uint16_t *ROM;     /* rom */
-        uint16_t *rs;      /* return stack */
-        uint16_t *ds;      /* data stack */
+        uint16_t *RAM;     /* ram vector*/
+      //uint16_t *ROM;     /* rom vector*/
+        uint16_t *rs;      /* return stack vector*/
+        uint16_t *ds;      /* data stack vector*/
 #ifdef UNDER_OVER
         uint16_t RAM_size; /* ram size */
       //uint16_t ROM_size; /* rom size */
-        uint16_t ds_size;  /* data stack size */
-        uint16_t rs_size;  /* return stack size */
+        uint8_t  ds_size;  /* data stack size */
+        uint8_t  rs_size;  /* return stack size */
 #endif
 
 } vm_t;
@@ -324,6 +325,10 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                         n              = aux >> 16;
                         vm->ds[vm->dp] = aux;
                         alu            = aux;
+#ifdef CARRY
+                        vm->status &= ~ST_CARRY;
+                        vm->status |= (t != 0 && aux / t != n) << 2;
+#endif
                         break;
                 case ALU_OP_AND:
 #ifdef DEBUG
@@ -524,7 +529,6 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #ifdef DEBUG
                         DBG_PRINT("/ALU_F_N2T ");
 #endif
-                        //vm->t = vm->ds[vm->dp];
                         vm->t = n;
                 } else {
                 	    vm->t = alu;
