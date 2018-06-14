@@ -29,13 +29,14 @@
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-#define OP(x)       (x & 0xe000)        /* operand */
-#define ARG_OP(x)   (x & 0x1fff)        /* argument of operand */
-#define ARG_LIT(x)  (x & 0x7fff)        /* literal */
+#define OP(x)       (x & 0xe000)                                /* operand */
+#define ARG_OP(x)   (x & 0x1fff)                                /* argument of operand */
+#define ARG_LIT(x)  (x & 0x7fff)                                /* literal */
 
-#define ALU_OP(x)   ((x >> 8) & 0x1F)   /* alu operation */
-#define ALU_DS(x)   (x & 0x03)          /* alu data stack */
-#define ALU_RS(x)   ((x >> 2) & 0x03)   /* alu return stack */
+#define ALU_OP(x)   ((x >> 8) & 0x1F)                           /* alu operation */
+#define ALU_DS(x)   (x & 0x03)                                  /* alu data stack */
+#define ALU_RS(x)   ((x >> 2) & 0x03)                           /* alu return stack */
+#define ALU_EX(x)   ((ALU_DS(x)== 0x03)|((ALU_RS(x)==0x03)<<1)) /* extended bits */
 
 /////////////////////////////////////////////////////////////////////////////////////
 /*
@@ -180,7 +181,6 @@ typedef struct {
                             */
 #ifdef EXTRAREGS
         uint16_t w;        /* w register */
-
 #endif
         uint16_t *RAM;     /* ram vector*/
       //uint16_t *ROM;     /* rom vector*/
