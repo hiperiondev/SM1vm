@@ -70,9 +70,11 @@
 	N2T : Move the new value of T (or D) to N
 	R2P : Move top of return stack to PC
 
-	RSTACK and DSTACK are signed values (twos compliment) that are
-	the stack delta (the amount to increment or decrement the stack
-	by for their respective stacks: return and data)
+	RSTACK and DSTACK :
+	00 = 0
+	01 = +1
+	10 = -1
+	11 = extended bit (not modify stack pointers. used for alu extended operations)
 
 */
 /////////////////////////////////////////////////////////////////////////////////////
@@ -203,7 +205,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 	    DBG_PRINT("[pc:%04x/dp:%02x/rp:%02x/rs[rp]:%04x/t:%04x/n:%04x/n-1:%04x/n-2:%04x] step(%04x):"
         ,vm->pc, vm->dp, vm->rp, vm->rs[vm->rp], vm->t, vm->ds[vm->dp], vm->ds[vm->dp-1], vm->ds[vm->dp-2], word);
 #endif
-        static const uint16_t delta[] = { 0, 1, -2, -1 };
+        static const uint16_t delta[] = { 0, 1, -1, 0 };
 
         vm->pc++;
 
