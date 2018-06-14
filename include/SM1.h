@@ -101,6 +101,7 @@ enum {
         RC_ROM_WRITE     = 0x07, /* rom write */
         RC_MEM_OVERFLOW  = 0x08, /* out of memory access */
         RC_IRQ           = 0x09, /* irq execute */
+		RC_EXPTN         = 0xFD, /* alu exception */
         RC_ERROR         = 0xFE, /* generic error */
         RC_BYE           = 0xFF  /* exit */
 };
@@ -112,6 +113,7 @@ enum {
         ST_CARRY = 0x04, /* carry bit*/
         ST_IRQ   = 0x08, /* interrupt */
         ST_IMK   = 0x10, /* interrupt mask */
+		ST_EXPTN = 0x40, /* alu exception */
 		ST_RSVD  = 0x80  /* reserverd */
 };
 
@@ -129,7 +131,7 @@ typedef struct {
                             *  3=IRQ - Interrupt (similar to INTR on Intel 8085)
                             *  4=MASK IRQ
                             *  5=NOT USED
-                            *  6=NOT USED
+                            *  6=ALU EXCEPTION
                             *  7=RESERVED
                             */
         uint16_t *RAM;     /* ram */
@@ -466,7 +468,8 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                                 t   = aux % t;
                                 n   = t;
                         } else {
-                               //TODO Exception
+                        	vm->status |= ST_EXPTN;
+                        	return RC_EXPTN;
                         }
                         break;
                 case ALU_OP_MOD:
@@ -478,7 +481,8 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                                 t   = (int16_t)n % t;
                                 n   = t;
                         } else {
-                               //TODO Exception
+                        	vm->status |= ST_EXPTN;
+                        	return RC_EXPTN;
                         }
                         break; //TODO Check
                 case ALU_OP_BYE:
