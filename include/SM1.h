@@ -122,11 +122,11 @@ enum {
         ALU_OP_SETSP  = 20, /* set stack depth */
         ALU_OP_SETRP  = 21, /* set r stack depth */
         ALU_OP_ST     = 22, /* get status & t */
-        ALU_OP_TX     = 23, /* send t and n */
-        ALU_OP_RX     = 24, /* receive t */
+		ALU_OP_SETST  = 23, /* set status or t */
+        ALU_OP_TX     = 24, /* send t and n */
+        ALU_OP_RX     = 25, /* receive t */
         ALU_OP_UMOD   = 26, /* u/mod */
         ALU_OP_MOD    = 27, /* /mod */
-        ALU_OP_SETST  = 28, /* set status or t */
 		ALU_OP_NOOP   = 29, /* not defined */
 		ALU_OP_NOOP_  = 30, /* not defined */
         ALU_OP_BYE    = 31  /* return */
