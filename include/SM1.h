@@ -394,7 +394,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #endif
                         alu = (n >> t);
 #ifdef CARRY
-                        alu |= aux; // carry
+                        alu |= aux;
 #endif
 
                         break;
@@ -409,7 +409,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #endif
                         alu = (n << t);
 #ifdef CARRY
-                        alu |= aux; // carry
+                        alu |= aux;
 #endif
                         break;
                 case ALU_OP_SP:
@@ -495,7 +495,8 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #ifdef DEBUG
                         DBG_PRINT("ALU_OP_SETST) ");
 #endif
-                        vm->status &= t;
+                        vm->status &= n;
+                        vm->status |= t;
                         break;
                 default:
 #ifdef DEBUG
