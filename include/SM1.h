@@ -163,8 +163,8 @@ enum {
 
 // Registers
 typedef struct {
-        int16_t  dp;       /* data stack pointer */
-        int16_t  rp;       /* return stack pointer*/
+        int8_t  dp;        /* data stack pointer */
+        int8_t  rp;        /* return stack pointer*/
         uint16_t pc;       /* program counter */
         uint16_t t;        /* top of data stack */
         uint16_t t_ext;    /* external top of data stack */
