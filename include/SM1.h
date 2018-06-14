@@ -352,6 +352,10 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                         DBG_PRINT("ALU_OP_DEC) ");
 #endif
                         --alu;
+#ifdef CARRY
+                        vm->status     &= ~ST_CARRY;
+                        vm->status     |= (alu == 0xffff) << 2;
+#endif
                         break;
                 case ALU_OP_EQ0:
 #ifdef DEBUG
