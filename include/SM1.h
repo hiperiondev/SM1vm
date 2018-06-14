@@ -38,6 +38,44 @@
 #define ALU_RS(x)   ((x >> 2) & 0x03)   /* alu return stack */
 
 /////////////////////////////////////////////////////////////////////////////////////
+/*
+## Instruction Set Encoding
+
+    +---------------------------------------------------------------+
+	| F | E | D | C | B | A | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	+---------------------------------------------------------------+
+	| 1 |                    LITERAL VALUE                          |
+	+---------------------------------------------------------------+
+	| 0 | 0 | 0 |            BRANCH TARGET ADDRESS                  |
+	+---------------------------------------------------------------+
+	| 0 | 0 | 1 |            CONDITIONAL BRANCH TARGET ADDRESS      |
+	+---------------------------------------------------------------+
+	| 0 | 1 | 0 |            CALL TARGET ADDRESS                    |
+	+---------------------------------------------------------------+
+	| 0 | 1 | 1 |   ALU OPERATION   |T2N|T2R|N2T|R2P| RSTACK| DSTACK|
+	+---------------------------------------------------------------+
+	| F | E | D | C | B | A | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	+---------------------------------------------------------------+
+
+	T   : Top of data stack
+	N   : Next on data stack
+	PC  : Program Counter
+
+	LITERAL VALUES : push a value onto the data stack
+	CONDITIONAL    : BRANCHS pop and test the T
+	CALLS          : PC+1 onto the return stack
+
+	T2N : Move T to N
+	T2R : Move T to top of return stack
+	N2T : Move the new value of T (or D) to N
+	R2P : Move top of return stack to PC
+
+	RSTACK and DSTACK are signed values (twos compliment) that are
+	the stack delta (the amount to increment or decrement the stack
+	by for their respective stacks: return and data)
+
+*/
+/////////////////////////////////////////////////////////////////////////////////////
 
 // Operation types
 enum {
@@ -58,16 +96,16 @@ enum {
 
 // ALU operations
 enum {
-        ALU_OP_T      = 0,  /* T */
-        ALU_OP_N      = 1,  /* N */
+        ALU_OP_T      = 0,  /* t */
+        ALU_OP_N      = 1,  /* n */
         ALU_OP_R      = 2,  /* top of return stack */
         ALU_OP_GET    = 3,  /* load from address */
         ALU_OP_PUT    = 4,  /* store to address */
         ALU_OP_DPLUS  = 5,  /* double cell addition */
         ALU_OP_DMUL   = 6,  /* double cell multiply */
-        ALU_OP_AND    = 7,  /* bitwise AND */
-        ALU_OP_OR     = 8,  /* bitwise OR */
-        ALU_OP_XOR    = 9,  /* bitwise XOR */
+        ALU_OP_AND    = 7,  /* bitwise and */
+        ALU_OP_OR     = 8,  /* bitwise or */
+        ALU_OP_XOR    = 9,  /* bitwise xor */
         ALU_OP_NEG    = 10, /* bitwise inversion */
         ALU_OP_DEC    = 11, /* decrement */
         ALU_OP_EQ0    = 12, /* equal to zero */
@@ -77,16 +115,18 @@ enum {
         ALU_OP_RSHIFT = 16, /* logical right shift */
         ALU_OP_LSHIFT = 17, /* logical left shift */
         ALU_OP_SP     = 18, /* depth of stack */
-        ALU_OP_RS     = 19, /* R stack depth */
+        ALU_OP_RS     = 19, /* r stack depth */
         ALU_OP_SETSP  = 20, /* set stack depth */
-        ALU_OP_SETRP  = 21, /* set R stack depth */
-        ALU_OP_ST     = 22, /* get status & T*/
-        ALU_OP_TX     = 23, /* send T and N */
-        ALU_OP_RX     = 24, /* receive T */
+        ALU_OP_SETRP  = 21, /* set r stack depth */
+        ALU_OP_ST     = 22, /* get status & t */
+        ALU_OP_TX     = 23, /* send t and n */
+        ALU_OP_RX     = 24, /* receive t */
         ALU_OP_UMOD   = 26, /* u/mod */
         ALU_OP_MOD    = 27, /* /mod */
-        ALU_OP_SETST  = 28, /* set status or T*/
-        ALU_OP_BYE    = 29  /* return */
+        ALU_OP_SETST  = 28, /* set status or t */
+		ALU_OP_NOOP   = 29, /* not defined */
+		ALU_OP_NOOP_  = 30, /* not defined */
+        ALU_OP_BYE    = 31  /* return */
 
 };
 
@@ -115,7 +155,7 @@ enum {
         ST_IRQ   = 0x08, /* interrupt */
         ST_IMK   = 0x10, /* interrupt mask */
 		ST_EXPTN = 0x40, /* alu exception */
-		ST_RSVD  = 0x80  /* reserverd */
+		ST_RSVD  = 0x80  /* reserved */
 };
 
 // Registers
@@ -132,10 +172,14 @@ typedef struct {
                             *  2=CARRY          / carry or overflow
                             *  3=IRQ            / interrupt (similar to INTR on Intel 8085)
                             *  4=IMK            / interrupt mask
-                            *  5=NOT USED       / *
+                            *  5=NOT USED       / not defined
                             *  6=EXCEPTION      / alu exception
                             *  7=RESERVED       / reserved
                             */
+#ifdef EXTRAREGS
+        uint16_t w;        /* w register */
+
+#endif
         uint16_t *RAM;     /* ram vector*/
       //uint16_t *ROM;     /* rom vector*/
         uint16_t *rs;      /* return stack vector*/
