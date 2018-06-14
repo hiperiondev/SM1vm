@@ -128,9 +128,14 @@ enum {
         ALU_OP_RX     = 25, /* receive t */
         ALU_OP_UMOD   = 26, /* u/mod */
         ALU_OP_MOD    = 27, /* /mod */
+#ifdef EXTRAREGS
+		ALU_OP_REG    = 29, /* get register t */
+		ALU_OP_SETREG = 30, /* set n on register t */
+#else
 		ALU_OP_NOOP   = 29, /* not defined */
 		ALU_OP_NOOP_  = 30, /* not defined */
-        ALU_OP_BYE    = 31  /* return */
+#endif
+		ALU_OP_BYE    = 31  /* return */
 
 };
 
@@ -164,8 +169,8 @@ enum {
 
 // Registers
 typedef struct {
-        int8_t  dp;        /* data stack pointer */
-        int8_t  rp;        /* return stack pointer*/
+        int8_t   dp;       /* data stack pointer */
+        int8_t   rp;       /* return stack pointer */
         uint16_t pc;       /* program counter */
         uint16_t t;        /* top of data stack */
         uint16_t t_ext;    /* external top of data stack */
@@ -189,7 +194,8 @@ typedef struct {
                             *  15=NOT USED       / not defined
                             */
 #ifdef EXTRAREGS
-        uint16_t w;        /* w register */
+        uint16_t *reg;     /* w register */
+        uint8_t  reg_size; /* register size */
 #endif
         uint16_t *RAM;     /* ram vector*/
       //uint16_t *ROM;     /* rom vector*/
@@ -556,6 +562,24 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                         vm->status &= n;
                         vm->status |= t;
                         break;
+#ifdef EXTRAREGS
+                case ALU_OP_REG:
+                	if (t > (vm->reg_size-1)){
+                		vm->status |= ST_EXPTN;
+                		return RC_EXPTN;
+                	} else {
+                		alu = vm->reg[t];
+                	}
+
+                case ALU_OP_SETREG:
+                	if (t > (vm->reg_size-1)){
+                		vm->status |= ST_EXPTN;
+                		return RC_EXPTN;
+                	} else {
+                		vm->reg[t] = n;
+                	}
+#endif
+
                 case ALU_OP_BYE:
 #ifdef DEBUG
                         DBG_PRINT("ALU_OP_BYE) ");
