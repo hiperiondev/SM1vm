@@ -85,8 +85,9 @@ enum {
         ALU_OP_RX     = 24, /* receive T */
         ALU_OP_UMOD   = 26, /* u/mod */
         ALU_OP_MOD    = 27, /* /mod */
-        ALU_OP_BYE    = 28, /* return */
-        ALU_OP_SETST  = 29  /* set status or T*/
+        ALU_OP_SETST  = 28, /* set status or T*/
+        ALU_OP_BYE    = 29  /* return */
+
 };
 
 // Return Condition
@@ -490,18 +491,18 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                         	return RC_EXPTN;
                         }
                         break; //TODO Check
-                case ALU_OP_BYE:
-#ifdef DEBUG
-                        DBG_PRINT("ALU_OP_BYE) ");
-#endif
-                        return RC_BYE;
-                        break;
                 case ALU_OP_SETST:
 #ifdef DEBUG
                         DBG_PRINT("ALU_OP_SETST) ");
 #endif
                         vm->status &= n;
                         vm->status |= t;
+                        break;
+                case ALU_OP_BYE:
+#ifdef DEBUG
+                        DBG_PRINT("ALU_OP_BYE) ");
+#endif
+                        return RC_BYE;
                         break;
                 default:
 #ifdef DEBUG
