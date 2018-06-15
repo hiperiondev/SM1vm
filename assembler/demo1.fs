@@ -6,8 +6,8 @@ header >        : >           swap < ;
         dup
         tx!
         d# 1 +
-        dup 
+        dup
         d# 90
         >
-    again
+    until
 ;

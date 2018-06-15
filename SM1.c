@@ -12,13 +12,15 @@
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-#define DEBUG 1
-#define MANUAL_STEP
+//#define DEBUG 1
+//#define MANUAL_STEP
 #define UNDER_OVER
-#define CARRY
-
-#define DS_SIZE  65535
-#define RS_SIZE  65535
+//#define CARRY
+#define EXTRAREGS
+//#define EXTBITS
+#define REG_SIZE 2
+#define DS_SIZE  128
+#define RS_SIZE  128
 #define RAM_SIZE 65535
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -46,6 +48,10 @@ int main() {
         vm->ds_size  = DS_SIZE;
         vm->rs_size  = RS_SIZE;
         vm->RAM_size = RAM_SIZE;
+#endif
+#ifdef EXTRAREGS
+        vm->reg      = (uint16_t *) malloc(sizeof(uint8_t) * REG_SIZE);
+        vm->reg_size = REG_SIZE;
 #endif
         uint8_t result;
 #ifdef DEBUG

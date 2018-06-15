@@ -17,9 +17,3 @@
     over @ over @ + r@ !
     r@ cell+ str! str! drop r>
 ;
-
-: example
-    s"  sailor" >str
-    s" hello" >str
-    +str str@ type
-;

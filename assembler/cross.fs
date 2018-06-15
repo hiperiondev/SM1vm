@@ -8,7 +8,7 @@
 
 variable lst        \ .lst output file handle
 
-: h#
+: h#  \ Parse hexadecimal
     base @ >r 16 base !
     0. bl parse >number throw 2drop postpone literal
     r> base ! ; immediate
@@ -63,7 +63,7 @@ warnings on
     dup h# 8000 and if
         \ h# ffff xor recurse
         invert recurse
-        ~t alu
+        alu_neg alu
     else
         h# 8000 or tw,
     then
@@ -71,7 +71,7 @@ warnings on
 
 ( Defining words for target )
 
-: codeptr   tdp @ 2/ ;  \ target data pointer as a jump address
+: codeptr   tdp @ 2/ dup ." codepointer " . cr ;  \ target data pointer as a jump address
 
 : wordstr ( "name" -- c-addr u )
     >in @ >r bl word count r> >in !
@@ -122,10 +122,12 @@ variable link 0 link !
     dup t@ h# e000 and h# 4000 = if
         dup t@ h# 1fff and over tw!
         true
+        cr ." shortcut a "
     else
         dup t@ h# e00c and h# 6000 = if
             dup t@ h# 0080 or r-1 over tw!
             true
+            cr ." shortcut b "
         else
             false
         then
@@ -139,7 +141,7 @@ variable link 0 link !
         i tbranches @ there = if
             i tbranches @ shortcut and
         then
-    loop    
+    loop
     0= if   \ not all shortcuts worked
         cr ." not all shortcuts worked"
         s" exit" evaluate
@@ -171,7 +173,7 @@ variable link 0 link !
 
 : t'        bl parse target-wordlist search-wordlist 0= throw >body @ ;
 
-( eforth's way of handling constants         JCB 13:12 09/03/10)
+( eforth's way of handling constants )
 
 : sign>number   ( c-addr1 u1 -- ud2 c-addr2 u2 )
     0. 2swap
