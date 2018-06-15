@@ -99,42 +99,43 @@ enum {
 
 // ALU operations
 enum {
-        ALU_OP_T      = 0,  /* t */
-        ALU_OP_N      = 1,  /* n */
-        ALU_OP_R      = 2,  /* top of return stack */
-        ALU_OP_GET    = 3,  /* load from address t */
-        ALU_OP_PUT    = 4,  /* store n to address t */
-        ALU_OP_DPLUS  = 5,  /* double cell addition */
-        ALU_OP_DMUL   = 6,  /* double cell multiply */
-        ALU_OP_AND    = 7,  /* bitwise and */
-        ALU_OP_OR     = 8,  /* bitwise or */
-        ALU_OP_XOR    = 9,  /* bitwise xor */
-        ALU_OP_NEG    = 10, /* bitwise inversion */
-        ALU_OP_DEC    = 11, /* decrement */
-        ALU_OP_EQ0    = 12, /* equal to zero */
-        ALU_OP_EQ     = 13, /* equality test */
-        ALU_OP_UCMP   = 14, /* unsigned comparison */
-        ALU_OP_CMP    = 15, /* signed comparison */
-        ALU_OP_RSHIFT = 16, /* logical right shift */
-        ALU_OP_LSHIFT = 17, /* logical left shift */
-        ALU_OP_SP     = 18, /* depth of stack */
-        ALU_OP_RS     = 19, /* r stack depth */
-        ALU_OP_SETSP  = 20, /* set stack depth */
-        ALU_OP_SETRP  = 21, /* set r stack depth */
-        ALU_OP_ST     = 22, /* get status & t */
-		ALU_OP_SETST  = 23, /* set status or t */
-        ALU_OP_TX     = 24, /* send t and n */
-        ALU_OP_RX     = 25, /* receive t */
-        ALU_OP_UMOD   = 26, /* u/mod */
-        ALU_OP_MOD    = 27, /* /mod */
+        ALU_OP_T      = 0x00, /* t */
+        ALU_OP_N      = 0x01, /* n */
+        ALU_OP_R      = 0x02, /* top of return stack */
+        ALU_OP_GET    = 0x03, /* load from address t */
+        ALU_OP_PUT    = 0x04, /* store n to address t */
+        ALU_OP_DPLUS  = 0x05, /* double cell addition */
+        ALU_OP_DMUL   = 0x06, /* double cell multiply */
+        ALU_OP_AND    = 0x07, /* bitwise and */
+        ALU_OP_OR     = 0x08, /* bitwise or */
+        ALU_OP_XOR    = 0x09, /* bitwise xor */
+        ALU_OP_NEG    = 0x0a, /* bitwise inversion */
+        ALU_OP_DEC    = 0x0b, /* decrement */
+        ALU_OP_EQ0    = 0x0c, /* equal to zero */
+        ALU_OP_EQ     = 0x0d, /* equality test */
+        ALU_OP_UCMP   = 0x0e, /* unsigned comparison */
+        ALU_OP_CMP    = 0x0f, /* signed comparison */
+        ALU_OP_RSHIFT = 0x10, /* logical right shift */
+        ALU_OP_LSHIFT = 0x11, /* logical left shift */
+        ALU_OP_SP     = 0x12, /* depth of stack */
+        ALU_OP_RS     = 0x13, /* r stack depth */
+        ALU_OP_SETSP  = 0x14, /* set stack depth */
+        ALU_OP_SETRP  = 0x15, /* set r stack depth */
+        ALU_OP_ST     = 0x16, /* get status & t */
+		ALU_OP_SETST  = 0x17, /* set status or t */
+        ALU_OP_TX     = 0x18, /* send t and n */
+        ALU_OP_RX     = 0x19, /* receive t */
+        ALU_OP_UMOD   = 0x1a, /* u/mod */
+        ALU_OP_MOD    = 0x1b, /* /mod */
 #ifdef EXTRAREGS
-		ALU_OP_REG    = 29, /* get register t */
-		ALU_OP_SETREG = 30, /* set n on register t */
+		ALU_OP_REG    = 0x1c, /* get register t */
+		ALU_OP_SETREG = 0x1d, /* set n on register t */
 #else
-		ALU_OP_NOOP   = 29, /* not defined */
-		ALU_OP_NOOP_  = 30, /* not defined */
+		ALU_OP_NOOP   = 0x1c, /* not defined */
+		ALU_OP_NOOP_  = 0x1d, /* not defined */
 #endif
-		ALU_OP_BYE    = 31  /* return */
+		ALU_OP_NOOP__ = 0x1e, /* not defined */
+		ALU_OP_BYE    = 0x1f  /* return */
 };
 
 // Return Condition
