@@ -29,14 +29,14 @@
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-#define OP(x)       (x & 0xe000)                                /* operand */
-#define ARG_OP(x)   (x & 0x1fff)                                /* argument of operand */
-#define ARG_LIT(x)  (x & 0x7fff)                                /* literal */
+#define OP(x)       (x & 0xe000)                                     /* operand */
+#define ARG_OP(x)   (x & 0x1fff)                                     /* argument of operand */
+#define ARG_LIT(x)  (x & 0x7fff)                                     /* literal */
 
-#define ALU_OP(x)   ((x >> 8) & 0x1F)                           /* alu operation */
-#define ALU_DS(x)   (x & 0x03)                                  /* alu data stack */
-#define ALU_RS(x)   ((x >> 2) & 0x03)                           /* alu return stack */
-#define ALU_EX(x)   ((ALU_DS(x)== 0x03)|((ALU_RS(x)==0x03)<<1)) /* extended bits */
+#define ALU_OP(x)   ((x >> 8) & 0x1F)                                /* alu operation */
+#define ALU_DS(x)   (x & 0x03)                                       /* alu data stack */
+#define ALU_RS(x)   ((x >> 2) & 0x03)                                /* alu return stack */
+#define ALU_EX(x)   ((ALU_DS(x) == 0x03)|((ALU_RS(x) == 0x03) << 1)) /* extended bits */
 
 /////////////////////////////////////////////////////////////////////////////////////
 /*
@@ -77,7 +77,6 @@
 	10 = -1
 	11 = extended bit (not modify stack pointers. used for alu extended operations)
 	     or -2 (depend on compilation flag EXTBITS)
-
 */
 /////////////////////////////////////////////////////////////////////////////////////
 
@@ -103,8 +102,8 @@ enum {
         ALU_OP_T      = 0,  /* t */
         ALU_OP_N      = 1,  /* n */
         ALU_OP_R      = 2,  /* top of return stack */
-        ALU_OP_GET    = 3,  /* load from address */
-        ALU_OP_PUT    = 4,  /* store to address */
+        ALU_OP_GET    = 3,  /* load from address t */
+        ALU_OP_PUT    = 4,  /* store n to address t */
         ALU_OP_DPLUS  = 5,  /* double cell addition */
         ALU_OP_DMUL   = 6,  /* double cell multiply */
         ALU_OP_AND    = 7,  /* bitwise and */
@@ -136,7 +135,6 @@ enum {
 		ALU_OP_NOOP_  = 30, /* not defined */
 #endif
 		ALU_OP_BYE    = 31  /* return */
-
 };
 
 // Return Condition
@@ -175,7 +173,7 @@ typedef struct {
         uint16_t t;        /* top of data stack */
         uint16_t t_ext;    /* external top of data stack */
         uint16_t n_ext;    /* external second element of data stack */
-        uint16_t status;   /*  status register
+        uint16_t status;   /* status register
                             *   0=SNDTN          / vm data transmission
                             *   1=RCVTN          / external data receive
                             *   2=CARRY          / carry or overflow
@@ -194,7 +192,7 @@ typedef struct {
                             *  15=NOT USED       / not defined
                             */
 #ifdef EXTRAREGS
-        uint16_t *reg;     /* w register */
+        uint16_t *reg;     /* register vector*/
         uint8_t  reg_size; /* register size */
 #endif
         uint16_t *RAM;     /* ram vector*/
@@ -243,6 +241,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                 vm->rs[++vm->rp] = vm->pc + 1;
                 vm->pc           = ARG_OP(vm->t_ext);
                 vm->status      &= ~ST_IRQ;
+                vm->status      |= ST_IMK;
                 return RC_IRQ;
         }
 ////////// Literal
@@ -365,7 +364,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #endif
                         sm1_mem_put(t>>1, n, vm);
                         alu = vm->ds[--vm->dp];
-                        break; //TODO Check
+                        break;
                 case ALU_OP_DPLUS:
 #ifdef DEBUG
                         DBG_PRINT("ALU_OP_DPLUS) ");
@@ -446,13 +445,13 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                         DBG_PRINT("ALU_OP_UCMP) ");
 #endif
                         alu = -(n < t);
-                        break; //TODO Check
+                        break;
                 case ALU_OP_CMP:
 #ifdef DEBUG
                         DBG_PRINT("ALU_OP_CMP) ");
 #endif
                         alu = -((int16_t)n < (int16_t)t);
-                        break; //TODO Check
+                        break;
                 case ALU_OP_RSHIFT:
 #ifdef DEBUG
                         DBG_PRINT("ALU_OP_RSHIFT) ");
@@ -466,7 +465,6 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #ifdef CARRY
                         alu |= aux;
 #endif
-
                         break;
                 case ALU_OP_LSHIFT:
 #ifdef DEBUG
@@ -519,7 +517,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                         vm->t_ext   = t;
                         vm->n_ext   = n;
                         vm->status |= ST_SNDTN;
-                        break; //TODO
+                        break;
                 case ALU_OP_RX:
 #ifdef DEBUG
                         DBG_PRINT("ALU_OP_RX) ");
@@ -533,10 +531,10 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                         DBG_PRINT("ALU_OP_UMOD) ");
 #endif
                         if (t) {
-                        	    aux = vm->ds[--vm->dp]|((uint32_t)n<<16);
-                                alu = aux / t;
-                                t   = aux % t;
-                                n   = t;
+                        	aux = vm->ds[--vm->dp]|((uint32_t)n<<16);
+                            alu = aux / t;
+                            t   = aux % t;
+                            n   = t;
                         } else {
                         	vm->status |= ST_EXPTN;
                         	return RC_EXPTN;
@@ -547,14 +545,14 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                         DBG_PRINT("ALU_OP_MOD) ");
 #endif
                         if (t) {
-                                alu = (int16_t)n / t;
-                                t   = (int16_t)n % t;
-                                n   = t;
+                        	alu = (int16_t)n / t;
+                            t   = (int16_t)n % t;
+                            n   = t;
                         } else {
                         	vm->status |= ST_EXPTN;
                         	return RC_EXPTN;
                         }
-                        break; //TODO Check
+                        break;
                 case ALU_OP_SETST:
 #ifdef DEBUG
                         DBG_PRINT("ALU_OP_SETST) ");
@@ -579,7 +577,6 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                 		vm->reg[t] = n;
                 	}
 #endif
-
                 case ALU_OP_BYE:
 #ifdef DEBUG
                         DBG_PRINT("ALU_OP_BYE) ");
