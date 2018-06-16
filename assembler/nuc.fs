@@ -27,7 +27,7 @@ header ms
 
 header key?
 : key?
-    d# 2 (getst)
+    d# 2 getst
     0<>
 ;
 
@@ -41,7 +41,7 @@ header key
 ;
 
 \ : ready
-\     d# 2 (getst)
+\     d# 2 getst
 \     0<>
 \ ;
 
@@ -540,7 +540,7 @@ target
 
 : b.key
     begin
-        d# 2 (getst)
+        d# 2 getst
     until
     \ d# 0 io@ d# 8 rshift
     \ d# 0 d# 2 io!

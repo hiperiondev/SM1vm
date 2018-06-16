@@ -64,8 +64,10 @@ warnings on
         \ h# ffff xor recurse
         invert recurse
         alu_neg alu
+        cr ." short literal"
     else
         h# 8000 or tw,
+        cr ." long literal"
     then
 ;
 
@@ -143,7 +145,7 @@ variable link 0 link !
         then
     loop
     0= if   \ not all shortcuts worked
-        cr ." not all shortcuts worked"
+        cr ." not all shortcuts worked" cr
         s" exit" evaluate
     then
 ;
