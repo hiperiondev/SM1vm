@@ -43,69 +43,69 @@
 : r-2     h# 000C or ; ( decrement variable stack by two )
 
 \ ALU flags
-: r->pc   h# 0010 or ; ( Set Program Counter to Top of Return Stack )
-: n->t    h# 0020 or ; ( Set Top of Variable Stack to Next on Variable Stack )
-: t->r    h# 0040 or ; ( Set Top of Return Stack to Top on Variable Stack )
-: t->n    h# 0080 or ; ( Set Next on Variable Stack to Top on Variable Stack )
+: r2p     h# 0010 or ; ( Set Program Counter to Top of Return Stack )
+: n2t     h# 0020 or ; ( Set Top of Variable Stack to Next on Variable Stack )
+: t2r     h# 0040 or ; ( Set Top of Return Stack to Top on Variable Stack )
+: t2n     h# 0080 or ; ( Set Next on Variable Stack to Top on Variable Stack )
 
 \ CPU Instructions
-: imm     h# 8000 or tw, ;
-: alu     h# 6000 or tw, ;
-: ubranch h# 0000 or tw, ;
-: 0branch h# 2000 or tw, ;
-: scall   h# 4000 or tw, ;
+: imm     h# 8000 or tw, ; ( literal )
+: alu     h# 6000 or tw, ; ( alu )
+: ubranch h# 0000 or tw, ; ( jump )
+: 0branch h# 2000 or tw, ; ( jump if zero )
+: scall   h# 4000 or tw, ; ( call )
 
 \ Derived primitives
-:: exit     alu_t      r->pc    r-1 alu ;
-:: nop      alu_t                   alu ;
-:: dup      alu_t      t->n d+1     alu ;
-:: over     alu_n      t->n d+1     alu ;
-:: invert   alu_neg                 alu ;
-:: um+      alu_dplus               alu ;
-:: +        alu_dplus  n->t d-1     alu ;
-:: um*      alu_dmul                alu ;
-:: *        alu_dmul   n->t d-1     alu ;
-:: swap     alu_n      t->n         alu ;
-:: nip      alu_t           d-1     alu ;
-:: drop     alu_n           d-1     alu ;
-:: >r       alu_n      t->r d-1 r+1 alu ;
-:: r>       alu_r      t->n d+1 r-1 alu ;
-:: r@       alu_r      t->n d+1     alu ;
-:: @        alu_get                 alu ;
-:: !        alu_put         d-1     alu ;
-:: rshift   alu_rshift      d-1     alu ;
-:: lshift   alu_lshift      d-1     alu ;
-:: =        alu_eq          d-1     alu ;
-:: u<       alu_ucmp        d-1     alu ;
-:: <        alu_cmp         d-1     alu ;
-:: and      alu_and         d-1     alu ;
-:: xor      alu_xor         d-1     alu ;
-:: or       alu_or          d-1     alu ;
-:: sp@      alu_sp    t->n  d+1     alu ;
-:: sp!      alu_setsp               alu ;
-:: 1-       alu_dec                 alu ;
-:: rp@      alu_rs    t->n  d+1     alu ;
-:: rp!      alu_setrp       d-1     alu ;
-:: 0=       alu_eq0                 alu ;
-:: yield?   alu_bye                 alu ;
-:: rx?      alu_rx     t->n d+1     alu ;
-:: tx!      alu_tx     n->t d-1     alu ;
-:: getst    alu_st     t->n d+1     alu ;
-:: setst    alu_setst       d-1     alu ;
-:: um/mod   alu_umod   t->n         alu ;
-:: /mod     alu_mod    t->n         alu ;
-:: /        alu_mod         d-1     alu ;
-:: mod      alu_mod    n->t d-1     alu ;
-:: rdrop    alu_t               r-1 alu ;
+:: exit     alu_t      r2p     r-1 alu ;
+:: nop      alu_t                  alu ;
+:: dup      alu_t      t2n d+1     alu ;
+:: over     alu_n      t2n d+1     alu ;
+:: invert   alu_neg                alu ;
+:: um+      alu_dplus              alu ;
+:: +        alu_dplus  n2t d-1     alu ;
+:: um*      alu_dmul               alu ;
+:: *        alu_dmul   n2t d-1     alu ;
+:: swap     alu_n      t2n         alu ;
+:: nip      alu_t          d-1     alu ;
+:: drop     alu_n          d-1     alu ;
+:: >r       alu_n      t2r d-1 r+1 alu ;
+:: r>       alu_r      t2n d+1 r-1 alu ;
+:: r@       alu_r      t2n d+1     alu ;
+:: @        alu_get                alu ;
+:: !        alu_put        d-1     alu ;
+:: rshift   alu_rshift     d-1     alu ;
+:: lshift   alu_lshift     d-1     alu ;
+:: =        alu_eq         d-1     alu ;
+:: u<       alu_ucmp       d-1     alu ;
+:: <        alu_cmp        d-1     alu ;
+:: and      alu_and        d-1     alu ;
+:: xor      alu_xor        d-1     alu ;
+:: or       alu_or         d-1     alu ;
+:: sp@      alu_sp     t2n d+1     alu ;
+:: sp!      alu_setsp              alu ;
+:: 1-       alu_dec                alu ;
+:: rp@      alu_rs     t2n d+1     alu ;
+:: rp!      alu_setrp      d-1     alu ;
+:: 0=       alu_eq0                alu ;
+:: yield?   alu_bye                alu ;
+:: rx?      alu_rx     t2n d+1     alu ;
+:: tx!      alu_tx     n2t d-1     alu ;
+:: getst    alu_st     t2n d+1     alu ;
+:: setst    alu_setst      d-1     alu ;
+:: um/mod   alu_umod   t2n         alu ;
+:: /mod     alu_mod    t2n         alu ;
+:: /        alu_mod        d-1     alu ;
+:: mod      alu_mod    n2t d-1     alu ;
+:: rdrop    alu_t              r-1 alu ;
 
 \ Some words can be implemented in a single instruction which have no
 \ analogue within Forth.
-:: dup@     alu_get    t->n d+1     alu ;
-:: dup0=    alu_eq0    t->n d+1     alu ;
-:: dup>r    alu_t      t->r     r+1 alu ;
-:: 2dup=    alu_eq     t->n d+1     alu ;
-:: 2dupxor  alu_xor    t->n d+1     alu ;
-:: 2dup<    alu_cmp    t->n d+1     alu ;
-:: rxchg    alu_r      t->r         alu ;
-:: over-and alu_and                 alu ;
-:: over-xor alu_xor                 alu ;
+:: dup@     alu_get    t2n d+1     alu ;
+:: dup0=    alu_eq0    t2n d+1     alu ;
+:: dup>r    alu_t      t2r     r+1 alu ;
+:: 2dup=    alu_eq     t2n d+1     alu ;
+:: 2dupxor  alu_xor    t2n d+1     alu ;
+:: 2dup<    alu_cmp    t2n d+1     alu ;
+:: rxchg    alu_r      t2r         alu ;
+:: over-and alu_and                alu ;
+:: over-xor alu_xor                alu ;

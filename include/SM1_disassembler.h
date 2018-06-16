@@ -7,8 +7,6 @@
  *  Author: Emiliano Augusto Gonzalez (egonzalez.hiperion@gmail.com)
  */
 
-
-//#define DEBUG 1
 #define UNDER_OVER
 //#define CARRY
 #define EXTRAREGS
