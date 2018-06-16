@@ -112,15 +112,15 @@ char* sm1_disasembly(uint16_t word) {
 				strcat(dis, "/");
 			}
 			if (word & ALU_F_T2N) {
-				strcat(dis, FLAGS[ALU_F_R2P]);
+				strcat(dis, FLAGS[ALU_F_T2N]);
 				strcat(dis, "/");
 			}
 			if (word & ALU_F_T2R) {
-				strcat(dis, FLAGS[ALU_F_R2P]);
+				strcat(dis, FLAGS[ALU_F_T2R]);
 				strcat(dis, "/");
 			}
 			if (word & ALU_F_N2T) {
-				strcat(dis, FLAGS[ALU_F_R2P]);
+				strcat(dis, FLAGS[ALU_F_N2T]);
 				strcat(dis, "/");
 			}
 
