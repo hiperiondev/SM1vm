@@ -168,8 +168,8 @@ enum {
 
 // Registers
 typedef struct {
-        int8_t   dp;       /* data stack pointer */
-        int8_t   rp;       /* return stack pointer */
+         uint8_t dp;       /* data stack pointer */
+         uint8_t rp;       /* return stack pointer */
         uint16_t pc;       /* program counter */
         uint16_t t;        /* top of data stack */
         uint16_t t_ext;    /* external top of data stack */
@@ -194,7 +194,7 @@ typedef struct {
                             */
 #ifdef EXTRAREGS
         uint16_t *reg;     /* register vector */
-        uint8_t  reg_size; /* register size */
+         uint8_t reg_size; /* register size */
 #endif
         uint16_t *RAM;     /* ram vector */
       //uint16_t *ROM;     /* rom vector */
@@ -203,8 +203,8 @@ typedef struct {
 #ifdef UNDER_OVER
         uint16_t RAM_size; /* ram size */
       //uint16_t ROM_size; /* rom size */
-        uint8_t  ds_size;  /* data stack size */
-        uint8_t  rs_size;  /* return stack size */
+         uint8_t ds_size;  /* data stack size */
+         uint8_t rs_size;  /* return stack size */
 #endif
 
 } vm_t;
@@ -220,9 +220,9 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
         ,vm->pc, vm->dp, vm->rp, vm->rs[vm->rp], vm->t, vm->ds[vm->dp], vm->ds[vm->dp-1], vm->ds[vm->dp-2], word);
 #endif
 #ifdef EXTBITS
-	    static const uint16_t delta[] = { 0, 1, -1, 0 };
+	    static const int8_t delta[] = { 0, 1, -1, 0 };
 #else
-	    static const uint16_t delta[] = { 0, 1, -1, -2 };
+	    static const int8_t delta[] = { 0, 1, -1, -2 };
 #endif
         vm->pc++;
 
