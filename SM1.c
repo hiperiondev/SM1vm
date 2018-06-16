@@ -9,7 +9,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-
+#include <string.h>
 /////////////////////////////////////////////////////////////////////////////////////
 
 //#define DEBUG 1
@@ -25,6 +25,7 @@
 
 /////////////////////////////////////////////////////////////////////////////////////
 
+#include "SM1_disassembler.h"
 #include "SM1.h"
 
 uint8_t sm1_mem_put(uint16_t addr, uint16_t value, vm_t* vm) {
@@ -36,10 +37,9 @@ uint16_t sm1_mem_get(uint16_t addr, vm_t* vm) {
         return vm->RAM[addr];
 }
 
-
 /////////////////////////////////////////////////////////////////////////////////////
 
-int main() {
+int main(int argc, char **argv) {
         vm_t *vm     = (vm_t *)     malloc(sizeof(vm_t));
         vm->RAM      = (uint16_t *) malloc(sizeof(uint8_t)  * RAM_SIZE);
         vm->rs       = (uint16_t *) malloc(sizeof(uint16_t) * RS_SIZE);
@@ -80,28 +80,40 @@ int main() {
 #ifdef DEBUG
         DBG_PRINT("START...\n");
 #endif
-       vm->pc = vm->RAM[0];
-        while (1) {
-                uint16_t word = sm1_mem_get(vm->pc, vm);
-                result = sm1_step(word, vm);
-#ifdef DEBUG
-                DBG_PRINT("step:%d\n", step_counter++);
-#endif
-                if (vm->status & ST_SNDTN) {
-#ifdef DEBUG
-                	DBG_PRINT("%c", (char) vm->t_ext);
-#endif
-                	vm->status &= ~ST_SNDTN;
-                }
 
-                if (result != RC_OK) {
+	if (argc == 1) {
+		while (1) {
+			uint16_t word = sm1_mem_get(vm->pc, vm);
+			result = sm1_step(word, vm);
 #ifdef DEBUG
-                	DBG_PRINT("EXCEPTION: %02x\n", result);
+			DBG_PRINT("step:%d\n", step_counter++);
 #endif
-                    exit(1);
-                }
+			if (vm->status & ST_SNDTN) {
+#ifdef DEBUG
+				DBG_PRINT("%c", (char) vm->t_ext);
+#endif
+				vm->status &= ~ST_SNDTN;
+			}
+
+			if (result != RC_OK) {
+#ifdef DEBUG
+				DBG_PRINT("EXCEPTION: %02x\n", result);
+#endif
+				exit(1);
+			}
 #ifdef MANUAL_STEP
-                getchar();
+			getchar();
 #endif
-        }
+		}
+	} else {
+	if (!strcmp(argv[1],"-dis")) {
+		int add;
+		for (add=0;add<RAM_SIZE;add++) {
+			uint16_t word = sm1_mem_get(add, vm);
+			printf("%04x %s\n", add, sm1_disasembly(word));
+		}
+		} else {
+			printf ("SM1 [-dis] \n");
+	}
+	}
 }
