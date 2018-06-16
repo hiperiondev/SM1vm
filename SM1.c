@@ -82,6 +82,7 @@ int main(int argc, char **argv) {
 #endif
 
 	if (argc == 1) {
+		printf("--START\n\n");
 		while (1) {
 			uint16_t word = sm1_mem_get(vm->pc, vm);
 			result = sm1_step(word, vm);
@@ -89,9 +90,7 @@ int main(int argc, char **argv) {
 			DBG_PRINT("step:%d\n", step_counter++);
 #endif
 			if (vm->status & ST_SNDTN) {
-#ifdef DEBUG
-				DBG_PRINT("%c", (char) vm->t_ext);
-#endif
+				printf ("%c", (char) vm->t_ext);
 				vm->status &= ~ST_SNDTN;
 			}
 

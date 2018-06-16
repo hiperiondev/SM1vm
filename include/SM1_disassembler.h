@@ -125,7 +125,7 @@ char* sm1_disasembly(uint16_t word) {
 			strcat(dis, "dp=");
 			sprintf(hex, "%d/", _delta[ALU_DS(word)]);
 			strcat(dis, hex);
-			strcat(dis, "dp=");
+			strcat(dis, "rp=");
 			sprintf(hex, "%d)", _delta[ALU_RS(word)]);
 			strcat(dis, hex);
 		}
