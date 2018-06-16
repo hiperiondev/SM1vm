@@ -1,4 +1,5 @@
-header >        : >           swap < ;
+header > 
+: >           swap < ;
 
 : main
     d# 65

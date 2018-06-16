@@ -127,7 +127,7 @@ variable link 0 link !
         cr ." shortcut a "
     else
         dup t@ h# e00c and h# 6000 = if
-            dup t@ h# 0080 or r-1 over tw!
+            dup t@ h# 0010 or r-1 over tw!
             true
             cr ." shortcut b "
         else
@@ -145,8 +145,8 @@ variable link 0 link !
         then
     loop
     0= if   \ not all shortcuts worked
-        cr ." not all shortcuts worked" cr
-        s" exit" evaluate
+       cr ." not all shortcuts worked (evaluate exit)" cr
+       s" exit" evaluate
     then
 ;
 :: ;fallthru ;

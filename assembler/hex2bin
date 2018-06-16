@@ -1,4 +1,5 @@
 #! /bin/bash
 
-awk '{printf "%s%s\n",substr($0,3,2),substr($0,1,2)}' build/nuc.hex| xxd -r -p > build/nuc.bin
-
+for n in $(find build -name *.hex);do
+    awk '{printf "%s%s\n",substr($0,3,2),substr($0,1,2)}' $n| xxd -r -p > $n.bin
+done
