@@ -113,8 +113,8 @@ enum {
         ALU_OP_DEC    = 0x0b, /* decrement */
         ALU_OP_EQ0    = 0x0c, /* equal to zero */
         ALU_OP_EQ     = 0x0d, /* equality test */
-        ALU_OP_UCMP   = 0x0e, /* unsigned comparison */
-        ALU_OP_CMP    = 0x0f, /* signed comparison */
+        ALU_OP_UCMP   = 0x0e, /* unsigned comparison (n-t)*/
+        ALU_OP_CMP    = 0x0f, /* signed comparison (n<t) */
         ALU_OP_RSHIFT = 0x10, /* logical right shift */
         ALU_OP_LSHIFT = 0x11, /* logical left shift */
         ALU_OP_SP     = 0x12, /* depth of stack */
@@ -281,7 +281,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #ifdef DEBUG
                         DBG_PRINT("RC_RS_UNDER_FLOW\n");
 #endif
-                        return RC_RS_UNDER_FLOW;
+                        return RC_DS_UNDER_FLOW;
                 }
 #endif
                 vm->pc = !vm->t ? ARG_OP(word) : vm->pc;
