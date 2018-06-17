@@ -75,6 +75,7 @@ static const uint16_t delta[] = { 0, 1, -1, -2 };
 char* sm1_disasembly(uint16_t word) {
 	int _delta[] = { 0, 1, -1, -2 };
 	char hex[6];
+	int f = 0;
 	strcpy(dis, "");
 
 	if (word & OP_LIT) {
@@ -106,28 +107,31 @@ char* sm1_disasembly(uint16_t word) {
 			strcpy(dis, ALU[ALU_OP(word)]);
 			strcat(dis, " (");
 			if (word & ALU_F_R2P) {
+				f =1;
 				strcat(dis, FLAGS[ALU_F_R2P]);
-				strcat(dis, "/");
 			}
 			if (word & ALU_F_T2N) {
+				if (f==1) strcat(dis, "/");
+				f = 1;
 				strcat(dis, FLAGS[ALU_F_T2N]);
-				strcat(dis, "/");
 			}
 			if (word & ALU_F_T2R) {
+				if (f==1) strcat(dis, "/");
+				f = 1;
 				strcat(dis, FLAGS[ALU_F_T2R]);
-				strcat(dis, "/");
 			}
 			if (word & ALU_F_N2T) {
+				if (f==1) strcat(dis, "/");
 				strcat(dis, FLAGS[ALU_F_N2T]);
-				strcat(dis, "/");
 			}
 
-			strcat(dis, "dp=");
-			sprintf(hex, "%d/", _delta[ALU_DS(word)]);
+			strcat(dis, ") [dp:");
+			sprintf(hex, "%d|", _delta[ALU_DS(word)]);
 			strcat(dis, hex);
-			strcat(dis, "rp=");
-			sprintf(hex, "%d)", _delta[ALU_RS(word)]);
+			strcat(dis, "rp:");
+			sprintf(hex, "%d", _delta[ALU_RS(word)]);
 			strcat(dis, hex);
+			strcat(dis, "]");
 		}
 	}
 

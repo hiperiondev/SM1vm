@@ -595,7 +595,9 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #endif
                     return RC_OP_UNKNOWN;
                 }
-
+#ifdef DEBUG
+                DBG_PRINT("[dp:%d|dr:%d] ", delta[ALU_DS(word)], delta[ALU_RS(word)]);
+#endif
                 vm->dp += delta[ALU_DS(word)];
                 vm->rp += delta[ALU_RS(word)];
 
@@ -637,25 +639,25 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #ifdef UNDER_OVER
         if (vm->rp > vm->rs_size) {
 #ifdef DEBUG
-                DBG_PRINT("RC_RS_OVER_FLOW_end\n");
+                DBG_PRINT("\nRC_RS_OVER_FLOW_end");
 #endif
                 return RC_RS_OVER_FLOW;
         }
         if (vm->dp > vm->ds_size) {
 #ifdef DEBUG
-                DBG_PRINT("RC_DS_OVER_FLOW_end\n");
+                DBG_PRINT("\nRC_DS_OVER_FLOW_end\n");
 #endif
                 return RC_DS_OVER_FLOW;
         }
         if (vm->dp < 0) {
 #ifdef DEBUG
-                DBG_PRINT("RC_DS_UNDER_FLOW_end\n");
+                DBG_PRINT("\nRC_DS_UNDER_FLOW_end\n");
 #endif
                 return RC_DS_UNDER_FLOW;
         }
         if (vm->rp < 0) {
 #ifdef DEBUG
-                DBG_PRINT("RC_RS_UNDER_FLOW_end\n");
+                DBG_PRINT("\nRC_RS_UNDER_FLOW_end\n");
 #endif
                 return RC_RS_UNDER_FLOW;
         }
