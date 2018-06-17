@@ -17,13 +17,14 @@ variable lst        \ .lst output file handle
 : tcells    tcell * ;
 : tcell+    tcell + ;
 
-131072 allocate throw constant tflash       \ bytes, target flash
-131072 allocate throw constant _tbranches   \ branch targets, cells
-tflash      31072 0 fill
-_tbranches  131072 0 fill
+  131072 allocate throw constant tflash       \ bytes, target flash
+  131072 allocate throw constant _tbranches   \ branch targets, cells
+  tflash      31072  0 fill
+  _tbranches  131072 0 fill
 : tbranches cells _tbranches + ;
 
-variable tdp    0 tdp !
+  variable tdp    0 tdp !
+  
 : there     tdp @ ;
 : islegal   ;
 : tc!       islegal tflash + c! ;
@@ -38,15 +39,15 @@ variable tdp    0 tdp !
 : tw,       there tw! tcell tdp +! ;
 : org       tdp ! ;
 
-wordlist constant target-wordlist
+  wordlist constant target-wordlist
 : add-order ( wid -- ) >r get-order r> swap 1+ set-order ;
 : :: get-current >r target-wordlist set-current : r> set-current ;
 
-next-arg included       \ include the machine.fs
+next-arg included       \ include basewords.fs
 
 ( Language basics for target )
 
-warnings on
+warnings off
 :: ( postpone ( ;
 :: \ postpone \ ;
 
@@ -64,16 +65,16 @@ warnings on
         \ h# ffff xor recurse
         invert recurse
         alu_neg alu
-        cr ." short literal"
+        \ cr ." short literal"
     else
         h# 8000 or tw,
-        cr ." long literal"
+        \ cr ." long literal"
     then
 ;
 
 ( Defining words for target )
 
-: codeptr   tdp @ 2/ dup ." codepointer " . cr ;  \ target data pointer as a jump address
+: codeptr   tdp @ 2/ dup  ; \ ." codepointer " . cr ;  target data pointer as a jump address
 
 : wordstr ( "name" -- c-addr u )
     >in @ >r bl word count r> >in !
@@ -83,7 +84,7 @@ variable link 0 link !
 
 :: header
     twalign there
-    cr ." link is " link @ .
+    \ cr ." link is " link @ .
     link @ tw,
     link !
     bl parse
@@ -124,12 +125,12 @@ variable link 0 link !
     dup t@ h# e000 and h# 4000 = if
         dup t@ h# 1fff and over tw!
         true
-        cr ." shortcut a "
+        \ cr ." shortcut a "
     else
         dup t@ h# e00c and h# 6000 = if
             dup t@ h# 0010 or r-1 over tw!
             true
-            cr ." shortcut b "
+            \ cr ." shortcut b "
         else
             false
         then
@@ -145,7 +146,7 @@ variable link 0 link !
         then
     loop
     0= if   \ not all shortcuts worked
-       cr ." not all shortcuts worked (evaluate exit)" cr
+       \ cr ." not all shortcuts worked (evaluate exit)" cr
        s" exit" evaluate
     then
 ;
@@ -278,9 +279,8 @@ next-arg 2dup .trim >str constant prefix.
 ;
 execute
 
-target included                         \ include the program.fs
+target included         \ include the program.fs
 
-\ [ tdp @ 0 org ] bootloader main [ org ]
 [ tdp @ 0 org ] main [ org ]
 
 meta

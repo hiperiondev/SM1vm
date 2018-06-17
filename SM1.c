@@ -12,8 +12,8 @@
 #include <string.h>
 /////////////////////////////////////////////////////////////////////////////////////
 
-#define DEBUG 1
-//#define MANUAL_STEP
+//#define DEBUG 1
+#define KEYBOARD_ENTRY
 #define UNDER_OVER
 //#define CARRY
 #define EXTRAREGS
@@ -40,24 +40,22 @@ uint16_t sm1_mem_get(uint16_t addr, vm_t* vm) {
 /////////////////////////////////////////////////////////////////////////////////////
 
 int main(int argc, char **argv) {
-
-	vm_t *vm = (vm_t *) malloc(sizeof(vm_t));
-	vm->RAM = (uint16_t *) malloc(sizeof(uint8_t) * RAM_SIZE);
-	vm->rs = (uint16_t *) malloc(sizeof(uint16_t) * RS_SIZE);
-	vm->ds = (uint16_t *) malloc(sizeof(uint16_t) * DS_SIZE);
+	vm_t *vm =     (vm_t *) malloc(sizeof(vm_t));
+	vm->RAM  = (uint16_t *) malloc(sizeof(uint8_t) * RAM_SIZE);
+	vm->rs   = (uint16_t *) malloc(sizeof(uint16_t) * RS_SIZE);
+	vm->ds   = (uint16_t *) malloc(sizeof(uint16_t) * DS_SIZE);
 #ifdef UNDER_OVER
-	vm->ds_size = DS_SIZE;
-	vm->rs_size = RS_SIZE;
+	vm->ds_size  = DS_SIZE;
+	vm->rs_size  = RS_SIZE;
 	vm->RAM_size = RAM_SIZE;
 #endif
 #ifdef EXTRAREGS
-	vm->reg = (uint16_t *) malloc(sizeof(uint8_t) * REG_SIZE);
+	vm->reg      = (uint16_t *) malloc(sizeof(uint8_t) * REG_SIZE);
 	vm->reg_size = REG_SIZE;
 #endif
     uint8_t result;
 #ifdef DEBUG
     int step_counter = 0;
-
     DBG_PRINT("RESET...\n");
 #endif
 	vm->pc = 0;
@@ -67,7 +65,10 @@ int main(int argc, char **argv) {
 #ifdef DEBUG
         DBG_PRINT("START...\n");
 #endif
-    if (argc == 1) { printf ("\nuse:\n    SM1 [-dis] file\n");exit(1);}
+	if (argc == 1) {
+		printf("\nUse: SM1 [-dis] file\n");
+		exit(1);
+	}
 
 #ifdef DEBUG
     DBG_PRINT("LOAD...\n");
@@ -102,19 +103,18 @@ int main(int argc, char **argv) {
 #ifdef DEBUG
 			DBG_PRINT("step:%d\n", step_counter++);
 #endif
-			if (vm->status & ST_SNDTN) {
+			if ((vm->status & ST_SNDTN) && (vm->n_ext == 0)) {
 				printf ("%c", (char) vm->t_ext);
 				vm->status &= ~ST_SNDTN;
 			}
 
 			if (result != RC_OK) {
-#ifdef DEBUG
-				DBG_PRINT("EXCEPTION: %02x\n", result);
-#endif
+				printf("\nEXCEPTION: %02x\n", result);
 				exit(1);
 			}
-#ifdef MANUAL_STEP
-			getchar();
+#ifdef KEYBOARD_ENTRY
+			vm->t_ext = getchar();
+			vm->status |= ST_RCVTN;
 #endif
 		}
 	}

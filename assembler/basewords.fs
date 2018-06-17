@@ -88,9 +88,9 @@
 :: rp!      alu_setrp      d-1     alu ;
 :: 0=       alu_eq0                alu ;
 :: yield?   alu_bye                alu ;
-:: rx?      alu_rx     t2n d+1     alu ;
+:: rx?      alu_rx         d+1     alu ;
 :: tx!      alu_tx         d-1     alu ;
-:: getst    alu_st     t2n d+1     alu ;
+:: getst    alu_st                 alu ;
 :: setst    alu_setst      d-1     alu ;
 :: um/mod   alu_umod   t2n         alu ;
 :: /mod     alu_mod    t2n         alu ;

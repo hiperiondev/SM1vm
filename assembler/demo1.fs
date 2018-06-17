@@ -4,7 +4,7 @@
     d# 65
     begin
         dup
-        tx!
+        emit
         d# 1 +
         dup
         d# 90
@@ -12,5 +12,5 @@
     until
     d# 64
     dup
-    tx!
+    emit
 ;

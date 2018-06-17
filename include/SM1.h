@@ -75,8 +75,9 @@
 	00 = 0
 	01 = +1
 	10 = -1
-	11 = extended bit (not modify stack pointers. used for alu extended operations)
-	     or -2 (depend on compilation flag EXTBITS)
+	11 = -2 or
+	     extended bit (not modify stack pointers. used for alu extended operations)
+	     (depend on compilation flag EXTBITS)
 */
 /////////////////////////////////////////////////////////////////////////////////////
 
