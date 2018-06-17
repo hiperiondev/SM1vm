@@ -40,48 +40,61 @@ uint16_t sm1_mem_get(uint16_t addr, vm_t* vm) {
 /////////////////////////////////////////////////////////////////////////////////////
 
 int main(int argc, char **argv) {
-        vm_t *vm     = (vm_t *)     malloc(sizeof(vm_t));
-        vm->RAM      = (uint16_t *) malloc(sizeof(uint8_t)  * RAM_SIZE);
-        vm->rs       = (uint16_t *) malloc(sizeof(uint16_t) * RS_SIZE);
-        vm->ds       = (uint16_t *) malloc(sizeof(uint16_t) * DS_SIZE);
+
+	vm_t *vm = (vm_t *) malloc(sizeof(vm_t));
+	vm->RAM = (uint16_t *) malloc(sizeof(uint8_t) * RAM_SIZE);
+	vm->rs = (uint16_t *) malloc(sizeof(uint16_t) * RS_SIZE);
+	vm->ds = (uint16_t *) malloc(sizeof(uint16_t) * DS_SIZE);
 #ifdef UNDER_OVER
-        vm->ds_size  = DS_SIZE;
-        vm->rs_size  = RS_SIZE;
-        vm->RAM_size = RAM_SIZE;
+	vm->ds_size = DS_SIZE;
+	vm->rs_size = RS_SIZE;
+	vm->RAM_size = RAM_SIZE;
 #endif
 #ifdef EXTRAREGS
-        vm->reg      = (uint16_t *) malloc(sizeof(uint8_t) * REG_SIZE);
-        vm->reg_size = REG_SIZE;
+	vm->reg = (uint16_t *) malloc(sizeof(uint8_t) * REG_SIZE);
+	vm->reg_size = REG_SIZE;
 #endif
-        uint8_t result;
+    uint8_t result;
 #ifdef DEBUG
-        int step_counter = 0;
+    int step_counter = 0;
 
-        DBG_PRINT("RESET...\n");
+    DBG_PRINT("RESET...\n");
 #endif
 	vm->pc = 0;
 	vm->dp = 0;
 	vm->rp = 0;
+
 #ifdef DEBUG
-        DBG_PRINT("LOAD...\n");
+        DBG_PRINT("START...\n");
+#endif
+    if (argc == 1) { printf ("\nuse:\n    SM1 [-dis] file\n");exit(1);}
+
+#ifdef DEBUG
+    DBG_PRINT("LOAD...\n");
 #endif
 	FILE *RAM;
 	int addr = 0x0000;
-	RAM = fopen("/tmp/eforth.rom", "r");
+	if (argc == 2) {
+		RAM = fopen(argv[1], "r");
+	} else {
+		RAM = fopen(argv[2], "r");
+	}
 #ifdef DEBUG
 	if (RAM == NULL)
-        	DBG_PRINT("...Can't load file!\n");
+		DBG_PRINT("...Can't load file!\n");
 #endif
 	uint16_t data;
 	while (fread(&data, sizeof(uint16_t), 1, RAM) == 1) {
 		vm->RAM[addr++] = data;
 	}
 	fclose(RAM);
-#ifdef DEBUG
-        DBG_PRINT("START...\n");
-#endif
-
-	if (argc == 1) {
+    if (!strcmp(argv[1],"-dis")) {
+    		int add;
+    		for (add=0;add<RAM_SIZE;add++) {
+    			uint16_t word = sm1_mem_get(add, vm);
+    			printf("%04x %s\n", add, sm1_disasembly(word));
+    		}
+    } else {
 		printf("--START\n\n");
 		while (1) {
 			uint16_t word = sm1_mem_get(vm->pc, vm);
@@ -104,15 +117,5 @@ int main(int argc, char **argv) {
 			getchar();
 #endif
 		}
-	} else {
-	if (!strcmp(argv[1],"-dis")) {
-		int add;
-		for (add=0;add<RAM_SIZE;add++) {
-			uint16_t word = sm1_mem_get(add, vm);
-			printf("%04x %s\n", add, sm1_disasembly(word));
-		}
-		} else {
-			printf ("SM1 [-dis] \n");
-	}
 	}
 }
