@@ -16,22 +16,23 @@ header emit
     drop
 ;
 
-header key?
+header key? ( - keyPressed?)
 : key?
     d# 2 
-    invert
     getst
     0<>
 ;
 
-header key
+header key ( - key )
 : key
     begin
         key?
     until
     rx?
 ;
+
 \ \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
 : main
     d# 65
     begin
@@ -42,10 +43,13 @@ header key
         d# 90
         >
     until
+    
     d# 64
     emit
     begin
         key
+        emit
+        d# 64
         emit
     again
 ;

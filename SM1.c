@@ -39,6 +39,38 @@ uint16_t sm1_mem_get(uint16_t addr, vm_t* vm) {
 
 /////////////////////////////////////////////////////////////////////////////////////
 
+#include <termios.h>
+#include <unistd.h>
+#include <fcntl.h>
+
+int kbhit(void)
+{
+  struct termios oldt, newt;
+  int ch;
+  int oldf;
+
+  tcgetattr(STDIN_FILENO, &oldt);
+  newt = oldt;
+  newt.c_lflag &= ~(ICANON | ECHO);
+  tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+  oldf = fcntl(STDIN_FILENO, F_GETFL, 0);
+  fcntl(STDIN_FILENO, F_SETFL, oldf | O_NONBLOCK);
+
+  ch = getchar();
+
+  tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+  fcntl(STDIN_FILENO, F_SETFL, oldf);
+
+  if(ch != EOF)
+  {
+    ungetc(ch, stdin);
+    return 1;
+  }
+  return 0;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////
+
 int main(int argc, char **argv) {
 	vm_t *vm =     (vm_t *) malloc(sizeof(vm_t));
 	vm->RAM  = (uint16_t *) malloc(sizeof(uint8_t) * RAM_SIZE);
@@ -113,8 +145,10 @@ int main(int argc, char **argv) {
 				exit(1);
 			}
 #ifdef KEYBOARD_ENTRY
-			vm->t_ext = getchar();
-			vm->status |= ST_RCVTN;
+			if (kbhit()) {
+				vm->t_ext = getc(stdin);
+				vm->status |= ST_RCVTN;
+			}
 #endif
 		}
 	}

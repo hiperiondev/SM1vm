@@ -533,6 +533,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                     if (!(vm->status & ST_RCVTN))
                     	break;
                     alu = vm->t_ext;
+                    vm->status &= ~ST_RCVTN;
                     break;
                 case ALU_OP_UMD:
 #ifdef DEBUG
