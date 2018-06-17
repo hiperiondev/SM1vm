@@ -83,8 +83,8 @@
 // Operation types
 enum {
         OP_JMP  = 0x0000,  /* jump */
-        OP_JZ   = 0x2000,  /* jump if zero */
-        OP_CALL = 0x4000,  /* call */
+        OP_JMZ  = 0x2000,  /* jump if zero */
+        OP_CAL  = 0x4000,  /* call */
         OP_ALU  = 0x6000,  /* alu */
         OP_LIT  = 0x8000   /* literal */
 };
@@ -99,42 +99,42 @@ enum {
 
 // ALU operations
 enum {
-        ALU_OP_T      = 0x00, /* t */
-        ALU_OP_N      = 0x01, /* n */
-        ALU_OP_R      = 0x02, /* top of return stack */
+        ALU_OP_TOP    = 0x00, /* t */
+        ALU_OP_SCN    = 0x01, /* n */
+        ALU_OP_RSK    = 0x02, /* top of return stack */
         ALU_OP_GET    = 0x03, /* load from address t */
         ALU_OP_PUT    = 0x04, /* store n to address t */
-        ALU_OP_DPLUS  = 0x05, /* double cell addition */
-        ALU_OP_DMUL   = 0x06, /* double cell multiply */
+        ALU_OP_DPL    = 0x05, /* double cell addition */
+        ALU_OP_DML    = 0x06, /* double cell multiply */
         ALU_OP_AND    = 0x07, /* bitwise and */
-        ALU_OP_OR     = 0x08, /* bitwise or */
+        ALU_OP_BOR    = 0x08, /* bitwise or */
         ALU_OP_XOR    = 0x09, /* bitwise xor */
         ALU_OP_NEG    = 0x0a, /* bitwise inversion */
         ALU_OP_DEC    = 0x0b, /* decrement */
         ALU_OP_EQ0    = 0x0c, /* equal to zero */
-        ALU_OP_EQ     = 0x0d, /* equality test */
-        ALU_OP_UCMP   = 0x0e, /* unsigned comparison (n-t)*/
+        ALU_OP_EQU    = 0x0d, /* equality test */
+        ALU_OP_UCP    = 0x0e, /* unsigned comparison (n-t)*/
         ALU_OP_CMP    = 0x0f, /* signed comparison (n<t) */
-        ALU_OP_RSHIFT = 0x10, /* logical right shift */
-        ALU_OP_LSHIFT = 0x11, /* logical left shift */
-        ALU_OP_SP     = 0x12, /* depth of stack */
-        ALU_OP_RS     = 0x13, /* r stack depth */
-        ALU_OP_SETSP  = 0x14, /* set stack depth */
-        ALU_OP_SETRP  = 0x15, /* set r stack depth */
-        ALU_OP_ST     = 0x16, /* get status & t */
-		ALU_OP_SETST  = 0x17, /* set status or t */
-        ALU_OP_TX     = 0x18, /* send t and n */
-        ALU_OP_RX     = 0x19, /* receive t */
-        ALU_OP_UMOD   = 0x1a, /* u/mod */
+        ALU_OP_RSH    = 0x10, /* logical right shift */
+        ALU_OP_LSH    = 0x11, /* logical left shift */
+        ALU_OP_GSP    = 0x12, /* depth of stack */
+        ALU_OP_GRS    = 0x13, /* r stack depth */
+        ALU_OP_SSP    = 0x14, /* set stack depth */
+        ALU_OP_SRP    = 0x15, /* set r stack depth */
+        ALU_OP_GST    = 0x16, /* get status & t */
+		ALU_OP_SST    = 0x17, /* set status or t */
+        ALU_OP_SND    = 0x18, /* send t and n */
+        ALU_OP_RCV    = 0x19, /* receive t */
+        ALU_OP_UMD    = 0x1a, /* u/mod */
         ALU_OP_MOD    = 0x1b, /* /mod */
 #ifdef EXTRAREGS
 		ALU_OP_REG    = 0x1c, /* get register t */
-		ALU_OP_SETREG = 0x1d, /* set n on register t */
+		ALU_OP_SRG    = 0x1d, /* set n on register t */
 #else
-		ALU_OP_NOOP   = 0x1c, /* not defined */
-		ALU_OP_NOOP_  = 0x1d, /* not defined */
+		ALU_OP_NP0    = 0x1c, /* not defined */
+		ALU_OP_NP1    = 0x1d, /* not defined */
 #endif
-		ALU_OP_NOOP__ = 0x1e, /* not defined */
+		ALU_OP_NP2    = 0x1e, /* not defined */
 		ALU_OP_BYE    = 0x1f  /* return */
 };
 
@@ -272,7 +272,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 
         switch (OP(word)) {
 ////////// 0Branch
-        case OP_JZ:
+        case OP_JMZ:
 #ifdef DEBUG
                 DBG_PRINT("OP_JZ  (%04x)\n",ARG_OP(word));
 #endif
@@ -303,7 +303,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                 vm->pc = ARG_OP(word);
                 break;
 ////////// Call
-        case OP_CALL:
+        case OP_CAL:
 #ifdef DEBUG
                 DBG_PRINT("OP_CALL(%04x)\n",ARG_OP(word));
 #endif
@@ -338,18 +338,18 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #endif
                 }
                 switch (ALU_OP(word)) {
-                case ALU_OP_T:
+                case ALU_OP_TOP:
 #ifdef DEBUG
                     DBG_PRINT("ALU_OP_T) ");
 #endif
                     break;
-                case ALU_OP_N:
+                case ALU_OP_SCN:
 #ifdef DEBUG
                     DBG_PRINT("ALU_OP_N) ");
 #endif
                     alu = n;
                     break;
-                case ALU_OP_R:
+                case ALU_OP_RSK:
 #ifdef DEBUG
                     DBG_PRINT("ALU_OP_R) ");
 #endif
@@ -371,7 +371,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                     sm1_mem_put(t>>1, n, vm);
                     alu = vm->ds[--vm->dp];
                     break;
-                case ALU_OP_DPLUS:
+                case ALU_OP_DPL:
 #ifdef DEBUG
                     DBG_PRINT("ALU_OP_DPLUS) ");
 #endif
@@ -387,7 +387,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                     vm->ds[vm->dp] = aux;
                     n              = aux;
                     break;
-                case ALU_OP_DMUL:
+                case ALU_OP_DML:
 #ifdef DEBUG
                     DBG_PRINT("ALU_OP_DMUL) ");
 #endif
@@ -406,7 +406,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #endif
                     alu &= n;
                     break;
-                case ALU_OP_OR:
+                case ALU_OP_BOR:
 #ifdef DEBUG
                     DBG_PRINT("ALU_OP_OR) ");
 #endif
@@ -440,13 +440,13 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #endif
                     alu = -(t == 0);
                     break;
-                case ALU_OP_EQ:
+                case ALU_OP_EQU:
 #ifdef DEBUG
                     DBG_PRINT("ALU_OP_EQ) ");
 #endif
                     alu = -(t == n);
                     break;
-                case ALU_OP_UCMP:
+                case ALU_OP_UCP:
 #ifdef DEBUG
                     DBG_PRINT("ALU_OP_UCMP) ");
 #endif
@@ -458,7 +458,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #endif
                     alu = -((int16_t)n < (int16_t)t);
                     break;
-                case ALU_OP_RSHIFT:
+                case ALU_OP_RSH:
 #ifdef DEBUG
                     DBG_PRINT("ALU_OP_RSHIFT) ");
 #endif
@@ -473,7 +473,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                         alu |= aux;
 #endif
                     break;
-                case ALU_OP_LSHIFT:
+                case ALU_OP_LSH:
 #ifdef DEBUG
                     DBG_PRINT("ALU_OP_LSHIFT) ");
 #endif
@@ -487,37 +487,37 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                     alu |= aux;
 #endif
                     break;
-                case ALU_OP_SP:
+                case ALU_OP_GSP:
 #ifdef DEBUG
                     DBG_PRINT("ALU_OP_SP) ");
 #endif
                     alu = vm->dp << 1;
                     break;
-                case ALU_OP_RS:
+                case ALU_OP_GRS:
 #ifdef DEBUG
                     DBG_PRINT("ALU_OP_RS) ");
 #endif
                     alu = vm->rp << 1;
                     break;
-                case ALU_OP_SETSP:
+                case ALU_OP_SSP:
 #ifdef DEBUG
                     DBG_PRINT("ALU_OP_SETSP) ");
 #endif
                     vm->dp = t >> 1;
                     break;
-                case ALU_OP_SETRP:
+                case ALU_OP_SRP:
 #ifdef DEBUG
                     DBG_PRINT("ALU_OP_RP) ");
 #endif
                     vm->rp = t >> 1;
                     break;
-                case ALU_OP_ST:
+                case ALU_OP_GST:
 #ifdef DEBUG
                     DBG_PRINT("ALU_OP_ST) ");
 #endif
                     alu = vm->status & t;
                     break;
-                case ALU_OP_TX:
+                case ALU_OP_SND:
 #ifdef DEBUG
                     DBG_PRINT("ALU_OP_TX) ");
 #endif
@@ -525,7 +525,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                     vm->n_ext   = n;
                     vm->status |= ST_SNDTN;
                     break;
-                case ALU_OP_RX:
+                case ALU_OP_RCV:
 #ifdef DEBUG
                     DBG_PRINT("ALU_OP_RX) ");
 #endif
@@ -533,7 +533,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                     	break;
                     alu = vm->t_ext;
                     break;
-                case ALU_OP_UMOD:
+                case ALU_OP_UMD:
 #ifdef DEBUG
                     DBG_PRINT("ALU_OP_UMOD) ");
 #endif
@@ -560,7 +560,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                        return RC_EXPTN;
                    }
                    break;
-                case ALU_OP_SETST:
+                case ALU_OP_SST:
 #ifdef DEBUG
                    DBG_PRINT("ALU_OP_SETST) ");
 #endif
@@ -575,7 +575,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                 	}
                 	alu = vm->reg[t];
                 	break;
-                case ALU_OP_SETREG:
+                case ALU_OP_SRG:
                 	if (t > (vm->reg_size-1)){
                 		vm->status |= ST_EXPTN;
                 		return RC_EXPTN;

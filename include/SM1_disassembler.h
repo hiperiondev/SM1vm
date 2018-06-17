@@ -21,44 +21,44 @@
 char dis[100];
 
 const char* ALU[] = {
-		EP(ALU_OP_T),
-		EP(ALU_OP_N),
-		EP(ALU_OP_R),
+		EP(ALU_OP_TOP),
+		EP(ALU_OP_SCN),
+		EP(ALU_OP_RSK),
 		EP(ALU_OP_GET),
 		EP(ALU_OP_PUT),
-		EP(ALU_OP_DPLUS),
-		EP(ALU_OP_DMUL),
+		EP(ALU_OP_DPL),
+		EP(ALU_OP_DML),
 		EP(ALU_OP_AND),
-		EP(ALU_OP_OR),
+		EP(ALU_OP_BOR),
 		EP(ALU_OP_XOR),
 		EP(ALU_OP_NEG),
 		EP(ALU_OP_DEC),
 		EP(ALU_OP_EQ0),
-		EP(ALU_OP_EQ),
-		EP(ALU_OP_UCMP),
+		EP(ALU_OP_EQU),
+		EP(ALU_OP_UCP),
 		EP(ALU_OP_CMP),
-		EP(ALU_OP_RSHIFT),
-		EP(ALU_OP_LSHIFT),
-		EP(ALU_OP_SP),
-		EP(ALU_OP_RS),
-		EP(ALU_OP_SETSP),
-		EP(ALU_OP_SETRP),
-		EP(ALU_OP_ST),
-		EP(ALU_OP_SETST),
-		EP(ALU_OP_TX),
-		EP(ALU_OP_RX),
-		EP(ALU_OP_UMOD),
+		EP(ALU_OP_RSH),
+		EP(ALU_OP_LSH),
+		EP(ALU_OP_GSP),
+		EP(ALU_OP_GRS),
+		EP(ALU_OP_SSP),
+		EP(ALU_OP_SRP),
+		EP(ALU_OP_GST),
+		EP(ALU_OP_SST),
+		EP(ALU_OP_SND),
+		EP(ALU_OP_RCV),
+		EP(ALU_OP_UMD),
 		EP(ALU_OP_MOD),
 		EP(ALU_OP_REG),
-		EP(ALU_OP_SETREG),
-		EP(ALU_OP_NOOP__),
+		EP(ALU_OP_SRG),
+		EP(ALU_OP_NP2),
 		EP(ALU_OP_BYE)
 };
 
 const char* OPTYPE[] = {
 		EP(OP_JMP),
-		EP(OP_JZ),
-		EP(OP_CALL),
+		EP(OP_JMZ),
+		EP(OP_CAL),
 		EP(OP_ALU),
 		EP(OP_LIT)
 };
@@ -85,9 +85,9 @@ char* sm1_disasembly(uint16_t word) {
 		strcat(dis, hex);
 	} else {
 		switch (OP(word)) {
-		case OP_JZ:
+		case OP_JMZ:
 			sprintf(hex, "%04x",  ARG_OP(word));
-			strcat(dis, OPTYPE[OP_JZ]);
+			strcat(dis, OPTYPE[OP_JMZ]);
 			strcat(dis, " ");
 			strcat(dis, hex);
 			break;
@@ -97,9 +97,9 @@ char* sm1_disasembly(uint16_t word) {
 			strcat(dis, " ");
 			strcat(dis, hex);
 			break;
-		case OP_CALL:
+		case OP_CAL:
 			sprintf(hex, "%04x",  ARG_OP(word));
-			strcat(dis, OPTYPE[OP_CALL]);
+			strcat(dis, OPTYPE[OP_CAL]);
 			strcat(dis, " ");
 			strcat(dis, hex);
 			break;
@@ -111,17 +111,17 @@ char* sm1_disasembly(uint16_t word) {
 				strcat(dis, FLAGS[ALU_F_R2P]);
 			}
 			if (word & ALU_F_T2N) {
-				if (f==1) strcat(dis, "/");
+				if (f==1) strcat(dis, "|");
 				f = 1;
 				strcat(dis, FLAGS[ALU_F_T2N]);
 			}
 			if (word & ALU_F_T2R) {
-				if (f==1) strcat(dis, "/");
+				if (f==1) strcat(dis, "|");
 				f = 1;
 				strcat(dis, FLAGS[ALU_F_T2R]);
 			}
 			if (word & ALU_F_N2T) {
-				if (f==1) strcat(dis, "/");
+				if (f==1) strcat(dis, "|");
 				strcat(dis, FLAGS[ALU_F_N2T]);
 			}
 
