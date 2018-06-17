@@ -1,4 +1,3 @@
-header > 
 : >           swap < ;
 
 : main
@@ -11,4 +10,7 @@ header >
         d# 90
         >
     until
+    d# 64
+    dup
+    tx!
 ;

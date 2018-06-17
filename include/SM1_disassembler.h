@@ -15,10 +15,33 @@
 #include "SM1.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <ctype.h>
 
 #define EP(x) [x] = #x  /* enum print */
 /////////////////////////////////////////////////////////////////////////////////////
 char dis[100];
+
+char *strlwr(char *str) {
+	unsigned char *p = (unsigned char *) str;
+	while (*p) {
+		*p = tolower((unsigned char) *p);
+		p++;
+	}
+	return str;
+}
+
+char * removeSubStr(char *str, const char *substr) {
+	size_t m1 = strlen(str);
+	size_t m2 = strlen(substr);
+	if (!(m1 < m2)) {
+		for (char *p = str; (p = strstr(p, substr)) != NULL;) {
+			size_t n = m1 - (p + m2 - str);
+			memmove(p, p + m2, n + 1);
+		}
+	}
+	return str;
+}
 
 const char* ALU[] = {
 		EP(ALU_OP_TOP),
@@ -126,14 +149,17 @@ char* sm1_disasembly(uint16_t word) {
 			}
 
 			strcat(dis, ") [dp:");
-			sprintf(hex, "%d|", _delta[ALU_DS(word)]);
+			sprintf(hex, "%*d|", 2, _delta[ALU_DS(word)]);
 			strcat(dis, hex);
 			strcat(dis, "rp:");
-			sprintf(hex, "%d", _delta[ALU_RS(word)]);
+			sprintf(hex, "%*d", 2, _delta[ALU_RS(word)]);
 			strcat(dis, hex);
 			strcat(dis, "]");
 		}
 	}
 
-	return dis;
+	strcpy(dis,removeSubStr(dis,"ALU_"));
+	strcpy(dis,removeSubStr(dis,"OP_"));
+	strcpy(dis,removeSubStr(dis,"F_"));
+	return strlwr(dis);
 }
