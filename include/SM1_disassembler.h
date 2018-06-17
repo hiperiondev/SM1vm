@@ -58,7 +58,7 @@ const char* ALU[] = {
 const char* OPTYPE[] = {
 		EP(OP_JMP),
 		EP(OP_JMZ),
-		EP(OP_CAL),
+		EP(OP_CLL),
 		EP(OP_ALU),
 		EP(OP_LIT)
 };
@@ -97,9 +97,9 @@ char* sm1_disasembly(uint16_t word) {
 			strcat(dis, " ");
 			strcat(dis, hex);
 			break;
-		case OP_CAL:
+		case OP_CLL:
 			sprintf(hex, "%04x",  ARG_OP(word));
-			strcat(dis, OPTYPE[OP_CAL]);
+			strcat(dis, OPTYPE[OP_CLL]);
 			strcat(dis, " ");
 			strcat(dis, hex);
 			break;

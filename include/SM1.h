@@ -84,7 +84,7 @@
 enum {
         OP_JMP  = 0x0000,  /* jump */
         OP_JMZ  = 0x2000,  /* jump if zero */
-        OP_CAL  = 0x4000,  /* call */
+        OP_CLL  = 0x4000,  /* call */
         OP_ALU  = 0x6000,  /* alu */
         OP_LIT  = 0x8000   /* literal */
 };
@@ -303,7 +303,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                 vm->pc = ARG_OP(word);
                 break;
 ////////// Call
-        case OP_CAL:
+        case OP_CLL:
 #ifdef DEBUG
                 DBG_PRINT("OP_CALL(%04x)\n",ARG_OP(word));
 #endif
