@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#define EP(x) [x] = #x  /* enum print */
 /////////////////////////////////////////////////////////////////////////////////////
 
 //#define DEBUG 1
@@ -37,6 +38,21 @@ uint16_t sm1_mem_get(uint16_t addr, vm_t* vm) {
         return vm->RAM[addr];
 }
 
+const char* RET[] = {
+		EP(RC_OK),
+		EP(RC_DS_UNDER_FLOW),
+		EP(RC_DS_OVER_FLOW),
+		EP(RC_RS_OVER_FLOW),
+		EP(RC_RS_UNDER_FLOW),
+		EP(RC_PC_OVER_FLOW),
+		EP(RC_OP_UNKNOWN),
+		EP(RC_ROM_WRITE),
+		EP(RC_MEM_OVERFLOW),
+		EP(RC_IRQ),
+		EP(RC_EXPTN),
+		EP(RC_ERROR),
+		EP(RC_BYE)
+};
 /////////////////////////////////////////////////////////////////////////////////////
 
 #include <termios.h>
@@ -141,12 +157,13 @@ int main(int argc, char **argv) {
 			}
 
 			if (result != RC_OK) {
-				printf("\nEXCEPTION: %02x\n", result);
+				printf("\nEXCEPTION: %s\n", RET[result]);
 				exit(1);
 			}
 #ifdef KEYBOARD_ENTRY
 			if (kbhit()) {
 				vm->t_ext = getc(stdin);
+				vm->n_ext = 0;
 				vm->status |= ST_RCVTN;
 			}
 #endif
