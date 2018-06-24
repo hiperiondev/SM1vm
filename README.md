@@ -50,7 +50,8 @@ _For more examples and usage, please refer to the [Wiki][wiki]._
 ```sh
 [TODO]
 ```
-
+## Architecture and design
+[TODO]
 ## Release History
 
 * 1.0

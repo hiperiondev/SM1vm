@@ -89,7 +89,7 @@ int kbhit(void)
 
 int main(int argc, char **argv) {
 	vm_t *vm =     (vm_t *) malloc(sizeof(vm_t));
-	vm->RAM  = (uint16_t *) malloc(sizeof(uint8_t) * RAM_SIZE);
+	vm->RAM  = (uint16_t *) malloc(sizeof(uint8_t)  * RAM_SIZE);
 	vm->rs   = (uint16_t *) malloc(sizeof(uint16_t) * RS_SIZE);
 	vm->ds   = (uint16_t *) malloc(sizeof(uint16_t) * DS_SIZE);
 #ifdef UNDER_OVER

@@ -83,129 +83,129 @@
 
 // Operation types
 enum {
-        OP_JMP  = 0x0000,  /* jump */
-        OP_JMZ  = 0x2000,  /* jump if zero */
-        OP_CLL  = 0x4000,  /* call */
-        OP_ALU  = 0x6000,  /* alu */
-        OP_LIT  = 0x8000   /* literal */
+    OP_JMP  = 0x0000,  /* jump */
+    OP_JMZ  = 0x2000,  /* jump if zero */
+    OP_CLL  = 0x4000,  /* call */
+    OP_ALU  = 0x6000,  /* alu */
+    OP_LIT  = 0x8000   /* literal */
 };
 
 // ALU flags
 enum {
-        ALU_F_T2N = 0x80,   /* move T to N */
-        ALU_F_T2R = 0x40,   /* move T to R */
-        ALU_F_N2T = 0x20,   /* move N to T */
-        ALU_F_R2P = 0x10    /* move R to PC */
+	ALU_F_T2N = 0x80,  /* move T to N */
+	ALU_F_T2R = 0x40,  /* move T to R */
+	ALU_F_N2T = 0x20,  /* move N to T */
+	ALU_F_R2P = 0x10   /* move R to PC */
 };
 
 // ALU operations
 enum {
-        ALU_OP_TOP    = 0x00, /* t */
-        ALU_OP_SCN    = 0x01, /* n */
-        ALU_OP_RSK    = 0x02, /* top of return stack */
-        ALU_OP_GET    = 0x03, /* load from address t */
-        ALU_OP_PUT    = 0x04, /* store n to address t */
-        ALU_OP_DPL    = 0x05, /* double cell addition */
-        ALU_OP_DML    = 0x06, /* double cell multiply */
-        ALU_OP_AND    = 0x07, /* bitwise and */
-        ALU_OP_BOR    = 0x08, /* bitwise or */
-        ALU_OP_XOR    = 0x09, /* bitwise xor */
-        ALU_OP_NEG    = 0x0a, /* bitwise inversion */
-        ALU_OP_DEC    = 0x0b, /* decrement */
-        ALU_OP_EQ0    = 0x0c, /* equal to zero */
-        ALU_OP_EQU    = 0x0d, /* equality test */
-        ALU_OP_UCP    = 0x0e, /* unsigned comparison (n-t)*/
-        ALU_OP_CMP    = 0x0f, /* signed comparison (n<t) */
-        ALU_OP_RSH    = 0x10, /* logical right shift */
-        ALU_OP_LSH    = 0x11, /* logical left shift */
-        ALU_OP_GSP    = 0x12, /* depth of stack */
-        ALU_OP_GRS    = 0x13, /* r stack depth */
-        ALU_OP_SSP    = 0x14, /* set stack depth */
-        ALU_OP_SRP    = 0x15, /* set r stack depth */
-        ALU_OP_GST    = 0x16, /* get status & t */
-		ALU_OP_SST    = 0x17, /* set status or t */
-        ALU_OP_SND    = 0x18, /* send t and n */
-        ALU_OP_RCV    = 0x19, /* receive t */
-        ALU_OP_UMD    = 0x1a, /* u/mod */
-        ALU_OP_MOD    = 0x1b, /* /mod */
+	ALU_OP_TOP = 0x00, /* t */
+	ALU_OP_SCN = 0x01, /* n */
+	ALU_OP_RSK = 0x02, /* top of return stack */
+	ALU_OP_GET = 0x03, /* load from address t */
+	ALU_OP_PUT = 0x04, /* store n to address t */
+	ALU_OP_DPL = 0x05, /* double cell addition */
+	ALU_OP_DML = 0x06, /* double cell multiply */
+	ALU_OP_AND = 0x07, /* bitwise and */
+	ALU_OP_BOR = 0x08, /* bitwise or */
+	ALU_OP_XOR = 0x09, /* bitwise xor */
+	ALU_OP_NEG = 0x0a, /* bitwise inversion */
+	ALU_OP_DEC = 0x0b, /* decrement */
+	ALU_OP_EQ0 = 0x0c, /* equal to zero */
+	ALU_OP_EQU = 0x0d, /* equality test */
+	ALU_OP_UCP = 0x0e, /* unsigned comparison (n-t)*/
+	ALU_OP_CMP = 0x0f, /* signed comparison (n<t) */
+	ALU_OP_RSH = 0x10, /* logical right shift */
+	ALU_OP_LSH = 0x11, /* logical left shift */
+	ALU_OP_GSP = 0x12, /* depth of stack */
+	ALU_OP_GRS = 0x13, /* r stack depth */
+	ALU_OP_SSP = 0x14, /* set stack depth */
+	ALU_OP_SRP = 0x15, /* set r stack depth */
+	ALU_OP_GST = 0x16, /* get status & t */
+	ALU_OP_SST = 0x17, /* set status or t */
+	ALU_OP_SND = 0x18, /* send t and n */
+	ALU_OP_RCV = 0x19, /* receive t */
+	ALU_OP_UMD = 0x1a, /* u/mod */
+	ALU_OP_MOD = 0x1b, /* /mod */
 #ifdef EXTRAREGS
-		ALU_OP_REG    = 0x1c, /* get register t */
-		ALU_OP_SRG    = 0x1d, /* set n on register t */
+	ALU_OP_REG = 0x1c, /* get register t */
+	ALU_OP_SRG = 0x1d, /* set n on register t */
 #else
-		ALU_OP_NP0    = 0x1c, /* not defined */
-		ALU_OP_NP1    = 0x1d, /* not defined */
+	ALU_OP_NP0 = 0x1c, /* not defined */
+	ALU_OP_NP1 = 0x1d, /* not defined */
 #endif
-		ALU_OP_NP2    = 0x1e, /* not defined */
-		ALU_OP_BYE    = 0x1f  /* return */
+	ALU_OP_NP2 = 0x1e, /* not defined */
+	ALU_OP_BYE = 0x1f /* return */
 };
 
 // Return Condition
 enum {
-        RC_OK            = 0x00, /* ok */
-        RC_DS_UNDER_FLOW = 0x01, /* data stack underflow */
-        RC_DS_OVER_FLOW  = 0x02, /* data stack over flow */
-        RC_RS_OVER_FLOW  = 0x03, /* return stack over flow */
-        RC_RS_UNDER_FLOW = 0x04, /* return stack under flow */
-        RC_PC_OVER_FLOW  = 0x05, /* program counter overflow */
-        RC_OP_UNKNOWN    = 0x06, /* operator unknown */
-        RC_ROM_WRITE     = 0x07, /* rom write */
-        RC_MEM_OVERFLOW  = 0x08, /* out of memory access */
-        RC_IRQ           = 0x09, /* irq execute */
-		RC_EXPTN         = 0xFD, /* alu exception */
-        RC_ERROR         = 0xFE, /* generic error */
-        RC_BYE           = 0xFF  /* exit */
+	RC_OK            = 0x00, /* ok */
+	RC_DS_UNDER_FLOW = 0x01, /* data stack underflow */
+	RC_DS_OVER_FLOW  = 0x02, /* data stack over flow */
+	RC_RS_OVER_FLOW  = 0x03, /* return stack over flow */
+	RC_RS_UNDER_FLOW = 0x04, /* return stack under flow */
+	RC_PC_OVER_FLOW  = 0x05, /* program counter overflow */
+	RC_OP_UNKNOWN    = 0x06, /* operator unknown */
+	RC_ROM_WRITE     = 0x07, /* rom write */
+	RC_MEM_OVERFLOW  = 0x08, /* out of memory access */
+	RC_IRQ           = 0x09, /* irq execute */
+	RC_EXPTN         = 0xFD, /* alu exception */
+	RC_ERROR         = 0xFE, /* generic error */
+	RC_BYE           = 0xFF /* exit */
 };
 
 // Status
 enum {
-        ST_SNDTN = 0x01, /* send */
-        ST_RCVTN = 0x02, /* receive */
-        ST_CARRY = 0x04, /* carry bit */
-        ST_IRQ   = 0x08, /* interrupt */
-        ST_IMK   = 0x10, /* interrupt mask */
-		ST_EXPTN = 0x40, /* alu exception */
-		ST_RSVD  = 0x80  /* reserved */
+	ST_SNDTN = 0x01, /* send */
+	ST_RCVTN = 0x02, /* receive */
+	ST_CARRY = 0x04, /* carry bit */
+	ST_IRQ   = 0x08, /* interrupt */
+	ST_IMK   = 0x10, /* interrupt mask */
+	ST_EXPTN = 0x40, /* alu exception */
+	ST_RSVD  = 0x80  /* reserved */
 };
 
 // Registers
 typedef struct {
-         uint8_t dp;       /* data stack pointer */
-         uint8_t rp;       /* return stack pointer */
-        uint16_t pc;       /* program counter */
-        uint16_t t;        /* top of data stack */
-        uint16_t t_ext;    /* external top of data stack */
-        uint16_t n_ext;    /* external second element of data stack */
-        uint16_t status;   /* status register
-                            *   0=SND        / vm data transmission
-                            *   1=RCV        / external data receive
-                            *   2=CARRY      / carry or overflow
-                            *   3=IRQ        / interrupt (similar to INTR on Intel 8085)
-                            *   4=IMK        / interrupt mask
-                            *   5=NOT USED   / not defined
-                            *   6=EXCEPTION  / alu exception
-                            *   7=RESERVED   / reserved
-                            *   8=NOT USED   / not defined
-                            *   9=NOT USED   / not defined
-                            *  10=NOT USED   / not defined
-                            *  11=NOT USED   / not defined
-                            *  12=NOT USED   / not defined
-                            *  13=NOT USED   / not defined
-                            *  14=NOT USED   / not defined
-                            *  15=NOT USED   / not defined
-                            */
+	 uint8_t dp;        /* data stack pointer */
+	 uint8_t rp;        /* return stack pointer */
+	uint16_t pc;        /* program counter */
+	uint16_t t;         /* top of data stack */
+	uint16_t t_ext;     /* external top of data stack */
+	uint16_t n_ext;     /* external second element of data stack */
+	uint16_t status;    /* status register
+	                     *   0=SND        / vm data transmission
+	                     *   1=RCV        / external data receive
+	                     *   2=CARRY      / carry or overflow
+	                     *   3=IRQ        / interrupt (similar to INTR on Intel 8085)
+	                     *   4=IMK        / interrupt mask
+	                     *   5=NOT USED   / not defined
+	                     *   6=EXCEPTION  / alu exception
+	                     *   7=RESERVED   / reserved
+	                     *   8=NOT USED   / not defined
+	                     *   9=NOT USED   / not defined
+	                     *  10=NOT USED   / not defined
+	                     *  11=NOT USED   / not defined
+	                     *  12=NOT USED   / not defined
+	                     *  13=NOT USED   / not defined
+	                     *  14=NOT USED   / not defined
+	                     *  15=NOT USED   / not defined
+	                     */
 #ifdef EXTRAREGS
-        uint16_t *reg;     /* register vector */
-         uint8_t reg_size; /* register size */
+	uint16_t *reg;       /* register vector */
+	 uint8_t reg_size;   /* register size */
 #endif
-        uint16_t *RAM;     /* ram vector */
-      //uint16_t *ROM;     /* rom vector */
-        uint16_t *rs;      /* return stack vector */
-        uint16_t *ds;      /* data stack vector */
+	uint16_t *RAM;       /* ram vector */
+	//uint16_t *ROM;     /* rom vector */
+	uint16_t *rs;        /* return stack vector */
+	uint16_t *ds;        /* data stack vector */
 #ifdef UNDER_OVER
-        uint16_t RAM_size; /* ram size */
-      //uint16_t ROM_size; /* rom size */
-         uint8_t ds_size;  /* data stack size */
-         uint8_t rs_size;  /* return stack size */
+    uint16_t RAM_size;   /* ram size */
+    //uint16_t ROM_size; /* rom size */
+    uint8_t ds_size;     /* data stack size */
+    uint8_t rs_size;     /* return stack size */
 #endif
 
 } vm_t;
@@ -361,13 +361,16 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                     DBG_PRINT("ALU_OP_GET)  ");
 #endif
 #ifdef UNDER_OVER
-
+                    if ((t>>1) > vm->RAM_size) return RC_MEM_OVERFLOW;
 #endif
                     alu = sm1_mem_get(t>>1, vm);
                     break;
                 case ALU_OP_PUT:
 #ifdef DEBUG
                     DBG_PRINT("ALU_OP_PUT) ");
+#endif
+#ifdef UNDER_OVER
+                    if ((t>>1) > vm->RAM_size) return RC_MEM_OVERFLOW;
 #endif
                     sm1_mem_put(t>>1, n, vm);
                     alu = vm->ds[--vm->dp];
