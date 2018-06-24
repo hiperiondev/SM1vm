@@ -176,8 +176,8 @@ typedef struct {
         uint16_t t_ext;    /* external top of data stack */
         uint16_t n_ext;    /* external second element of data stack */
         uint16_t status;   /* status register
-                            *   0=SNDTN      / vm data transmission
-                            *   1=RCVTN      / external data receive
+                            *   0=SND        / vm data transmission
+                            *   1=RCV        / external data receive
                             *   2=CARRY      / carry or overflow
                             *   3=IRQ        / interrupt (similar to INTR on Intel 8085)
                             *   4=IMK        / interrupt mask
@@ -534,7 +534,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                     	break;
                     alu = vm->t_ext;
                     vm->status &= ~ST_RCVTN;
-                    break;
+                    break; //TODO: Receive t and n
                 case ALU_OP_UMD:
 #ifdef DEBUG
                     DBG_PRINT("ALU_OP_UMOD) ");
