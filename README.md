@@ -11,6 +11,8 @@ The only exception is the memory access functions (sm1_mem_put and sm1_mem_get) 
 
 It is also possible to build the VM as a library to be used in other projects. As an example see: <https://github.com/hiperiondev/SM1vm-Gambas3>
 
+Also have a very simple disassembler (SM1_disassembler.h)
+
 Many functionalities are defined at the time of compilation, allowing to size the machine according to its use as well as the debug (not necessary in the final implementation).
   
 These conditional functions are:  
@@ -36,8 +38,9 @@ use: gforth cross.fs basewords.fs project.fs
 Still not working
 
 ## Usage example
-
-[TODO]
+```
+SM1vm [-dis] project.bin
+```
 
 _For more examples and usage, please refer to the [Wiki][wiki]._
 
