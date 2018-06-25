@@ -101,4 +101,4 @@ const char* DELTA[] = {
 
 const uint8_t DELTA_CODE[] = { 0x0001, 0x0002, 0x0003, 0x0004, 0x0008, 0x000C, };
 
-static const uint16_t delta[] = { 0, 1, -1, -2 };
+//static const uint16_t delta[] = { 0, 1, -1, -2 };

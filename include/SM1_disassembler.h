@@ -12,9 +12,7 @@
 #define EXTRAREGS
 //#define EXTBITS
 
-#include "SM1.h"
-#include "SM1_ass_dis_common.h"
-#include <string.h>
+//#include "SM1_ass_dis_common.h"
 
 /////////////////////////////////////////////////////////////////////////////////////
 

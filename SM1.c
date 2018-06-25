@@ -26,8 +26,11 @@
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-#include "SM1_disassembler.h"
 #include "SM1.h"
+#include "SM1_ass_dis_common.h"
+#include "SM1_assembler.h"
+#include "SM1_disassembler.h"
+
 
 uint8_t sm1_mem_put(uint16_t addr, uint16_t value, vm_t* vm) {
         vm->RAM[addr] = value;
@@ -141,7 +144,7 @@ int main(int argc, char **argv) {
     		int add;
     		for (add=0;add<RAM_SIZE;add++) {
     			uint16_t word = sm1_mem_get(add, vm);
-    			printf("%04x %s\n", add, sm1_disasembly(word));
+    			printf("%04x %s\n", add, sm1_disassembly(word));
     		}
     } else {
 		printf("--START\n\n");
