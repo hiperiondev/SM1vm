@@ -52,21 +52,21 @@ char* sm1_disassembly(uint16_t word) {
 			strcat(dis, " (");
 			if (word & ALU_F_R2P) {
 				f =1;
-				strcat(dis, FLAGS[ALU_F_R2P]);
+				strcat(dis, VMFLAGS[ALU_F_R2P]);
 			}
 			if (word & ALU_F_T2N) {
 				if (f==1) strcat(dis, "|");
 				f = 1;
-				strcat(dis, FLAGS[ALU_F_T2N]);
+				strcat(dis, VMFLAGS[ALU_F_T2N]);
 			}
 			if (word & ALU_F_T2R) {
 				if (f==1) strcat(dis, "|");
 				f = 1;
-				strcat(dis, FLAGS[ALU_F_T2R]);
+				strcat(dis, VMFLAGS[ALU_F_T2R]);
 			}
 			if (word & ALU_F_N2T) {
 				if (f==1) strcat(dis, "|");
-				strcat(dis, FLAGS[ALU_F_N2T]);
+				strcat(dis, VMFLAGS[ALU_F_N2T]);
 			}
 
 			strcat(dis, ") [dp:");

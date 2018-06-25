@@ -30,16 +30,17 @@ These conditional functions are:
 ```
 
 ## Assembler
-Macro assembler 
 ```
-use: gforth cross.fs basewords.fs project.fs
+[TODO]
 ```
 ## FORTH
-Still not working
+```
+[TODO]
+```
 
 ## Usage example
 ```
-SM1vm [-dis] project.bin
+SM1 [-d|-a] file.in [file.out]
 ```
 
 _For more examples and usage, please refer to the [Wiki][wiki]._

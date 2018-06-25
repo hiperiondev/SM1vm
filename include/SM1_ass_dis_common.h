@@ -79,14 +79,12 @@ const char* OPTYPE[] = {
 		EP(OP_CLL)
 };
 
-const char* FLAGS[] = {
+const char* VMFLAGS[] = {
 		EP(ALU_F_T2N),
 		EP(ALU_F_T2R),
 		EP(ALU_F_N2T),
 		EP(ALU_F_R2P)
 };
-
-const uint8_t FLAGS_CODE[] = { 0x80, 0x40, 0x20, 0x10 };
 
 const char* DELTA[] = {
        "d+1",

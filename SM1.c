@@ -117,7 +117,7 @@ int main(int argc, char **argv) {
         DBG_PRINT("START...\n");
 #endif
 	if (argc == 1) {
-		printf("\nUse: SM1 [-dis] file\n");
+		printf("\nUse: SM1 [-d|-a] file.in [file.out]\n");
 		exit(1);
 	}
 
@@ -133,43 +133,45 @@ int main(int argc, char **argv) {
 	}
 #ifdef DEBUG
 	if (RAM == NULL)
-		DBG_PRINT("...Can't load file!\n");
+	DBG_PRINT("...Can't load file!\n");
 #endif
 	uint16_t data;
 	while (fread(&data, sizeof(uint16_t), 1, RAM) == 1) {
 		vm->RAM[addr++] = data;
 	}
 	fclose(RAM);
-    if (!strcmp(argv[1],"-dis")) {
-    		int add;
-    		for (add=0;add<RAM_SIZE;add++) {
-    			uint16_t word = sm1_mem_get(add, vm);
-    			printf("%04x %s\n", add, sm1_disassembly(word));
-    		}
-    } else {
-		printf("--START\n\n");
-		while (1) {
-			uint16_t word = sm1_mem_get(vm->pc, vm);
-			result = sm1_step(word, vm);
-#ifdef DEBUG
-			DBG_PRINT("step:%d\n", step_counter++);
-#endif
-			if ((vm->status & ST_SNDTN) && (vm->n_ext == 0)) {
-				printf ("%c", (char) vm->t_ext);
-				vm->status &= ~ST_SNDTN;
-			}
-
-			if (result != RC_OK) {
-				printf("\nEXCEPTION: %s\n", RET[result]);
-				exit(1);
-			}
-#ifdef KEYBOARD_ENTRY
-			if (kbhit()) {
-				vm->t_ext = getc(stdin);
-				vm->n_ext = 0;
-				vm->status |= ST_RCVTN;
-			}
-#endif
+	if (!strcmp(argv[1], "-d")) {       // disassembler
+		int add;
+		for (add = 0; add < RAM_SIZE; add++) {
+			uint16_t word = sm1_mem_get(add, vm);
+			printf("%04x %s\n", add, sm1_disassembly(word));
 		}
-	}
+	} else if (!strcmp(argv[1], "-a")){ // assembler
+			sm1_assembleFile(argv[2], argv[3]);
+		} else {                        // run program
+			printf("--START\n\n");
+			while (1) {
+				uint16_t word = sm1_mem_get(vm->pc, vm);
+				result = sm1_step(word, vm);
+#ifdef DEBUG
+				DBG_PRINT("step:%d\n", step_counter++);
+#endif
+				if ((vm->status & ST_SNDTN) && (vm->n_ext == 0)) {
+					printf("%c", (char) vm->t_ext);
+					vm->status &= ~ST_SNDTN;
+				}
+
+				if (result != RC_OK) {
+					printf("\nEXCEPTION: %s\n", RET[result]);
+					exit(1);
+				}
+#ifdef KEYBOARD_ENTRY
+				if (kbhit()) {
+					vm->t_ext = getc(stdin);
+					vm->n_ext = 0;
+					vm->status |= ST_RCVTN;
+				}
+#endif
+			}
+		}
 }
