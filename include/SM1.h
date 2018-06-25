@@ -102,7 +102,7 @@ enum {
 enum {
 	ALU_OP_TOP = 0x00, /* t */
 	ALU_OP_SCN = 0x01, /* n */
-	ALU_OP_RSK = 0x02, /* top of return stack */
+	ALU_OP_TRS = 0x02, /* top of return stack */
 	ALU_OP_GET = 0x03, /* load from address t */
 	ALU_OP_PUT = 0x04, /* store n to address t */
 	ALU_OP_DPL = 0x05, /* double cell addition */
@@ -136,7 +136,7 @@ enum {
 	ALU_OP_NP1 = 0x1d, /* not defined */
 #endif
 	ALU_OP_NP2 = 0x1e, /* not defined */
-	ALU_OP_BYE = 0x1f /* return */
+	ALU_OP_BYE = 0x1f  /* return */
 };
 
 // Return Condition
@@ -153,7 +153,7 @@ enum {
 	RC_IRQ           = 0x09, /* irq execute */
 	RC_EXPTN         = 0xFD, /* alu exception */
 	RC_ERROR         = 0xFE, /* generic error */
-	RC_BYE           = 0xFF /* exit */
+	RC_BYE           = 0xFF  /* exit */
 };
 
 // Status
@@ -350,7 +350,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #endif
                     alu = n;
                     break;
-                case ALU_OP_RSK:
+                case ALU_OP_TRS:
 #ifdef DEBUG
                     DBG_PRINT("ALU_OP_R) ");
 #endif

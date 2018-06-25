@@ -19,7 +19,9 @@
 #include <ctype.h>
 
 #define EP(x) [x] = #x  /* enum print */
+
 /////////////////////////////////////////////////////////////////////////////////////
+
 char dis[100];
 
 char *strlwr(char *str) {
@@ -46,7 +48,7 @@ char * removeSubStr(char *str, const char *substr) {
 const char* ALU[] = {
 		EP(ALU_OP_TOP),
 		EP(ALU_OP_SCN),
-		EP(ALU_OP_RSK),
+		EP(ALU_OP_TRS),
 		EP(ALU_OP_GET),
 		EP(ALU_OP_PUT),
 		EP(ALU_OP_DPL),
