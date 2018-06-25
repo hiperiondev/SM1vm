@@ -72,14 +72,12 @@ const char* ALU[] = {
 };
 
 const char* OPTYPE[] = {
+		EP(OP_LIT),
+		EP(OP_ALU),
 		EP(OP_JMP),
 		EP(OP_JMZ),
-		EP(OP_CLL),
-		EP(OP_ALU),
-		EP(OP_LIT)
+		EP(OP_CLL)
 };
-
-const uint16_t OPTYPE_CODE[] = { 0x8000, 0x6000, 0x0000, 0x2000, 0x4000 };
 
 const char* FLAGS[] = {
 		EP(ALU_F_T2N),
@@ -99,6 +97,4 @@ const char* DELTA[] = {
        "r-2"
 };
 
-const uint8_t DELTA_CODE[] = { 0x0001, 0x0002, 0x0003, 0x0004, 0x0008, 0x000C, };
-
-//static const uint16_t delta[] = { 0, 1, -1, -2 };
+const uint8_t DELTA_CODE[] = { 0x0001, 0x0002, 0x0003, 0x0004, 0x0008, 0x000C };
