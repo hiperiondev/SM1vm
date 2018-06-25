@@ -42,6 +42,42 @@ int opCmp(char *op, char *value){
 	return strcmp(strlwr(op), value);
 }
 
+int directives(char* line) {
+	char lineSplited[10][20];
+	int words = getWords(line, lineSplited);
+
+	if (opCmp(lineSplited[0], ".equ") == 0) {      // assigns a value to a label.
+		printf (".equ %d\n",words);
+		return 0;
+	}
+	if (opCmp(lineSplited[0], ".macro") == 0) {    // start of a macro. takes the name as parameter.when the name of the macro
+		printf (".macro %d\n",words);              // is written later in the program, the macro definition is expanded
+		                                           // at the place it was used. A Macro can take up to 10 parameters.
+		                                           // these parameters are referred to as @0-@9 within the Macro definition.
+		return 0;
+	}
+	if (opCmp(lineSplited[0], ".endm") == 0) {     // the end of a macro definition.
+		printf (".endm %d\n",words);
+		return 0;
+	}
+
+
+	if (opCmp(lineSplited[0], ".include") == 0) {  // start reading from a specified file.
+		printf (".include %d\n",words);
+		return 0;
+	}
+	if (opCmp(lineSplited[0], ".word") == 0) {     // define new mnemonic from complete line. Ex. dup@  get t2n d+1
+		printf (".words %d\n",words);
+		return 0;
+	}
+	if (opCmp(lineSplited[0], ".label") == 0) {    // assign the address of label.
+		printf (".label %d\n",words);
+		return 0;
+	}
+
+	return 1;
+}
+
 //////////////////////////////////////////////////////////////
 
 uint16_t sm1_assembleLine(char* line) {
@@ -88,7 +124,7 @@ uint16_t sm1_assembleLine(char* line) {
 	}
 
 	if (value == 0xffff) {
-		printf("ASSEMBLER ERROR: unknown mnemonic:: %s\n", lineSplited[0]);
+		printf("ASSEMBLER ERROR: unknown mnemonic\n");
 		exit(1);
 	}
 
@@ -141,10 +177,12 @@ int sm1_assembleFile(char* fileIn, char* fileOut) {
 		perror("Error: can't open destination-file");
 		return 1;
 	}
+
 	while (fgets(buf, sizeof(buf), fIn) != NULL) {
 		buf[strlen(buf) - 1] = '\0';
 		if (strcmp(buf, "") != 0) {
-			fprintf(fOut,"%04x\n", sm1_assembleLine(buf));
+			if (directives(buf))
+				fprintf(fOut, "%04x\n", sm1_assembleLine(buf));
 		}
 	}
 	fclose(fIn);
