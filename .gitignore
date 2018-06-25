@@ -3,3 +3,4 @@ Release/
 .project
 .settings/
 assembler/build/
+assembler/swapforth/

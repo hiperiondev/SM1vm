@@ -87,13 +87,14 @@ uint16_t sm1_assembly(char* line) {
 
 	value |= 0x6000;
 
-	int pos = 1;
+	int pos = 1, fl = 0;
 	while (pos < words) {
 		for (w=0; w < 4; w++) {
 			strcpy(str, FLAGS[w]);
 			removePrefix(str);
 			if (opCmp(str, lineSplited[pos])) {
 				value |= FLAGS_CODE[w];
+				fl = 1;
 				break;
 			}
 		}
@@ -103,10 +104,16 @@ uint16_t sm1_assembly(char* line) {
 			removePrefix(str);
 			if (opCmp(str, lineSplited[pos])) {
 				value |= DELTA_CODE[w];
+				fl = 1;
 				break;
 			}
 		}
+		if (fl == 0) {
+			printf("ASSEMBLER ERROR: unknown mnemonic\n");
+			exit(1);
+		}
 		pos++;
+		fl = 0;
 	}
 
 	return value;
