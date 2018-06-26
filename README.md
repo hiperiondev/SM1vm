@@ -43,6 +43,7 @@ These conditional functions are:
 .include: Start reading from a specified file.
 .word:    Define new mnemonic from complete line. Ex. dup@  get t2n d+1
 .label:   Assign the address at this point to label.
+.comment: Comment line.
 ```
 NOTE: Directives can't be used inside macro.
 ## FORTH

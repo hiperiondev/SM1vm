@@ -81,6 +81,10 @@ int directives(char* line, char* fileOut) {
 		return 0;
 	}
 
+	if (opCmp(lineSplited[0], ".comment") == 0) {
+			printf("%s\n", line);
+			return 0;
+	}
 	if (opCmp(lineSplited[0], ".equ") == 0) {
 		add_str_by_str(equ, lineSplited[1], lineSplited[2]);
 		get_str_by_str(equ, lineSplited[1], &hresult);
