@@ -96,7 +96,7 @@ int directives(char* line, char* fileOut) {
 		sprintf(str,"%04x",addr);
 		add_str_by_str(label,lineSplited[1], str);
 		get_str_by_str(label,lineSplited[1], &hresult);
-		printf (".label %s %s\n", lineSplited[1], hresult);
+		printf (".label %s (%s)\n", lineSplited[1], hresult);
 		return 0;
 	}
 
@@ -205,6 +205,7 @@ int sm1_assembleFile(char* fileIn, char* fileOut) {
 		equ   = create_hash(100);
 		word  = create_hash(100);
 		label = create_hash(100);
+		remove(fileOut);
 	}
 
 	if ((fIn = fopen(fileIn, "r")) == NULL) {
