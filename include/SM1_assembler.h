@@ -130,7 +130,6 @@ int directives(char* line, char* fileOut) {
 		sprintf(str, "%d", macroIndex++);
 		strcat(str, "#_");
 		strcat(str, macroName);
-		//printf("_macro: %s / %s\n",str, line);
 		add_str_by_str(macro,str, line);
 	}
 
