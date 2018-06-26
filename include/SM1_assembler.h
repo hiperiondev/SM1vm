@@ -7,9 +7,9 @@
  *  Author: Emiliano Augusto Gonzalez (egonzalez.hiperion@gmail.com)
  */
 
-#include "hashtable.h"
 #include <stdio.h>
 #include <string.h>
+#include "jwHash.h"
 
 #define UNDER_OVER
 //#define CARRY
@@ -21,12 +21,10 @@
 const uint8_t VMFLAGS_POS[]  = { ALU_F_T2N, ALU_F_T2R, ALU_F_N2T, ALU_F_R2P };
 const uint8_t VMFLAGS_CODE[] = { 0x80, 0x40, 0x20, 0x10 };
 int sm1_assembleFile(char* fileIn, char* fileOut);
-int initHash = 0;
 uint16_t addr = 0x0000;
-
-hashtable_t word;
-hashtable_t equ;
-hashtable_t label;
+jwHashTable * equ   = NULL;
+jwHashTable * word  = NULL;
+jwHashTable * label = NULL;
 
 int getWords(char *base, char target[10][20])
 {
@@ -56,12 +54,12 @@ int opCmp(char *op, char *value){
 int directives(char* line, char* fileOut) {
 	char lineSplited[10][20], str[40];
 	int words = getWords(line, lineSplited);
-	void *value;
+	char * hresult;
 
 	if (opCmp(lineSplited[0], ".equ") == 0) {      // assigns a value to a label.
-		hashtable_set(&equ, lineSplited[1], lineSplited[2]);
-		hashtable_get(&equ, lineSplited[1], &value);
-		printf (".equ %s %s\n", lineSplited[1], (char*)value);
+		add_str_by_str(equ,lineSplited[1], lineSplited[2]);
+		get_str_by_str(equ,lineSplited[1], &hresult);
+		printf (".equ %s %s\n", lineSplited[1], hresult);
 		return 0;
 	}
 	if (opCmp(lineSplited[0], ".macro") == 0) {    // start of a macro. takes the name as parameter.when the name of the macro
@@ -89,16 +87,16 @@ int directives(char* line, char* fileOut) {
 			strcat(str, " ");
 			ptr++;
 		}
-		hashtable_set(&word, lineSplited[1], str);
-		hashtable_get(&word, lineSplited[1], &value);
-		printf (".word %s %s\n", lineSplited[1], (char*)value);
+		add_str_by_str(word,lineSplited[1], str);
+		get_str_by_str(word,lineSplited[1], &hresult);
+		printf (".word %s %s\n", lineSplited[1], hresult);
 		return 0;
 	}
 	if (opCmp(lineSplited[0], ".label") == 0) {    // assign the address of label.
 		sprintf(str,"%04x",addr);
-		hashtable_set(&word, lineSplited[1], str);
-		hashtable_get(&word, lineSplited[1], &value);
-		printf (".label %s %s\n", lineSplited[1], (char*)value);
+		add_str_by_str(label,lineSplited[1], str);
+		get_str_by_str(label,lineSplited[1], &hresult);
+		printf (".label %s %s\n", lineSplited[1], hresult);
 		return 0;
 	}
 
@@ -111,8 +109,14 @@ uint16_t sm1_assembleLine(char* line) {
 	printf ("%s\n", line);
 	int words, value, w;
 	char lineSplited[10][20], str[20];
+	char * hresult;
+
 	words = getWords(line, lineSplited);
 	value = (int) strtol(lineSplited[1], NULL, 16);
+
+	get_str_by_str(equ,lineSplited[1], &hresult);
+	if (hresult == NULL) get_str_by_str(label,lineSplited[1], &hresult);
+	if (hresult != NULL) value = (int) strtol (hresult, NULL, 16);
 
 	if (opCmp(lineSplited[0], "lit") == 0) {
 		if (value < 32768)
@@ -191,17 +195,14 @@ uint16_t sm1_assembleLine(char* line) {
 
 
 int sm1_assembleFile(char* fileIn, char* fileOut) {
-
-	if (!initHash) {
-		hashtable_init(&word,  hashtable_hash_fnv, (hashtable_len_function)strlen);
-		hashtable_init(&equ,   hashtable_hash_fnv, (hashtable_len_function)strlen);
-		hashtable_init(&label, hashtable_hash_fnv, (hashtable_len_function)strlen);
-		initHash = 1 ;
-	}
-
 	FILE* fIn;
 	FILE* fOut;
 	char buf[80];
+	if (equ == NULL) {
+		equ   = create_hash(100);
+		word  = create_hash(100);
+		label = create_hash(100);
+	}
 
 	if ((fIn = fopen(fileIn, "r")) == NULL) {
 		perror("Error: can't open source-file");
@@ -216,16 +217,14 @@ int sm1_assembleFile(char* fileIn, char* fileOut) {
 	while (fgets(buf, sizeof(buf), fIn) != NULL) {
 		buf[strlen(buf) - 1] = '\0';
 		if (strcmp(buf, "") != 0) {
-			if (directives(buf, fileOut)){
-				printf("%04x ",addr);
+			if (directives(buf, fileOut)) {
+				printf("    %04x ", addr);
 				fprintf(fOut, "%04x\n", sm1_assembleLine(buf));
-			    addr++;
+				addr++;
 			}
 		}
 	}
 	fclose(fIn);
-	hashtable_destroy(&equ);
-	hashtable_destroy(&word);
-	hashtable_destroy(&label);
+
 	return 0;
 }
