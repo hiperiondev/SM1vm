@@ -21,15 +21,17 @@
 
 const uint8_t VMFLAGS_POS[]  = { ALU_F_T2N, ALU_F_T2R, ALU_F_N2T, ALU_F_R2P };
 const uint8_t VMFLAGS_CODE[] = { 0x80, 0x40, 0x20, 0x10 };
-int sm1_assembleFile(char* fileIn, char* fileOut);
-uint16_t addr = 0x0000;
+int macroIndex = 0;
+char macroName[40]="";
+int addr = -1;
 jwHashTable * equ   = NULL;
 jwHashTable * word  = NULL;
 jwHashTable * label = NULL;
 jwHashTable * macro = NULL;
 
-int macroIndex = 0;
-char macroName[40]="";
+int sm1_assembleFile(char* fileIn, char* fileOut);
+
+uint16_t sm1_assembleLine(char* line);
 
 int getWords(char *base, char target[10][20])
 {
@@ -57,80 +59,81 @@ int opCmp(char *op, char *value){
 }
 
 int directives(char* line, char* fileOut) {
-	char lineSplited[10][20], str[40]="";
+	char lineSplited[10][20], str[40] = "";
 	int words = getWords(line, lineSplited);
 	char * hresult;
 
-	if (opCmp(lineSplited[0], ".equ") == 0) {                // assigns a value to a label.
-		add_str_by_str(equ,lineSplited[1], lineSplited[2]);
-		get_str_by_str(equ,lineSplited[1], &hresult);
-		printf (".equ %s %s\n", lineSplited[1], hresult);
-		return 0;
-	}
-	if (opCmp(lineSplited[0], ".macro") == 0) {              // start of a macro. takes the name as parameter.when the name of the macro
-                                                             // is written later in the program, the macro definition is expanded
-		if (macroIndex) {                                    // at the place it was used. a macro can take up to 10 parameters.
-			printf("ASSEMBLER ERROR: macro inside macro\n"); // these parameters are referred to as @0-@9 within the Macro definition.
-			exit(1);                                         // can't define macro inside macro.
-		}
+	// search macro and insert
+	if (get_str_by_str(macro, lineSplited[0], &hresult) != HASHNOTFOUND) {
 		macroIndex = 1;
-		int ptr = 2;
-		while (ptr <= words) {
-			strcat(str, lineSplited[ptr]);
-			strcat(str, " ");
-			ptr++;
-		}
-		strcpy(macroName,lineSplited[1]);
-		add_str_by_str(equ,macroName, str);
-		get_str_by_str(equ,macroName, &hresult);
-		printf (".macro %s %s\n", macroName, hresult);
-		return 0;
-	}
-	if (opCmp(lineSplited[0], ".endm") == 0) {               // end of a macro definition.
-		printf (".endm\n");
-		sprintf(hresult,"[MACRO %s",macroName);
-		macroIndex = 1;
+		strcpy(macroName, lineSplited[0]);
+		printf("[ %s\n", macroName);
 		while (1) {
-			printf("    %s\n", hresult);
 			sprintf(str, "%d", macroIndex++);
 			strcat(str, "#_");
 			strcat(str, macroName);
-			if (get_str_by_str(macro, str, &hresult) == HASHNOTFOUND) break;
+			if (get_str_by_str(macro, str, &hresult) == HASHNOTFOUND)
+				break;
+			sm1_assembleLine(hresult);
 		}
-		printf("    ]\n");
+		printf("]\n");
 		macroIndex = 0;
 		return 0;
 	}
-	if (opCmp(lineSplited[0], ".include") == 0) {            // start reading from a specified file.
-		printf (".include %s\n",lineSplited[1]);
-		sm1_assembleFile(lineSplited[1], fileOut);
-		printf (".endinclude\n");
+
+	if (opCmp(lineSplited[0], ".equ") == 0) {
+		add_str_by_str(equ, lineSplited[1], lineSplited[2]);
+		get_str_by_str(equ, lineSplited[1], &hresult);
+		printf(".equ %s %s\n", lineSplited[1], hresult);
 		return 0;
 	}
-	if (opCmp(lineSplited[0], ".word") == 0) {               // define new mnemonic from complete line. Ex. dup@  get t2n d+1
+	if (opCmp(lineSplited[0], ".macro") == 0) {
+		if (macroIndex) {
+			printf("ASSEMBLER ERROR: macro inside macro\n");
+			exit(1);
+		}
+		macroIndex = 1;
+		strcpy(macroName, lineSplited[1]);
+		add_str_by_str(macro, macroName, macroName);
+		get_str_by_str(macro, macroName, &hresult);
+		printf(".macro %s \n", hresult);
+		return 0;
+	}
+	if (opCmp(lineSplited[0], ".endm") == 0) {
+		printf(".endm\n");
+		macroIndex = 0;
+		return 0;
+	}
+	if (opCmp(lineSplited[0], ".include") == 0) {
+		printf(".include %s\n", lineSplited[1]);
+		sm1_assembleFile(lineSplited[1], fileOut);
+		printf(".endinclude\n");
+		return 0;
+	}
+	if (opCmp(lineSplited[0], ".word") == 0) {
 		int ptr = 2;
 		while (ptr <= words) {
 			strcat(str, lineSplited[ptr]);
 			strcat(str, " ");
 			ptr++;
 		}
-		add_str_by_str(word,lineSplited[1], str);
-		get_str_by_str(word,lineSplited[1], &hresult);
-		printf (".word %s %s\n", lineSplited[1], hresult);
+		add_str_by_str(word, lineSplited[1], str);
+		get_str_by_str(word, lineSplited[1], &hresult);
+		printf(".word %s %s\n", lineSplited[1], hresult);
 		return 0;
 	}
-	if (opCmp(lineSplited[0], ".label") == 0) {             // assign the address of label.
-		sprintf(str,"%04x",addr);
-		add_str_by_str(label,lineSplited[1], str);
-		get_str_by_str(label,lineSplited[1], &hresult);
-		printf (".label %s (%s)\n", lineSplited[1], hresult);
+	if (opCmp(lineSplited[0], ".label") == 0) {
+		sprintf(str, "%04x", addr+1);
+		add_str_by_str(label, lineSplited[1], str);
+		get_str_by_str(label, lineSplited[1], &hresult);
+		printf(".label %s (%s)\n", lineSplited[1], hresult);
 		return 0;
 	}
 	if (macroIndex) {
 		sprintf(str, "%d", macroIndex++);
 		strcat(str, "#_");
 		strcat(str, macroName);
-		add_str_by_str(macro,str, line);
+		add_str_by_str(macro, str, line);
 	}
 
 	return 1;
@@ -139,13 +142,16 @@ int directives(char* line, char* fileOut) {
 //////////////////////////////////////////////////////////////
 
 uint16_t sm1_assembleLine(char* line) {
-	printf ("%s\n", line);
 	int words, value, w;
 	char lineSplited[10][20], str[20];
 	char * hresult = NULL;
 
 	words = getWords(line, lineSplited);
 	value = (int) strtol(lineSplited[1], NULL, 16);
+
+	addr++;
+	printf("    %04x ", addr);
+	printf ("%s\n", line);
 
 	get_str_by_str(word,lineSplited[0], &hresult);
 	if (hresult != NULL) words = getWords(hresult, lineSplited);
@@ -256,9 +262,7 @@ int sm1_assembleFile(char* fileIn, char* fileOut) {
 		buf[strlen(buf) - 1] = '\0';
 		if (strcmp(buf, "") != 0) {
 			if (directives(buf, fileOut) && !macroIndex) {
-				printf("    %04x ", addr);
 				fprintf(fOut, "%04x\n", sm1_assembleLine(buf));
-				addr++;
 			}
 		}
 	}
