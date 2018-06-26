@@ -42,7 +42,7 @@ int opCmp(char *op, char *value){
 	return strcmp(strlwr(op), value);
 }
 
-int directives(char* line) {
+int directives(char* line, char* fileIn, char* fileOut) {
 	char lineSplited[10][20];
 	int words = getWords(line, lineSplited);
 
@@ -64,6 +64,7 @@ int directives(char* line) {
 
 	if (opCmp(lineSplited[0], ".include") == 0) {  // start reading from a specified file.
 		printf (".include %d\n",words);
+		sm1_assembleFile(lineSplited[1], fileOut);
 		return 0;
 	}
 	if (opCmp(lineSplited[0], ".word") == 0) {     // define new mnemonic from complete line. Ex. dup@  get t2n d+1
@@ -173,7 +174,7 @@ int sm1_assembleFile(char* fileIn, char* fileOut) {
 		return 1;
 	}
 
-	if ((fOut = fopen(fileOut, "w")) == NULL) {
+	if ((fOut = fopen(fileOut, "a")) == NULL) {
 		perror("Error: can't open destination-file");
 		return 1;
 	}
@@ -181,7 +182,7 @@ int sm1_assembleFile(char* fileIn, char* fileOut) {
 	while (fgets(buf, sizeof(buf), fIn) != NULL) {
 		buf[strlen(buf) - 1] = '\0';
 		if (strcmp(buf, "") != 0) {
-			if (directives(buf))
+			if (directives(buf,fileIn, fileOut))
 				fprintf(fOut, "%04x\n", sm1_assembleLine(buf));
 		}
 	}
