@@ -50,7 +50,7 @@ static inline long int hashString(char * str)
 	unsigned long hash = 5381;
 	int c;
 
-	while (c = *str++)
+	while ((c = *str++))
 		hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
 	return hash;
 }
@@ -234,8 +234,8 @@ HASHRESULT add_int_by_str( jwHashTable *table, char *key, long int value )
 	entry->next = table->bucket[hash];
 	table->bucket[hash] = entry;
 	HASH_DEBUG("added entry\n");
-unlock:
 #ifdef HASHTHREADED
+unlock:
 	__sync_synchronize(); // memory barrier
 	table->locks[hash] = 0;
 #endif
