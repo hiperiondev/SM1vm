@@ -9,6 +9,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include "jwHash.h"
 
 #define UNDER_OVER
@@ -28,7 +29,7 @@ jwHashTable * label = NULL;
 jwHashTable * macro = NULL;
 
 int macroIndex = 0;
-char *macroName[40];
+char macroName[40]="";
 
 int getWords(char *base, char target[10][20])
 {
@@ -67,7 +68,7 @@ int directives(char* line, char* fileOut) {
 		return 0;
 	}
 	if (opCmp(lineSplited[0], ".macro") == 0) {              // start of a macro. takes the name as parameter.when the name of the macro
-		printf (".macro %d\n",words);                        // is written later in the program, the macro definition is expanded
+                                                             // is written later in the program, the macro definition is expanded
 		if (macroIndex) {                                    // at the place it was used. a macro can take up to 10 parameters.
 			printf("ASSEMBLER ERROR: macro inside macro\n"); // these parameters are referred to as @0-@9 within the Macro definition.
 			exit(1);                                         // can't define macro inside macro.
@@ -79,14 +80,24 @@ int directives(char* line, char* fileOut) {
 			strcat(str, " ");
 			ptr++;
 		}
-		add_str_by_str(equ,lineSplited[1], str);
-		get_str_by_str(equ,lineSplited[1], &hresult);
-		strcat(macroName,lineSplited[1]);
-		printf (".macro %s %s\n", lineSplited[1], hresult);
+		strcpy(macroName,lineSplited[1]);
+		add_str_by_str(equ,macroName, str);
+		get_str_by_str(equ,macroName, &hresult);
+		printf (".macro %s %s\n", macroName, hresult);
 		return 0;
 	}
 	if (opCmp(lineSplited[0], ".endm") == 0) {               // end of a macro definition.
-		printf (".endm %d\n",words);
+		printf (".endm\n");
+		sprintf(hresult,"[MACRO %s",macroName);
+		macroIndex = 1;
+		while (1) {
+			printf("    %s\n", hresult);
+			sprintf(str, "%d", macroIndex++);
+			strcat(str, "#_");
+			strcat(str, macroName);
+			if (get_str_by_str(macro, str, &hresult) == HASHNOTFOUND) break;
+		}
+		printf("    ]\n");
 		macroIndex = 0;
 		return 0;
 	}
@@ -119,6 +130,7 @@ int directives(char* line, char* fileOut) {
 		sprintf(str, "%d", macroIndex++);
 		strcat(str, "#_");
 		strcat(str, macroName);
+		//printf("_macro: %s / %s\n",str, line);
 		add_str_by_str(macro,str, line);
 	}
 
@@ -244,7 +256,7 @@ int sm1_assembleFile(char* fileIn, char* fileOut) {
 	while (fgets(buf, sizeof(buf), fIn) != NULL) {
 		buf[strlen(buf) - 1] = '\0';
 		if (strcmp(buf, "") != 0) {
-			if (directives(buf, fileOut)) {
+			if (directives(buf, fileOut) && !macroIndex) {
 				printf("    %04x ", addr);
 				fprintf(fOut, "%04x\n", sm1_assembleLine(buf));
 				addr++;
