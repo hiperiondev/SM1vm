@@ -7,6 +7,10 @@
  *  Author: Emiliano Augusto Gonzalez (egonzalez.hiperion@gmail.com)
  */
 
+#include "hashtable.h"
+#include <stdio.h>
+#include <string.h>
+
 #define UNDER_OVER
 //#define CARRY
 #define EXTRAREGS
@@ -16,6 +20,13 @@
 
 const uint8_t VMFLAGS_POS[]  = { ALU_F_T2N, ALU_F_T2R, ALU_F_N2T, ALU_F_R2P };
 const uint8_t VMFLAGS_CODE[] = { 0x80, 0x40, 0x20, 0x10 };
+int sm1_assembleFile(char* fileIn, char* fileOut);
+int initHash = 0;
+uint16_t addr = 0x0000;
+
+hashtable_t word;
+hashtable_t equ;
+hashtable_t label;
 
 int getWords(char *base, char target[10][20])
 {
@@ -42,12 +53,15 @@ int opCmp(char *op, char *value){
 	return strcmp(strlwr(op), value);
 }
 
-int directives(char* line, char* fileIn, char* fileOut) {
-	char lineSplited[10][20];
+int directives(char* line, char* fileOut) {
+	char lineSplited[10][20], str[40];
 	int words = getWords(line, lineSplited);
+	void *value;
 
 	if (opCmp(lineSplited[0], ".equ") == 0) {      // assigns a value to a label.
-		printf (".equ %d\n",words);
+		hashtable_set(&equ, lineSplited[1], lineSplited[2]);
+		hashtable_get(&equ, lineSplited[1], &value);
+		printf (".equ %s %s\n", lineSplited[1], (char*)value);
 		return 0;
 	}
 	if (opCmp(lineSplited[0], ".macro") == 0) {    // start of a macro. takes the name as parameter.when the name of the macro
@@ -63,16 +77,28 @@ int directives(char* line, char* fileIn, char* fileOut) {
 
 
 	if (opCmp(lineSplited[0], ".include") == 0) {  // start reading from a specified file.
-		printf (".include %d\n",words);
+		printf (".include %s\n",lineSplited[1]);
 		sm1_assembleFile(lineSplited[1], fileOut);
+		printf (".endinclude\n");
 		return 0;
 	}
 	if (opCmp(lineSplited[0], ".word") == 0) {     // define new mnemonic from complete line. Ex. dup@  get t2n d+1
-		printf (".words %d\n",words);
+		int ptr = 2;
+		while (ptr <= words) {
+			strcat(str, lineSplited[ptr]);
+			strcat(str, " ");
+			ptr++;
+		}
+		hashtable_set(&word, lineSplited[1], str);
+		hashtable_get(&word, lineSplited[1], &value);
+		printf (".word %s %s\n", lineSplited[1], (char*)value);
 		return 0;
 	}
 	if (opCmp(lineSplited[0], ".label") == 0) {    // assign the address of label.
-		printf (".label %d\n",words);
+		sprintf(str,"%04x",addr);
+		hashtable_set(&word, lineSplited[1], str);
+		hashtable_get(&word, lineSplited[1], &value);
+		printf (".label %s %s\n", lineSplited[1], (char*)value);
 		return 0;
 	}
 
@@ -165,6 +191,14 @@ uint16_t sm1_assembleLine(char* line) {
 
 
 int sm1_assembleFile(char* fileIn, char* fileOut) {
+
+	if (!initHash) {
+		hashtable_init(&word,  hashtable_hash_fnv, (hashtable_len_function)strlen);
+		hashtable_init(&equ,   hashtable_hash_fnv, (hashtable_len_function)strlen);
+		hashtable_init(&label, hashtable_hash_fnv, (hashtable_len_function)strlen);
+		initHash = 1 ;
+	}
+
 	FILE* fIn;
 	FILE* fOut;
 	char buf[80];
@@ -182,10 +216,16 @@ int sm1_assembleFile(char* fileIn, char* fileOut) {
 	while (fgets(buf, sizeof(buf), fIn) != NULL) {
 		buf[strlen(buf) - 1] = '\0';
 		if (strcmp(buf, "") != 0) {
-			if (directives(buf,fileIn, fileOut))
+			if (directives(buf, fileOut)){
+				printf("%04x ",addr);
 				fprintf(fOut, "%04x\n", sm1_assembleLine(buf));
+			    addr++;
+			}
 		}
 	}
 	fclose(fIn);
+	hashtable_destroy(&equ);
+	hashtable_destroy(&word);
+	hashtable_destroy(&label);
 	return 0;
 }
