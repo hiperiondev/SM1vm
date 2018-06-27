@@ -585,7 +585,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                 	break;
                 case ALU_OP_SRG:
 #ifdef DEBUG
-                   DBG_PRINT("ALU_OP_S) ");
+                   DBG_PRINT("ALU_OP_SRG) ");
 #endif
                 	if (t > (vm->reg_size-1)){
                 		vm->status |= ST_EXPTN;

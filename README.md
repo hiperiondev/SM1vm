@@ -80,4 +80,4 @@ _For more examples and usage, please refer to the [Wiki][wiki]._
 5. Create a new Pull Request
 
 <!-- Markdown link & img dfn's -->
-[wiki]: https://github.com/hiperiondev/SM1vm/wiki
+[wiki]:https://github.com/hiperiondev/SM1vm/wiki/%5B1%5D-SM1vm:-Tiny-embeddable-Stack-Machine---Forth-Machine
