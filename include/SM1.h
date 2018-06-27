@@ -158,54 +158,59 @@ enum {
 
 // Status
 enum {
-        ST_SNDTN = 0x01, /* send */
-        ST_RCVTN = 0x02, /* receive */
-        ST_CARRY = 0x04, /* carry bit */
-        ST_IRQ   = 0x08, /* interrupt */
-        ST_IMK   = 0x10, /* interrupt mask */
-        ST_EXPTN = 0x40, /* alu exception */
-        ST_RSVD  = 0x80  /* reserved */
+        ST_SNDTN    = 0x0001, /* send */
+        ST_RCVTN    = 0x0002, /* receive */
+        ST_CARRY    = 0x0004, /* carry bit */
+        ST_IRQ      = 0x0008, /* interrupt */
+        ST_IMK      = 0x0010, /* interrupt mask */
+        ST_EXPTN    = 0x0040, /* alu exception */
+        ST_RSVD     = 0x0080, /* reserved */
+		ST_AUTOINC0 = 0x0100, /* autoincrement register #0 on every read */
+		ST_AUTOINC1 = 0x0200, /* autoincrement register #1 on every read */
+		ST_AUTOINC2 = 0x0400, /* autoincrement register #2 on every read */
+		ST_INDGET   = 0x0800, /* indirect get on register #t */
+		ST_INDPUT   = 0x1000  /* indirect put on register #t */
 };
 
 // Registers
 typedef struct {
-         uint8_t dp;        /* data stack pointer */
-         uint8_t rp;        /* return stack pointer */
-        uint16_t pc;        /* program counter */
-        uint16_t t;         /* top of data stack */
-        uint16_t t_ext;     /* external top of data stack */
-        uint16_t n_ext;     /* external second element of data stack */
-        uint16_t status;    /* status register
-                             *   0=SND        / vm data transmission
-                             *   1=RCV        / external data receive
-                             *   2=CARRY      / carry or overflow
-                             *   3=IRQ        / interrupt (similar to INTR on Intel 8085)
-                             *   4=IMK        / interrupt mask
-                             *   5=NOT USED   / not defined
-                             *   6=EXCEPTION  / alu exception
-                             *   7=RESERVED   / reserved
-                             *   8=NOT USED   / not defined
-                             *   9=NOT USED   / not defined
-                             *  10=NOT USED   / not defined
-                             *  11=NOT USED   / not defined
-                             *  12=NOT USED   / not defined
-                             *  13=NOT USED   / not defined
-                             *  14=NOT USED   / not defined
-                             *  15=NOT USED   / not defined
-                             */
+         uint8_t dp;          /* data stack pointer */
+         uint8_t rp;          /* return stack pointer */
+        uint16_t pc;          /* program counter */
+        uint16_t t;           /* top of data stack */
+        uint16_t t_ext;       /* external top of data stack */
+        uint16_t n_ext;       /* external second element of data stack */
+        uint16_t status;      /* status register
+                               *   0=SND        / vm data transmission
+                               *   1=RCV        / external data receive
+                               *   2=CARRY      / carry or overflow
+                               *   3=IRQ        / interrupt (similar to INTR on Intel 8085)
+                               *   4=IMK        / interrupt mask
+                               *   5=NOT USED   / not defined
+                               *   6=EXCEPTION  / alu exception
+                               *   7=RESERVED   / reserved
+                               *   8=AUTOINC0   / autoincrement register #0 on every read
+                               *   9=AUTOINC1   / autoincrement register #1 on every read
+                               *  10=AUTOINC2   / autoincrement register #2 on every read
+                               *  11=INDGET     / indirect get on register #t
+                               *  12=INDPUT     / indirect put on register #t
+                               *  13=NOT USED   / not defined
+                               *  14=NOT USED   / not defined
+                               *  15=NOT USED   / not defined
+                               */
 #ifdef EXTRAREGS
-        uint16_t *reg;       /* register vector */
-         uint8_t reg_size;   /* register size */
+        uint16_t *reg;         /* register vector */
+         uint8_t reg_size;     /* register size */
 #endif
-        uint16_t *RAM;       /* ram vector */
-      //uint16_t *ROM;       /* rom vector */
-        uint16_t *rs;        /* return stack vector */
-        uint16_t *ds;        /* data stack vector */
+        uint16_t *RAM;         /* ram vector */
+      //uint16_t *ROM;         /* rom vector */
+        uint16_t *rs;          /* return stack vector */
+        uint16_t *ds;          /* data stack vector */
 #ifdef UNDER_OVER
-        uint16_t RAM_size;   /* ram size */
-      //uint16_t ROM_size;   /* rom size */
-         uint8_t ds_size;    /* data stack size */
-         uint8_t rs_size;    /* return stack size */
+        uint16_t RAM_size;     /* ram size */
+      //uint16_t ROM_size;     /* rom size */
+         uint8_t ds_size;      /* data stack size */
+         uint8_t rs_size;      /* return stack size */
 #endif
 
 } vm_t;
@@ -360,20 +365,38 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #ifdef DEBUG
                     DBG_PRINT("ALU_OP_GET)  ");
 #endif
+#ifdef INDIRECT
+                	if (vm->status & ST_INDGET) {
+                		aux = t;
+                		t = vm->reg[t];
+                	}
+#endif
 #ifdef UNDER_OVER
                     if ((t>>1) > vm->RAM_size) return RC_MEM_OVERFLOW;
 #endif
                     alu = sm1_mem_get(t>>1, vm);
+#ifdef INDIRECT
+                    t = aux;
+#endif
                     break;
                 case ALU_OP_PUT:
 #ifdef DEBUG
                     DBG_PRINT("ALU_OP_PUT) ");
+#endif
+#ifdef INDIRECT
+                	if (vm->status & ST_INDPUT) {
+                		aux = t;
+                		t = vm->reg[t];
+                	}
 #endif
 #ifdef UNDER_OVER
                     if ((t>>1) > vm->RAM_size) return RC_MEM_OVERFLOW;
 #endif
                     sm1_mem_put(t>>1, n, vm);
                     alu = vm->ds[--vm->dp];
+#ifdef INDIRECT
+                    t = aux;
+#endif
                     break;
                 case ALU_OP_DPL:
 #ifdef DEBUG
@@ -582,6 +605,11 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                                 return RC_EXPTN;
                         }
                         alu = vm->reg[t];
+#ifdef AUTOINCR
+                        if ((t == 0) && (vm->status & ST_AUTOINC0)) vm->reg[t]++;
+                        if ((t == 1) && (vm->status & ST_AUTOINC1)) vm->reg[t]++;
+                        if ((t == 2) && (vm->status & ST_AUTOINC2)) vm->reg[t]++;
+#endif
                         break;
                 case ALU_OP_SRG:
 #ifdef DEBUG

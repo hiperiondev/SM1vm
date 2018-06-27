@@ -19,6 +19,8 @@
 //#define CARRY
 #define EXTRAREGS
 //#define EXTBITS
+#define AUTOINCR
+#define INDIRECT
 #define REG_SIZE 2
 #define DS_SIZE  128
 #define RS_SIZE  128

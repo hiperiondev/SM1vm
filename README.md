@@ -27,6 +27,10 @@ These conditional functions are:
     Add generic registers to the VM (maximum 255)  
 #define EXTBITS  
     EXPERIMENTAL: Uses the -2 bits of the delta of the stack pointers for added functions
+#define AUTOINCR
+    Define autoincremental registers (0, 1 and 2)
+#define INDIRECT
+    Add indirect address PUT/GET on registers
 ```
 
 ## Assembler
