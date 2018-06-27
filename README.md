@@ -21,16 +21,16 @@ These conditional functions are:
     DEBUG information printing  
 #define UNDER_OVER  
     Add control on OVERFLOW and UNDERFLOW of stack pointers and PC  
-#define CARRY  
-    EXPERIMENTAL: Adds CARRY functions in the addition, subtraction, multiplication and division primitives  
-#define EXTRAREGS  
-    Add generic registers to the VM (maximum 255)  
-#define EXTBITS  
-    EXPERIMENTAL: Uses the -2 bits of the delta of the stack pointers for added functions
 #define AUTOINCR
-    Define autoincremental registers (0, 1 and 2)
+    Define autoincremental registers (0, 1 and 2) on read (and get/put if defined indirect)
 #define INDIRECT
     Add indirect address PUT/GET on registers
+#define EXTRAREGS  
+    Add generic registers to the VM (maximum 255)  
+#define CARRY  
+    EXPERIMENTAL: Adds CARRY functions in the addition, subtraction, multiplication and division primitives  
+#define EXTBITS  
+    EXPERIMENTAL: Uses the -2 bits of the delta of the stack pointers for added functions
 ```
 
 ## Assembler

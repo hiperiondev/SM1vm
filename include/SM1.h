@@ -151,9 +151,10 @@ enum {
         RC_ROM_WRITE     = 0x07, /* rom write */
         RC_MEM_OVERFLOW  = 0x08, /* out of memory access */
         RC_IRQ           = 0x09, /* irq execute */
-        RC_EXPTN         = 0xFD, /* alu exception */
-        RC_ERROR         = 0xFE, /* generic error */
-        RC_BYE           = 0xFF  /* exit */
+		RC_REG_UNKNOWN   = 0x0a, /* unknown register */
+        RC_EXPTN         = 0xfd, /* alu exception */
+        RC_ERROR         = 0xfe, /* generic error */
+        RC_BYE           = 0xff  /* exit */
 };
 
 // Status
@@ -367,6 +368,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #endif
 #ifdef INDIRECT
                 	if (vm->status & ST_INDGET) {
+                		if (t > vm->reg_size - 1) return RC_REG_UNKNOWN;
                 		aux = t;
                 		t = vm->reg[t];
                 	}
@@ -390,6 +392,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #endif
 #ifdef INDIRECT
                 	if (vm->status & ST_INDPUT) {
+                		if (t > vm->reg_size - 1) return RC_REG_UNKNOWN;
                 		aux = t;
                 		t = vm->reg[t];
                 	}
@@ -610,10 +613,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #ifdef DEBUG
                    DBG_PRINT("ALU_OP_REG) ");
 #endif
-                        if (t > (vm->reg_size-1)){
-                                vm->status |= ST_EXPTN;
-                                return RC_EXPTN;
-                        }
+                        if (t > vm->reg_size - 1) return RC_REG_UNKNOWN;
                         alu = vm->reg[t];
 #ifdef AUTOINCR
                         if ((t == 0) && (vm->status & ST_AUTOINC0)) vm->reg[t]++;
@@ -625,10 +625,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #ifdef DEBUG
                    DBG_PRINT("ALU_OP_SRG) ");
 #endif
-                        if (t > (vm->reg_size-1)){
-                                vm->status |= ST_EXPTN;
-                                return RC_EXPTN;
-                        }
+                        if (t > vm->reg_size - 1) return RC_REG_UNKNOWN;
                         vm->reg[t] = n;
                         break;
 #endif
