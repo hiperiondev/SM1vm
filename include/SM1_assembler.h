@@ -19,36 +19,33 @@
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-const uint8_t VMFLAGS_POS[]  = { ALU_F_T2N, ALU_F_T2R, ALU_F_N2T, ALU_F_R2P };
+const uint8_t  VMFLAGS_POS[] = { ALU_F_T2N, ALU_F_T2R, ALU_F_N2T, ALU_F_R2P };
 const uint8_t VMFLAGS_CODE[] = { 0x80, 0x40, 0x20, 0x10 };
 int macroIndex = 0;
-char macroName[40]="";
+char macroName[40] = "";
 int addr = -1;
-jwHashTable * equ   = NULL;
-jwHashTable * word  = NULL;
-jwHashTable * label = NULL;
-jwHashTable * macro = NULL;
+jwHashTable*   equ = NULL;
+jwHashTable*  word = NULL;
+jwHashTable* label = NULL;
+jwHashTable* macro = NULL;
 
 int sm1_assembleFile(char* fileIn, char* fileOut);
 
 uint16_t sm1_assembleLine(char* line);
 
-int getWords(char *base, char target[10][20])
-{
-	int n=0,i,j=0;
+int getWords(char *base, char target[10][20]) {
+	int n = 0, i, j = 0;
 
-	for(i=0;1;i++)
-	{
-		if(base[i]!=' '){
-			target[n][j++]=base[i];
-		}
-		else{
-			target[n][j++]='\0';
+	for (i = 0; 1; i++) {
+		if (base[i] != ' ') {
+			target[n][j++] = base[i];
+		} else {
+			target[n][j++] = '\0';
 			n++;
-			j=0;
+			j = 0;
 		}
-		if(base[i]=='\0')
-		    break;
+		if (base[i] == '\0')
+			break;
 	}
 	return n;
 
@@ -82,8 +79,8 @@ int directives(char* line, char* fileOut) {
 	}
 
 	if (opCmp(lineSplited[0], ".comment") == 0) {
-			printf("%s\n", line);
-			return 0;
+		printf("%s\n", line);
+		return 0;
 	}
 	if (opCmp(lineSplited[0], ".equ") == 0) {
 		add_str_by_str(equ, lineSplited[1], lineSplited[2]);
@@ -127,7 +124,7 @@ int directives(char* line, char* fileOut) {
 		return 0;
 	}
 	if (opCmp(lineSplited[0], ".label") == 0) {
-		sprintf(str, "%04x", addr+1);
+		sprintf(str, "%04x", addr + 1);
 		add_str_by_str(label, lineSplited[1], str);
 		get_str_by_str(label, lineSplited[1], &hresult);
 		printf(".label %s (%s)\n", lineSplited[1], hresult);
@@ -155,14 +152,18 @@ uint16_t sm1_assembleLine(char* line) {
 
 	addr++;
 	printf("    %04x ", addr);
-	printf ("%s\n", line);
+	printf("%s\n", line);
 
-	get_str_by_str(word,lineSplited[0], &hresult);
-	if (hresult != NULL) words = getWords(hresult, lineSplited);
+	get_str_by_str(word, lineSplited[0], &hresult);
+	if (hresult != NULL)
+		words = getWords(hresult, lineSplited);
 
-	get_str_by_str(equ,lineSplited[1], &hresult);
-	if (hresult == NULL) get_str_by_str(label,lineSplited[1], &hresult);
-	if (hresult != NULL) value = (int) strtol (hresult, NULL, 16);;
+	get_str_by_str(equ, lineSplited[1], &hresult);
+	if (hresult == NULL)
+		get_str_by_str(label, lineSplited[1], &hresult);
+	if (hresult != NULL)
+		value = (int) strtol(hresult, NULL, 16);
+	;
 
 	if (opCmp(lineSplited[0], "lit") == 0) {
 		if (value < 32768)
@@ -191,9 +192,9 @@ uint16_t sm1_assembleLine(char* line) {
 	}
 
 	value = 0xffff;
-	for (int w=0; w < 32; w++) {
-		strcpy(str,ALU[w]);
-        removePrefix(str);
+	for (int w = 0; w < 32; w++) {
+		strcpy(str, ALU[w]);
+		removePrefix(str);
 		if (opCmp(str, lineSplited[0]) == 0) {
 			value = w << 8;
 			break;
@@ -209,7 +210,7 @@ uint16_t sm1_assembleLine(char* line) {
 
 	int pos = 1, fl = 0;
 	while (pos < words) {
-		for (w=0; w < 4; w++) {
+		for (w = 0; w < 4; w++) {
 			strcpy(str, VMFLAGS[VMFLAGS_POS[w]]);
 			removePrefix(str);
 			if (opCmp(str, lineSplited[pos]) == 0) {
@@ -219,7 +220,7 @@ uint16_t sm1_assembleLine(char* line) {
 			}
 		}
 
-		for (w=0; w < 6; w++) {
+		for (w = 0; w < 6; w++) {
 			strcpy(str, DELTA[w]);
 			removePrefix(str);
 			if (opCmp(str, lineSplited[pos]) == 0) {
@@ -245,8 +246,8 @@ int sm1_assembleFile(char* fileIn, char* fileOut) {
 	FILE* fOut;
 	char buf[80];
 	if (equ == NULL) {
-		equ   = create_hash(100);
-		word  = create_hash(100);
+		  equ = create_hash(100);
+		 word = create_hash(100);
 		label = create_hash(100);
 		macro = create_hash(1000);
 		remove(fileOut);
