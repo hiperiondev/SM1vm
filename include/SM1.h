@@ -376,6 +376,11 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #endif
                     alu = sm1_mem_get(t>>1, vm);
 #ifdef INDIRECT
+#ifdef AUTOINCR
+                    if ((t == 0) && (vm->status & ST_AUTOINC0)) vm->reg[t]++;
+                    if ((t == 1) && (vm->status & ST_AUTOINC1)) vm->reg[t]++;
+                    if ((t == 2) && (vm->status & ST_AUTOINC2)) vm->reg[t]++;
+#endif
                     t = aux;
 #endif
                     break;
@@ -395,6 +400,11 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                     sm1_mem_put(t>>1, n, vm);
                     alu = vm->ds[--vm->dp];
 #ifdef INDIRECT
+#ifdef AUTOINCR
+                    if ((t == 0) && (vm->status & ST_AUTOINC0)) vm->reg[t]++;
+                    if ((t == 1) && (vm->status & ST_AUTOINC1)) vm->reg[t]++;
+                    if ((t == 2) && (vm->status & ST_AUTOINC2)) vm->reg[t]++;
+#endif
                     t = aux;
 #endif
                     break;
