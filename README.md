@@ -5,7 +5,7 @@
 This project is based on H2 VM but modified for to be more flexible and embeddable, especially on constrained microcontrollers.
 
 ## About
-The project is based on a self-contained library that provides everything necessary to embed the VM.  
+The project is based on a self-contained library that provides everything necessary to embed the VM (SM1.h).  
 
 The only exception is the memory access functions (sm1_mem_put and sm1_mem_get) which must be defined by the user. This allows adaptation to the local implementation access to the program memory, both in hardware and in logic.
 
@@ -80,4 +80,4 @@ _For more examples and usage, please refer to the [Wiki][wiki]._
 5. Create a new Pull Request
 
 <!-- Markdown link & img dfn's -->
-[wiki]: https://github.com/yourname/yourproject/wiki
+[wiki]: https://github.com/hiperiondev/SM1vm/wiki

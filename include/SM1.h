@@ -42,42 +42,42 @@
 /*
 ## Instruction Set Encoding
 
-    +---------------------------------------------------------------+
-	| F | E | D | C | B | A | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
-	+---------------------------------------------------------------+
-	| 1 |                    LITERAL VALUE                          |
-	+---------------------------------------------------------------+
-	| 0 | 0 | 0 |            BRANCH TARGET ADDRESS                  |
-	+---------------------------------------------------------------+
-	| 0 | 0 | 1 |            CONDITIONAL BRANCH TARGET ADDRESS      |
-	+---------------------------------------------------------------+
-	| 0 | 1 | 0 |            CALL TARGET ADDRESS                    |
-	+---------------------------------------------------------------+
-	| 0 | 1 | 1 |   ALU OPERATION   |T2N|T2R|N2T|R2P| RSTACK| DSTACK|
-	+---------------------------------------------------------------+
-	| F | E | D | C | B | A | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
-	+---------------------------------------------------------------+
+        +---------------------------------------------------------------+
+        | F | E | D | C | B | A | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+        +---------------------------------------------------------------+
+        | 1 |                    LITERAL VALUE                          |
+        +---------------------------------------------------------------+
+        | 0 | 0 | 0 |            BRANCH TARGET ADDRESS                  |
+        +---------------------------------------------------------------+
+        | 0 | 0 | 1 |            CONDITIONAL BRANCH TARGET ADDRESS      |
+        +---------------------------------------------------------------+
+        | 0 | 1 | 0 |            CALL TARGET ADDRESS                    |
+        +---------------------------------------------------------------+
+        | 0 | 1 | 1 |   ALU OPERATION   |T2N|T2R|N2T|R2P| RSTACK| DSTACK|
+        +---------------------------------------------------------------+
+        | F | E | D | C | B | A | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+        +---------------------------------------------------------------+
 
-	T   : Top of data stack
-	N   : Next on data stack
-	PC  : Program Counter
+        T   : Top of data stack
+        N   : Next on data stack
+        PC  : Program Counter
 
-	LITERAL VALUES : push a value onto the data stack
-	CONDITIONAL    : BRANCHS pop and test the T
-	CALLS          : PC+1 onto the return stack
+        LITERAL VALUES : push a value onto the data stack
+        CONDITIONAL    : BRANCHS pop and test the T
+        CALLS          : PC+1 onto the return stack
 
-	T2N : Move T to N
-	T2R : Move T to top of return stack
-	N2T : Move the new value of T (or D) to N
-	R2P : Move top of return stack to PC
+        T2N : Move T to N
+        T2R : Move T to top of return stack
+        N2T : Move the new value of T (or D) to N
+        R2P : Move top of return stack to PC
 
-	RSTACK and DSTACK :
-	00 = 0
-	01 = +1
-	10 = -1
-	11 = -2 or
-	     extended bit (not modify stack pointers. used for alu extended operations)
-	     (depend on compilation flag EXTBITS)
+        RSTACK and DSTACK :
+        00 = 0
+        01 = +1
+        10 = -1
+        11 = -2 or
+             extended bit (not modify stack pointers. used for alu extended operations)
+             (depend on compilation flag EXTBITS)
 */
 /////////////////////////////////////////////////////////////////////////////////////
 
@@ -202,10 +202,10 @@ typedef struct {
 	uint16_t *rs;        /* return stack vector */
 	uint16_t *ds;        /* data stack vector */
 #ifdef UNDER_OVER
-    uint16_t RAM_size;   /* ram size */
-    //uint16_t ROM_size; /* rom size */
-    uint8_t ds_size;     /* data stack size */
-    uint8_t rs_size;     /* return stack size */
+    uint16_t RAM_size;       /* ram size */
+    //uint16_t ROM_size;     /* rom size */
+    uint8_t ds_size;         /* data stack size */
+    uint8_t rs_size;         /* return stack size */
 #endif
 
 } vm_t;
@@ -341,18 +341,18 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                 switch (ALU_OP(word)) {
                 case ALU_OP_TOP:
 #ifdef DEBUG
-                    DBG_PRINT("ALU_OP_T) ");
+                    DBG_PRINT("ALU_OP_TOP) ");
 #endif
                     break;
                 case ALU_OP_SCN:
 #ifdef DEBUG
-                    DBG_PRINT("ALU_OP_N) ");
+                    DBG_PRINT("ALU_OP_SCN) ");
 #endif
                     alu = n;
                     break;
                 case ALU_OP_TRS:
 #ifdef DEBUG
-                    DBG_PRINT("ALU_OP_R) ");
+                    DBG_PRINT("ALU_OP_TRS) ");
 #endif
                     alu = r;
                     break;
@@ -377,7 +377,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                     break;
                 case ALU_OP_DPL:
 #ifdef DEBUG
-                    DBG_PRINT("ALU_OP_DPLUS) ");
+                    DBG_PRINT("ALU_OP_DPL) ");
 #endif
                     aux            = (uint32_t)t + n;
 #ifdef CARRY
@@ -393,7 +393,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                     break;
                 case ALU_OP_DML:
 #ifdef DEBUG
-                    DBG_PRINT("ALU_OP_DMUL) ");
+                    DBG_PRINT("ALU_OP_DML) ");
 #endif
                     aux            = (uint32_t) t * n;
                     n              = aux >> 16;
@@ -412,7 +412,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                     break;
                 case ALU_OP_BOR:
 #ifdef DEBUG
-                    DBG_PRINT("ALU_OP_OR) ");
+                    DBG_PRINT("ALU_OP_BOR) ");
 #endif
                     alu |= n;
                     break;
@@ -446,13 +446,13 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                     break;
                 case ALU_OP_EQU:
 #ifdef DEBUG
-                    DBG_PRINT("ALU_OP_EQ) ");
+                    DBG_PRINT("ALU_OP_EQU) ");
 #endif
                     alu = -(t == n);
                     break;
                 case ALU_OP_UCP:
 #ifdef DEBUG
-                    DBG_PRINT("ALU_OP_UCMP) ");
+                    DBG_PRINT("ALU_OP_UCP) ");
 #endif
                     alu = -(n < t);
                     break;
@@ -464,7 +464,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                     break;
                 case ALU_OP_RSH:
 #ifdef DEBUG
-                    DBG_PRINT("ALU_OP_RSHIFT) ");
+                    DBG_PRINT("ALU_OP_RSH) ");
 #endif
 
 #ifdef CARRY
@@ -479,7 +479,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                     break;
                 case ALU_OP_LSH:
 #ifdef DEBUG
-                    DBG_PRINT("ALU_OP_LSHIFT) ");
+                    DBG_PRINT("ALU_OP_LSH) ");
 #endif
 #ifdef CARRY
                     aux = (vm->status & ST_CARRY) >> 2;
@@ -493,37 +493,37 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                     break;
                 case ALU_OP_GSP:
 #ifdef DEBUG
-                    DBG_PRINT("ALU_OP_SP) ");
+                    DBG_PRINT("ALU_OP_GSP) ");
 #endif
                     alu = vm->dp << 1;
                     break;
                 case ALU_OP_GRS:
 #ifdef DEBUG
-                    DBG_PRINT("ALU_OP_RS) ");
+                    DBG_PRINT("ALU_OP_GRS) ");
 #endif
                     alu = vm->rp << 1;
                     break;
                 case ALU_OP_SSP:
 #ifdef DEBUG
-                    DBG_PRINT("ALU_OP_SETSP) ");
+                    DBG_PRINT("ALU_OP_SSP) ");
 #endif
                     vm->dp = t >> 1;
                     break;
                 case ALU_OP_SRP:
 #ifdef DEBUG
-                    DBG_PRINT("ALU_OP_RP) ");
+                    DBG_PRINT("ALU_OP_SRP) ");
 #endif
                     vm->rp = t >> 1;
                     break;
                 case ALU_OP_GST:
 #ifdef DEBUG
-                    DBG_PRINT("ALU_OP_ST) ");
+                    DBG_PRINT("ALU_OP_GST) ");
 #endif
                     alu = vm->status & t;
                     break;
                 case ALU_OP_SND:
 #ifdef DEBUG
-                    DBG_PRINT("ALU_OP_TX) ");
+                    DBG_PRINT("ALU_OP_SND) ");
 #endif
                     vm->t_ext   = t;
                     vm->n_ext   = n;
@@ -531,7 +531,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                     break;
                 case ALU_OP_RCV:
 #ifdef DEBUG
-                    DBG_PRINT("ALU_OP_RX) ");
+                    DBG_PRINT("ALU_OP_RCV) ");
 #endif
                     if (!(vm->status & ST_RCVTN))
                     	break;
@@ -540,7 +540,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                     break; //TODO: Receive t and n
                 case ALU_OP_UMD:
 #ifdef DEBUG
-                    DBG_PRINT("ALU_OP_UMOD) ");
+                    DBG_PRINT("ALU_OP_UMD) ");
 #endif
                    if (t) {
                 	   aux = vm->ds[--vm->dp]|((uint32_t)n<<16);
@@ -567,13 +567,16 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                    break;
                 case ALU_OP_SST:
 #ifdef DEBUG
-                   DBG_PRINT("ALU_OP_SETST) ");
+                   DBG_PRINT("ALU_OP_SST) ");
 #endif
                    vm->status &= n;
                    vm->status |= t;
                    break;
 #ifdef EXTRAREGS
                 case ALU_OP_REG:
+#ifdef DEBUG
+                   DBG_PRINT("ALU_OP_REG) ");
+#endif
                 	if (t > (vm->reg_size-1)){
                 		vm->status |= ST_EXPTN;
                 		return RC_EXPTN;
@@ -581,6 +584,9 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                 	alu = vm->reg[t];
                 	break;
                 case ALU_OP_SRG:
+#ifdef DEBUG
+                   DBG_PRINT("ALU_OP_S) ");
+#endif
                 	if (t > (vm->reg_size-1)){
                 		vm->status |= ST_EXPTN;
                 		return RC_EXPTN;
