@@ -55,6 +55,7 @@ const char* RET[] = {
 		EP(RC_MEM_OVERFLOW),
 		EP(RC_IRQ),
 		EP(RC_EXPTN),
+		EP(RC_REG_UNKNOWN),
 		EP(RC_ERROR),
 		EP(RC_BYE)
 };

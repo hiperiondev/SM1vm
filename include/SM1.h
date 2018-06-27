@@ -151,7 +151,7 @@ enum {
         RC_ROM_WRITE     = 0x07, /* rom write */
         RC_MEM_OVERFLOW  = 0x08, /* out of memory access */
         RC_IRQ           = 0x09, /* irq execute */
-		RC_REG_UNKNOWN   = 0x0a, /* unknown register */
+        RC_REG_UNKNOWN   = 0x0a, /* unknown register */
         RC_EXPTN         = 0xfd, /* alu exception */
         RC_ERROR         = 0xfe, /* generic error */
         RC_BYE           = 0xff  /* exit */
