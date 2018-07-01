@@ -93,27 +93,8 @@ int kbhit(void)
 /////////////////////////////////////////////////////////////////////////////////////
 
 int main(int argc, char **argv) {
-	vm_t *vm =     (vm_t *) malloc(sizeof(vm_t));
-	vm->RAM  = (uint16_t *) malloc(sizeof(uint8_t)  * RAM_SIZE);
-	vm->rs   = (uint16_t *) malloc(sizeof(uint16_t) * RS_SIZE);
-	vm->ds   = (uint16_t *) malloc(sizeof(uint16_t) * DS_SIZE);
-#ifdef UNDER_OVER
-	vm->ds_size  = DS_SIZE;
-	vm->rs_size  = RS_SIZE;
-	vm->RAM_size = RAM_SIZE;
-#endif
-#ifdef EXTRAREGS
-	vm->reg      = (uint16_t *) malloc(sizeof(uint8_t) * REG_SIZE);
-	vm->reg_size = REG_SIZE;
-#endif
-    uint8_t result;
-#ifdef DEBUG
-    int step_counter = 0;
-    DBG_PRINT("RESET...\n");
-#endif
-	vm->pc = 0;
-	vm->dp = 0;
-	vm->rp = 0;
+	uint8_t result;
+	vm_t *vm = sm1_init(RAM_SIZE,RS_SIZE, DS_SIZE,  REG_SIZE);
 
 #ifdef DEBUG
         DBG_PRINT("START...\n");
