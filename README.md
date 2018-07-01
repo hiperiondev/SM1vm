@@ -25,8 +25,6 @@ These conditional functions are:
     Define autoincremental registers (0, 1 and 2) on read (and get/put if defined indirect)
 #define INDIRECT
     Add indirect address PUT/GET on registers
-#define EXTRAREGS  
-    Add generic registers to the VM (maximum 255)  
 #define CARRY  
     EXPERIMENTAL: Adds CARRY functions in the addition, subtraction, multiplication and division primitives  
 #define EXTBITS  

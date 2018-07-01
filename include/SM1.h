@@ -122,19 +122,14 @@ enum {
         ALU_OP_GRS = 0x13, /* r stack depth */
         ALU_OP_SSP = 0x14, /* set stack depth */
         ALU_OP_SRP = 0x15, /* set r stack depth */
-        ALU_OP_GST = 0x16, /* get status & t */
-        ALU_OP_SST = 0x17, /* set status or t */
+        ALU_OP_REG = 0x16, /* get register t (status == 0xff) */
+        ALU_OP_SRG = 0x17, /* set n on register t (status == 0xff) */
         ALU_OP_SND = 0x18, /* send t and n */
         ALU_OP_RCV = 0x19, /* receive t */
         ALU_OP_UMD = 0x1a, /* u/mod */
         ALU_OP_MOD = 0x1b, /* /mod */
-#ifdef EXTRAREGS
-        ALU_OP_REG = 0x1c, /* get register t */
-        ALU_OP_SRG = 0x1d, /* set n on register t */
-#else
         ALU_OP_NP0 = 0x1c, /* not defined */
         ALU_OP_NP1 = 0x1d, /* not defined */
-#endif
         ALU_OP_NP2 = 0x1e, /* not defined */
         ALU_OP_BYE = 0x1f  /* return */
 };
@@ -199,10 +194,9 @@ typedef struct {
                                *  14=NOT USED   / not defined
                                *  15=NOT USED   / not defined
                                */
-#ifdef EXTRAREGS
+
         uint16_t *reg;         /* register vector */
          uint8_t reg_size;     /* register size */
-#endif
         uint16_t *RAM;         /* ram vector */
       //uint16_t *ROM;         /* rom vector */
         uint16_t *rs;          /* return stack vector */
@@ -551,12 +545,6 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #endif
                     vm->rp = t >> 1;
                     break;
-                case ALU_OP_GST:
-#ifdef DEBUG
-                    DBG_PRINT("ALU_OP_GST) ");
-#endif
-                    alu = vm->status & t;
-                    break;
                 case ALU_OP_SND:
 #ifdef DEBUG
                     DBG_PRINT("ALU_OP_SND) ");
@@ -601,18 +589,14 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                        return RC_EXPTN;
                    }
                    break;
-                case ALU_OP_SST:
-#ifdef DEBUG
-                   DBG_PRINT("ALU_OP_SST) ");
-#endif
-                   vm->status &= n;
-                   vm->status |= t;
-                   break;
-#ifdef EXTRAREGS
                 case ALU_OP_REG:
 #ifdef DEBUG
                    DBG_PRINT("ALU_OP_REG) ");
 #endif
+                        if (t == 0xff) {
+                        	alu = vm->status;
+                        	break;
+                        }
                         if (t > vm->reg_size - 1) return RC_REG_UNKNOWN;
                         alu = vm->reg[t];
 #ifdef AUTOINCR
@@ -625,10 +609,13 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #ifdef DEBUG
                    DBG_PRINT("ALU_OP_SRG) ");
 #endif
+	                    if (t == 0xff) {
+			                vm->status = t;
+			                break;
+		                }
                         if (t > vm->reg_size - 1) return RC_REG_UNKNOWN;
                         vm->reg[t] = n;
                         break;
-#endif
                 case ALU_OP_BYE:
 #ifdef DEBUG
                     DBG_PRINT("ALU_OP_BYE) ");

@@ -17,7 +17,6 @@
 #define KEYBOARD_ENTRY
 #define UNDER_OVER
 //#define CARRY
-#define EXTRAREGS
 //#define EXTBITS
 #define AUTOINCR
 #define INDIRECT

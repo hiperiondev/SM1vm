@@ -59,14 +59,14 @@ const char* ALU[] = {
 		EP(ALU_OP_GRS),
 		EP(ALU_OP_SSP),
 		EP(ALU_OP_SRP),
-		EP(ALU_OP_GST),
-		EP(ALU_OP_SST),
 		EP(ALU_OP_SND),
 		EP(ALU_OP_RCV),
 		EP(ALU_OP_UMD),
 		EP(ALU_OP_MOD),
 		EP(ALU_OP_REG),
 		EP(ALU_OP_SRG),
+		EP(ALU_OP_NP0),
+		EP(ALU_OP_NP1),
 		EP(ALU_OP_NP2),
 		EP(ALU_OP_BYE)
 };
