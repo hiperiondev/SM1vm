@@ -161,11 +161,11 @@ enum {
         ST_IMK      = 0x0010, /* interrupt mask */
         ST_EXPTN    = 0x0040, /* alu exception */
         ST_RSVD     = 0x0080, /* reserved */
-		ST_AUTOINC0 = 0x0100, /* autoincrement register #0 on every read */
-		ST_AUTOINC1 = 0x0200, /* autoincrement register #1 on every read */
-		ST_AUTOINC2 = 0x0400, /* autoincrement register #2 on every read */
-		ST_INDGET   = 0x0800, /* indirect get on register #t */
-		ST_INDPUT   = 0x1000  /* indirect put on register #t */
+        ST_AUTOINC0 = 0x0100, /* autoincrement register #0 on every read */
+        ST_AUTOINC1 = 0x0200, /* autoincrement register #1 on every read */
+        ST_AUTOINC2 = 0x0400, /* autoincrement register #2 on every read */
+        ST_INDGET   = 0x0800, /* indirect get on register #t */
+        ST_INDPUT   = 0x1000  /* indirect put on register #t */
 };
 
 // Registers
@@ -242,7 +242,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #ifdef EXTBITS
              static const int8_t delta[] = { 0, 1, -1, 0 };
 #else
-             static const int8_t delta[] = { 0, 1, -1, -2 };
+        static const int8_t delta[] = { 0, 1, -1, -2 };
 #endif
         vm->pc++;
 
