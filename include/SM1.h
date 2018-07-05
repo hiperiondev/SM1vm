@@ -240,7 +240,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
         ,vm->pc, vm->dp, vm->rp, vm->rs[vm->rp], vm->t, vm->ds[vm->dp], vm->ds[vm->dp-1], vm->ds[vm->dp-2], word);
 #endif
 #ifdef EXTBITS
-             static const int8_t delta[] = { 0, 1, -1, 0 };
+        static const int8_t delta[] = { 0, 1, -1, 0 };
 #else
         static const int8_t delta[] = { 0, 1, -1, -2 };
 #endif

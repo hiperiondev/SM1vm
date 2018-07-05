@@ -146,7 +146,6 @@ uint16_t sm1_assembleLine(char* line) {
 	int words, value, w;
 	char lineSplited[10][20], str[20];
 	char * hresult = NULL;
-
 	words = getWords(line, lineSplited);
 	value = (int) strtol(lineSplited[1], NULL, 16);
 
@@ -163,7 +162,6 @@ uint16_t sm1_assembleLine(char* line) {
 		get_str_by_str(label, lineSplited[1], &hresult);
 	if (hresult != NULL)
 		value = (int) strtol(hresult, NULL, 16);
-	;
 
 	if (opCmp(lineSplited[0], "lit") == 0) {
 		if (value < 32768)
