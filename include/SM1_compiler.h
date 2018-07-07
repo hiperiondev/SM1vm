@@ -49,8 +49,11 @@ int sm1_compileFile(char* fileIn, char* fileOut, char* baseWords) {
 		return 1;
 	}
 	while (fgets(buf, sizeof(buf), fWords) != NULL) {
-		if ((strcmp(strlwr(lineSplited[0]), ".word"))||(strcmp(strlwr(lineSplited[0]), ".macro")) == 0)
-			strcpy(bWords[bW++],lineSplited[1]);
+		getWords(buf, lineSplited);
+		if ((strcmp(strlwr(lineSplited[0]), ".word") == 0) || (strcmp(strlwr(lineSplited[0]), ".macro")) == 0) {
+			strcpy(bWords[bW++], lineSplited[1]);
+			printf("%s %s\n", lineSplited[0], lineSplited[1]);
+		}
 	}
 	bW--;
 	fclose(fWords);

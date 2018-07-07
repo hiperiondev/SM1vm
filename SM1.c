@@ -28,7 +28,7 @@
 /////////////////////////////////////////////////////////////////////////////////////
 
 #include "SM1.h"
-#include <SM1_common.h>
+#include "SM1_common.h"
 #include "SM1_assembler.h"
 #include "SM1_disassembler.h"
 #include "SM1_compiler.h"
@@ -97,66 +97,75 @@ int main(int argc, char **argv) {
 	vm_t *vm = sm1_init(RAM_SIZE,RS_SIZE, DS_SIZE,  REG_SIZE);
 
 #ifdef DEBUG
-        DBG_PRINT("START...\n");
+    DBG_PRINT("START...\n");
 #endif
 	if (argc == 1) {
 		printf("\nUse: SM1 [-d|-a|-c] file.in [file.out] [baseword]\n");
 		exit(1);
 	}
 
-#ifdef DEBUG
-    DBG_PRINT("LOAD...\n");
-#endif
-	FILE *RAM;
-	int addr = 0x0000;
-	if (argc == 2) {
-		RAM = fopen(argv[1], "r");
-	} else {
-		RAM = fopen(argv[2], "r");
-	}
-#ifdef DEBUG
-	if (RAM == NULL)
-	DBG_PRINT("...Can't load file!\n");
-#endif
-	uint16_t data;
-	while (fread(&data, sizeof(uint16_t), 1, RAM) == 1) {
-		vm->RAM[addr++] = data;
-	}
-	fclose(RAM);
 	if (!strcmp(argv[1], "-c")) {
+		printf("-- COMPILER --\n");
 		sm1_compileFile(argv[2], argv[3], argv[4]);
-	} else if (!strcmp(argv[1], "-d")) {       // disassembler
+	} else
+	if (!strcmp(argv[1], "-d")) {       // disassembler
 		int add;
 		for (add = 0; add < RAM_SIZE; add++) {
 			uint16_t word = sm1_mem_get(add, vm);
 			printf("%04x %s\n", add, sm1_disassembly(word));
 		}
-	} else if (!strcmp(argv[1], "-a")){ // assembler
-			sm1_assembleFile(argv[2], argv[3]);
-		} else {                        // run program
-			printf("--START\n\n");
-			while (1) {
-				uint16_t word = sm1_mem_get(vm->pc, vm);
-				result = sm1_step(word, vm);
-#ifdef DEBUG
-				DBG_PRINT("step:%d\n", step_counter++);
-#endif
-				if ((vm->status & ST_SNDTN) && (vm->n_ext == 0)) {
-					printf("%c", (char) vm->t_ext);
-					vm->status &= ~ST_SNDTN;
-				}
+	} else
 
-				if (result != RC_OK) {
-					printf("\nEXCEPTION: %s\n", RET[result]);
-					exit(1);
-				}
-#ifdef KEYBOARD_ENTRY
-				if (kbhit()) {
-					vm->t_ext = getc(stdin);
-					vm->n_ext = 0;
-					vm->status |= ST_RCVTN;
-				}
+	if (!strcmp(argv[1], "-a")) { // assembler
+		sm1_assembleFile(argv[2], argv[3]);
+	}
+
+	else {                        // run program
+		printf("--RUN\n\n");
+#ifdef DEBUG
+		DBG_PRINT("LOAD...\n");
 #endif
-			}
+		FILE *RAM;
+		int addr = 0x0000;
+		if (argc == 2) {
+			printf("load(2): %s\n", argv[1]);
+			RAM = fopen(argv[1], "r");
+		} else {
+			printf("load: %s\n", argv[1]);
+			RAM = fopen(argv[2], "r");
 		}
+#ifdef DEBUG
+		if (RAM == NULL)
+			DBG_PRINT("...Can't load file!\n");
+#endif
+		uint16_t data;
+		while (fread(&data, sizeof(uint16_t), 1, RAM) == 1) {
+			vm->RAM[addr++] = data;
+		}
+		fclose(RAM);
+
+		while (1) {
+			uint16_t word = sm1_mem_get(vm->pc, vm);
+			result = sm1_step(word, vm);
+#ifdef DEBUG
+			DBG_PRINT("step:%d\n", step_counter++);
+#endif
+			if ((vm->status & ST_SNDTN) && (vm->n_ext == 0)) {
+				printf("%c", (char) vm->t_ext);
+				vm->status &= ~ST_SNDTN;
+			}
+
+			if (result != RC_OK) {
+				printf("\nEXCEPTION: %s\n", RET[result]);
+				exit(1);
+			}
+#ifdef KEYBOARD_ENTRY
+			if (kbhit()) {
+				vm->t_ext = getc(stdin);
+				vm->n_ext = 0;
+				vm->status |= ST_RCVTN;
+			}
+#endif
+		}
+	}
 }
