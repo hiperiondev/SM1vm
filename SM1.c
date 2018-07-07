@@ -28,10 +28,10 @@
 /////////////////////////////////////////////////////////////////////////////////////
 
 #include "SM1.h"
-#include "SM1_ass_dis_common.h"
+#include <SM1_common.h>
 #include "SM1_assembler.h"
 #include "SM1_disassembler.h"
-
+#include "SM1_compiler.h"
 
 uint8_t sm1_mem_put(uint16_t addr, uint16_t value, vm_t* vm) {
         vm->RAM[addr] = value;
@@ -100,7 +100,7 @@ int main(int argc, char **argv) {
         DBG_PRINT("START...\n");
 #endif
 	if (argc == 1) {
-		printf("\nUse: SM1 [-d|-a] file.in [file.out]\n");
+		printf("\nUse: SM1 [-d|-a|-c] file.in [file.out] [baseword]\n");
 		exit(1);
 	}
 
@@ -123,7 +123,9 @@ int main(int argc, char **argv) {
 		vm->RAM[addr++] = data;
 	}
 	fclose(RAM);
-	if (!strcmp(argv[1], "-d")) {       // disassembler
+	if (!strcmp(argv[1], "-c")) {
+		sm1_compileFile(argv[2], argv[3], argv[4]);
+	} else if (!strcmp(argv[1], "-d")) {       // disassembler
 		int add;
 		for (add = 0; add < RAM_SIZE; add++) {
 			uint16_t word = sm1_mem_get(add, vm);

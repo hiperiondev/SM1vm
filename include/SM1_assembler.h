@@ -33,30 +33,14 @@ int sm1_assembleFile(char* fileIn, char* fileOut);
 
 uint16_t sm1_assembleLine(char* line);
 
-int getWords(char *base, char target[10][20]) {
-	int n = 0, i, j = 0;
 
-	for (i = 0; 1; i++) {
-		if (base[i] != ' ') {
-			target[n][j++] = base[i];
-		} else {
-			target[n][j++] = '\0';
-			n++;
-			j = 0;
-		}
-		if (base[i] == '\0')
-			break;
-	}
-	return n;
-
-}
 
 int opCmp(char *op, char *value){
 	return strcmp(strlwr(op), value);
 }
 
 int directives(char* line, char* fileOut) {
-	char lineSplited[10][20], str[40] = "";
+	char lineSplited[40][80], str[40] = "";
 	int words = getWords(line, lineSplited);
 	char * hresult;
 
@@ -144,7 +128,7 @@ int directives(char* line, char* fileOut) {
 
 uint16_t sm1_assembleLine(char* line) {
 	int words, value, w;
-	char lineSplited[10][20], str[20];
+	char lineSplited[40][80], str[20];
 	char * hresult = NULL;
 	words = getWords(line, lineSplited);
 	value = (int) strtol(lineSplited[1], NULL, 16);

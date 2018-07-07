@@ -9,6 +9,23 @@
 #include <string.h>
 #define EP(x) [x] = #x  /* enum print */
 
+int getWords(char *base, char target[40][80]) {
+	int n = 0, i, j = 0;
+
+	for (i = 0; 1; i++) {
+		if (base[i] != ' ') {
+			target[n][j++] = base[i];
+		} else {
+			target[n][j++] = '\0';
+			n++;
+			j = 0;
+		}
+		if (base[i] == '\0')
+			break;
+	}
+	return n;
+}
+
 char* strlwr(char *str) {
 	unsigned char *p = (unsigned char *) str;
 	while (*p) {

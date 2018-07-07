@@ -27,29 +27,9 @@ int sm1_assembleFile(char* fileIn, char* fileOut);
 
 uint16_t sm1_assembleLine(char* line);
 
-int getWords(char *base, char target[40][80]) {
-	int n = 0, i, j = 0;
-
-	for (i = 0; 1; i++) {
-		if (base[i] != ' ') {
-			target[n][j++] = base[i];
-		} else {
-			target[n][j++] = '\0';
-			n++;
-			j = 0;
-		}
-		if (base[i] == '\0')
-			break;
-	}
-	return n;
-
-}
-
 uint16_t sm1_compileLine(char* line) {
-	int words;
-	char lineSplited[10][80], str[20];
-	char* hresult = NULL;
-	words = getWords(line, lineSplited);
+	//char lineSplited[10][80], str[20];
+	//int words = getWords(line, lineSplited);
 
 	return RC_OK;
 }
@@ -59,8 +39,8 @@ int sm1_compileFile(char* fileIn, char* fileOut, char* baseWords) {
 	FILE* fOut;
 	FILE* fWords;
 	char buf[80];
-	char lineSplited[40][80], baseWords[100][20];
-	char* hresult = NULL;
+	char lineSplited[40][80];
+    char bWords[100][20];
 	int bW=0;
 	remove(fileOut);
 
@@ -70,7 +50,7 @@ int sm1_compileFile(char* fileIn, char* fileOut, char* baseWords) {
 	}
 	while (fgets(buf, sizeof(buf), fWords) != NULL) {
 		if ((strcmp(strlwr(lineSplited[0]), ".word"))||(strcmp(strlwr(lineSplited[0]), ".macro")) == 0)
-			baseWords[bW++] = lineSplited[1];
+			strcpy(bWords[bW++],lineSplited[1]);
 	}
 	bW--;
 	fclose(fWords);
