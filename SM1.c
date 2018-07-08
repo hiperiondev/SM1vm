@@ -115,11 +115,9 @@ int main(int argc, char **argv) {
 			printf("%04x %s\n", add, sm1_disassembly(word));
 		}
 	} else
-
 	if (!strcmp(argv[1], "-a")) { // assembler
 		sm1_assembleFile(argv[2], argv[3]);
 	}
-
 	else {                        // run program
 		printf("--RUN\n\n");
 #ifdef DEBUG
