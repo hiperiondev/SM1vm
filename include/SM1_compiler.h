@@ -117,7 +117,34 @@ int doCol(char *compiledLine, struct Header *header) {
 				continue;
 			}
 		}
-
+		char *ptr; // literal
+		bool lit = false;
+		long res = strtol(lineSplited[n], &ptr, 10);
+		if (strcmp(ptr, lineSplited[n]))
+			lit = true;
+		else {
+			res = strtol(lineSplited[n], &ptr, 16);
+			if (strcmp(ptr, lineSplited[n]))
+				lit = true;
+		}
+		if (lit) {
+			if (res > 0xffff) {
+				printf("ERROR: literal too long\n");
+				return RC_ERROR;
+			}
+			char literal[5];
+			if (res < 0x7fff) {
+				sprintf(literal, "%04x", res);
+				strcat(compiledLine, "lit ");
+				strcat(compiledLine, literal);
+				strcat(compiledLine, "\n");
+			} else {
+				sprintf(literal, "%04x", res^0xffff);
+				strcat(compiledLine, "lit ");
+				strcat(compiledLine, literal);
+				strcat(compiledLine, "\nneg\n");
+			}
+		}
 		return RC_ERROR;
 	}
 
