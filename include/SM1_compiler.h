@@ -217,14 +217,14 @@ int sm1_compileFile(char* fileIn, char* fileOut, char* baseWords) {
 	while (fgets(buf, sizeof(buf), fIn) != NULL) {
 		buf[strlen(buf) - 1] = '\0';
 		if (strcmp(buf, "") != 0) {
-			printf("%03d %s\n",++cntLine, buf);
+			printf("%03d %s\n", ++cntLine, buf);
 			if (sm1_compileLine(buf, compiledLine, header) != RC_OK) {
 				printf("Compile Error\n");
 				return RC_ERROR;
 			}
+			printf("- compiled\n%s\n", compiledLine);
+			fprintf(fOut, "%s", compiledLine);
 		}
-		printf("compiled %s\n",compiledLine);
-		fprintf(fOut, "%s", compiledLine);
 	}
 	fclose(fIn);
 
