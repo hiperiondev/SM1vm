@@ -28,16 +28,17 @@ char bWords[100][20];
 int words;
 int bW = 0;
 int doStatus = 0;
-int addr;
+int addrC = 0;
 int headerCount = 0;
 struct Header {
-	uint8_t type; /* 0: col, 1: var, 2:const */
-	char name[40];
-	uint16_t cfa;
-	uint16_t value;
-	bool inmediate;
+	   int type; /* 0: col, 1: var, 2:const */
+	  char name[40];
+	   int cfa;
+	   int value;
+	  bool inmediate;
 	struct Header *next;
 };
+struct Header *header = NULL;
 
 int preOptimizer(FILE* fIn) {
 	return RC_OK;
@@ -47,11 +48,11 @@ int postOptimizer(FILE* fout) {
 	return RC_OK;
 }
 
-void doHeader(struct Header** head_ref, char *name, uint8_t type, bool inmediate) {
+void doHeader(struct Header** head_ref, char *name, int type, bool inmediate) {
 	struct Header* new_header = (struct Header*) malloc(sizeof(struct Header));
-	sprintf(new_header->name,"%s",name);
+	strcpy(new_header->name, name);
 	new_header->type      = type;
-	new_header->cfa       = addr;
+	new_header->cfa       = addrC;
 	new_header->inmediate = inmediate;
 	new_header->next      = (*head_ref);
 	(*head_ref)           = new_header;
@@ -66,6 +67,14 @@ struct Header* searchHeader(struct Header *header, char *name) {
 	return NULL;
 }
 
+void listHeaders(struct Header *node) {
+	printf("listHeader\n");
+	while (node != NULL) {
+		printf("--name: %s | cfa: %d\n", node->name, node->cfa);
+		node = node->next;
+	}
+}
+
 int searchBwords(char *word) {
 	for (int n = 0; n < bW; n++) {
 		if (!strcmp(bWords[n], word))
@@ -74,14 +83,14 @@ int searchBwords(char *word) {
 	return RC_ERROR;
 }
 
-int doCol(char *compiledLine, struct Header *header) {
+int doCol(char *compiledLine) {
 	doStatus = 1;
 
 	for (int n = 0; n <= words; n++) {
-		addr++;
+		addrC++;
 		if (!strcmp(lineSplited[n], ":")) {
 			doHeader(&header, lineSplited[++n], 0, false);
-			addr--;
+			addrC--;
 			strcpy(compiledLine,"");
 			continue;
 		}
@@ -100,7 +109,6 @@ int doCol(char *compiledLine, struct Header *header) {
 		if (search != NULL) {
 			if (search->cfa) {
 				char cfaStr[5];
-				printf("search header1\n");
 				sprintf(cfaStr, "%04x", search->cfa);
 				if (search->type == 0) { // colon definition
 					strcat(compiledLine, "cll ");
@@ -134,19 +142,18 @@ int doCol(char *compiledLine, struct Header *header) {
 				lit = true;
 		}
 		if (lit) {
-			printf ("lit: %d\n", (int)res);
 			if (res > 0xffff) {
 				printf("ERROR: literal too long\n");
 				return RC_ERROR;
 			}
 			char literal[9];
 			if (res < 0x8000) {
-				sprintf(literal, "%04x", (int)res);
+				sprintf(literal, "%04x", (short)res);
 				strcat(compiledLine, "lit ");
 				strcat(compiledLine, literal);
 				strcat(compiledLine, "\n");
 			} else {
-				sprintf(literal, "%04x", ~(int)res);
+				sprintf(literal, "%04x", ~(short)res);
 				strcat(compiledLine, "lit ");
 				strcat(compiledLine, literal);
 				strcat(compiledLine, "\nneg\n");
@@ -168,12 +175,12 @@ int doConst() {
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-int sm1_compileLine(char* line, char* compiledLine, struct Header *header) {
+int sm1_compileLine(char* line, char* compiledLine) {
 	words = getWords(line, lineSplited);
 
 	if ((doStatus == 1) || (!strcmp(lineSplited[0], ":"))
 			|| (!strcmp(lineSplited[0], ";"))) {
-		doCol(compiledLine, header);
+		doCol(compiledLine);
 		return RC_OK;
 	}
 
@@ -186,7 +193,6 @@ int sm1_compileFile(char* fileIn, char* fileOut, char* baseWords) {
 	FILE* fWords;
 	char buf[80];
 	char compiledLine[500];
-	struct Header *header = NULL;
 	remove(fileOut);
 
 	if ((fWords = fopen(baseWords, "r")) == NULL) {
@@ -218,12 +224,12 @@ int sm1_compileFile(char* fileIn, char* fileOut, char* baseWords) {
 		buf[strlen(buf) - 1] = '\0';
 		if (strcmp(buf, "") != 0) {
 			printf("%03d %s\n", ++cntLine, buf);
-			if (sm1_compileLine(buf, compiledLine, header) != RC_OK) {
+			if (sm1_compileLine(buf, compiledLine) != RC_OK) {
 				printf("Compile Error\n");
 				return RC_ERROR;
 			}
-			printf("- compiled\n%s\n", compiledLine);
 			fprintf(fOut, "%s", compiledLine);
+			strcpy(compiledLine, "");
 		}
 	}
 	fclose(fIn);
