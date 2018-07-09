@@ -49,6 +49,7 @@ int postOptimizer(FILE* fout) {
 
 void doHeader(struct Header** head_ref, char *name, uint8_t type, bool inmediate) {
 	struct Header* new_header = (struct Header*) malloc(sizeof(struct Header));
+	sprintf(new_header->name,"%s",name);
 	new_header->type      = type;
 	new_header->cfa       = addr;
 	new_header->inmediate = inmediate;
@@ -62,7 +63,7 @@ struct Header* searchHeader(struct Header *header, char *name) {
 			return header;
 		header = header->next;
 	}
-	return 0;
+	return NULL;
 }
 
 int searchBwords(char *word) {
@@ -81,9 +82,11 @@ int doCol(char *compiledLine, struct Header *header) {
 		if (!strcmp(lineSplited[n], ":")) {
 			doHeader(&header, lineSplited[++n], 0, false);
 			addr--;
+			strcpy(compiledLine,"");
 			continue;
 		}
 		if (!strcmp(lineSplited[n], ";")) {
+			strcpy(compiledLine,"");
 			strcat(compiledLine, "exit\n");
 			doStatus = 0;
 			break;
@@ -94,27 +97,30 @@ int doCol(char *compiledLine, struct Header *header) {
 			continue;
 		}
 		struct Header *search = searchHeader(header, lineSplited[n]);
-		if (search->cfa) {
-			char cfaStr[5];
-			sprintf(cfaStr, "%04x", search->cfa);
-			if (search->type == 0) { // colon definition
-				strcat(compiledLine, "cll ");
-				strcat(compiledLine, cfaStr);
-				strcat(compiledLine, "\n");
-				continue;
-			}
-			if (search->type == 1) { // variable
-				strcat(compiledLine, "lit ");
-				strcat(compiledLine, cfaStr);
-				strcat(compiledLine, "\n");
-				continue;
-			}
-			if (search->type == 2) { // constant
-				sprintf(cfaStr, "%04x", search->value);
-				strcat(compiledLine, "lit ");
-				strcat(compiledLine, cfaStr);
-				strcat(compiledLine, "\n");
-				continue;
+		if (search != NULL) {
+			if (search->cfa) {
+				char cfaStr[5];
+				printf("search header1\n");
+				sprintf(cfaStr, "%04x", search->cfa);
+				if (search->type == 0) { // colon definition
+					strcat(compiledLine, "cll ");
+					strcat(compiledLine, cfaStr);
+					strcat(compiledLine, "\n");
+					continue;
+				}
+				if (search->type == 1) { // variable
+					strcat(compiledLine, "lit ");
+					strcat(compiledLine, cfaStr);
+					strcat(compiledLine, "\n");
+					continue;
+				}
+				if (search->type == 2) { // constant
+					sprintf(cfaStr, "%04x", search->value);
+					strcat(compiledLine, "lit ");
+					strcat(compiledLine, cfaStr);
+					strcat(compiledLine, "\n");
+					continue;
+				}
 			}
 		}
 		char *ptr; // literal
@@ -128,24 +134,25 @@ int doCol(char *compiledLine, struct Header *header) {
 				lit = true;
 		}
 		if (lit) {
+			printf ("lit: %d\n", (int)res);
 			if (res > 0xffff) {
 				printf("ERROR: literal too long\n");
 				return RC_ERROR;
 			}
-			char literal[5];
-			if (res < 0x7fff) {
-				sprintf(literal, "%04x", res);
+			char literal[9];
+			if (res < 0x8000) {
+				sprintf(literal, "%04x", (int)res);
 				strcat(compiledLine, "lit ");
 				strcat(compiledLine, literal);
 				strcat(compiledLine, "\n");
 			} else {
-				sprintf(literal, "%04x", res^0xffff);
+				sprintf(literal, "%04x", ~(int)res);
 				strcat(compiledLine, "lit ");
 				strcat(compiledLine, literal);
 				strcat(compiledLine, "\nneg\n");
 			}
 		}
-		return RC_ERROR;
+		else return RC_ERROR;
 	}
 
 	return RC_OK;
@@ -206,14 +213,17 @@ int sm1_compileFile(char* fileIn, char* fileOut, char* baseWords) {
 		return RC_ERROR;
 	}
 
+	int cntLine = 0;
 	while (fgets(buf, sizeof(buf), fIn) != NULL) {
 		buf[strlen(buf) - 1] = '\0';
 		if (strcmp(buf, "") != 0) {
+			printf("%03d %s\n",++cntLine, buf);
 			if (sm1_compileLine(buf, compiledLine, header) != RC_OK) {
 				printf("Compile Error\n");
 				return RC_ERROR;
 			}
 		}
+		printf("compiled %s\n",compiledLine);
 		fprintf(fOut, "%s", compiledLine);
 	}
 	fclose(fIn);
