@@ -68,9 +68,13 @@ struct Header* searchHeader(struct Header *header, char *name) {
 }
 
 void listHeaders(struct Header *node) {
-	printf("listHeader\n");
+	char typeHeader[][10] = {"colonDef", "variable", "constant"};
+	printf("\nHeaders:\n");
 	while (node != NULL) {
-		printf("--name: %s | cfa: %d\n", node->name, node->cfa);
+		printf("[%s]\n", node->name);
+		printf("     type: %s\n", typeHeader[node->type]);
+		printf("      cfa: %04x\n", node->cfa);
+		printf("    inmed: %s\n\n", node->inmediate ? "true" : "false");
 		node = node->next;
 	}
 }
@@ -95,8 +99,7 @@ int doCol(char *compiledLine) {
 			continue;
 		}
 		if (!strcmp(lineSplited[n], ";")) {
-			strcpy(compiledLine, "");
-			strcat(compiledLine, "exit\n");
+			strcpy(compiledLine, "exit\n");
 			doStatus = 0;
 			break;
 		}
@@ -209,6 +212,7 @@ int sm1_compileFile(char* fileIn, char* fileOut, char* baseWords) {
 		perror("Error: can't open basewords-file");
 		return RC_ERROR;
 	}
+	printf("\n--- start base words %s\n", baseWords);
 	while (fgets(buf, sizeof(buf), fWords) != NULL) {
 		getWords(buf, lineSplited);
 		if ((!strcmp(strlwr(lineSplited[0]), ".word"))
@@ -218,7 +222,7 @@ int sm1_compileFile(char* fileIn, char* fileOut, char* baseWords) {
 		}
 	}
 	fclose(fWords);
-
+	printf("--- end base words %s\n", baseWords);
 	if ((fIn = fopen(fileIn, "r")) == NULL) {
 		perror("Error: can't open source-file");
 		return RC_ERROR;
@@ -229,6 +233,7 @@ int sm1_compileFile(char* fileIn, char* fileOut, char* baseWords) {
 		return RC_ERROR;
 	}
 
+	printf("\n--- start compiling %s\n", fileIn);
 	int cntLine = 0;
 	fprintf(fOut, "jmp 0000\n");
 	while (fgets(buf, sizeof(buf), fIn) != NULL) {
@@ -240,7 +245,7 @@ int sm1_compileFile(char* fileIn, char* fileOut, char* baseWords) {
 				return RC_ERROR;
 			}
 			fprintf(fOut, "%s", compiledLine);
-			printf("compiled\n%s", compiledLine);
+			//printf("compiled\n%s", compiledLine);
 			strcpy(compiledLine, "");
 		}
 	}
@@ -249,6 +254,7 @@ int sm1_compileFile(char* fileIn, char* fileOut, char* baseWords) {
 		printf("Compile Error: not main\n");
 		return RC_ERROR;
 	}
+	printf("--- end compiling %s\n", fileIn);
 	listHeaders(header);
 	fclose(fOut);
 	fOut = fopen(fileOut, "r+");
