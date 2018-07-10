@@ -25,11 +25,11 @@
 
 char lineSplited[40][80];
 char bWords[100][20];
-int words;
-int bW = 0;
-int doStatus = 0;
-int addrC = 0;
-int headerCount = 0;
+ int words;
+ int bW = 0;
+ int doStatus = 0;
+ int addrC = 0;
+ int headerCount = 0;
 struct Header {
 	   int type; /* 0: col, 1: var, 2:const */
 	  char name[40];
@@ -51,11 +51,11 @@ int postOptimizer(FILE* fout) {
 void doHeader(struct Header** head_ref, char *name, int type, bool inmediate) {
 	struct Header* new_header = (struct Header*) malloc(sizeof(struct Header));
 	strcpy(new_header->name, name);
-	new_header->type      = type;
-	new_header->cfa       = addrC;
+	     new_header->type = type;
+	      new_header->cfa = addrC;
 	new_header->inmediate = inmediate;
-	new_header->next      = (*head_ref);
-	(*head_ref)           = new_header;
+	     new_header->next = (*head_ref);
+	          (*head_ref) = new_header;
 }
 
 struct Header* searchHeader(struct Header *header, char *name) {
@@ -91,11 +91,11 @@ int doCol(char *compiledLine) {
 		if (!strcmp(lineSplited[n], ":")) {
 			doHeader(&header, lineSplited[++n], 0, false);
 			addrC--;
-			strcpy(compiledLine,"");
+			strcpy(compiledLine, "");
 			continue;
 		}
 		if (!strcmp(lineSplited[n], ";")) {
-			strcpy(compiledLine,"");
+			strcpy(compiledLine, "");
 			strcat(compiledLine, "exit\n");
 			doStatus = 0;
 			break;
@@ -148,28 +148,38 @@ int doCol(char *compiledLine) {
 			}
 			char literal[9];
 			if (res < 0x8000) {
-				sprintf(literal, "%04x", (short)res);
+				sprintf(literal, "%04x", (short) res);
 				strcat(compiledLine, "lit ");
 				strcat(compiledLine, literal);
 				strcat(compiledLine, "\n");
 			} else {
-				sprintf(literal, "%04x", ~(short)res);
+				sprintf(literal, "%04x", ~(short) res);
 				strcat(compiledLine, "lit ");
 				strcat(compiledLine, literal);
 				strcat(compiledLine, "\nneg\n");
+				addrC++;
 			}
-		}
-		else return RC_ERROR;
+		} else
+			return RC_ERROR;
 	}
-
 	return RC_OK;
 }
 
-int doVar() {
+int doVar(char *compiledLine, char *name) {
+	doHeader(&header, name, 1, false);
+	addrC--;
+	strcpy(compiledLine, "");
 	return RC_OK;
 }
 
-int doConst() {
+int doConst(char *compiledLine, char *name) {
+	doHeader(&header, name, 2, false);
+	addrC--;
+	strcpy(compiledLine, "");
+	return RC_OK;
+}
+
+short tick () {
 	return RC_OK;
 }
 
@@ -191,8 +201,8 @@ int sm1_compileFile(char* fileIn, char* fileOut, char* baseWords) {
 	FILE* fIn;
 	FILE* fOut;
 	FILE* fWords;
-	char buf[80];
-	char compiledLine[500];
+	 char buf[80];
+	 char compiledLine[500];
 	remove(fileOut);
 
 	if ((fWords = fopen(baseWords, "r")) == NULL) {
@@ -220,6 +230,7 @@ int sm1_compileFile(char* fileIn, char* fileOut, char* baseWords) {
 	}
 
 	int cntLine = 0;
+	fprintf(fOut, "jmp 0000\n");
 	while (fgets(buf, sizeof(buf), fIn) != NULL) {
 		buf[strlen(buf) - 1] = '\0';
 		if (strcmp(buf, "") != 0) {
@@ -229,10 +240,21 @@ int sm1_compileFile(char* fileIn, char* fileOut, char* baseWords) {
 				return RC_ERROR;
 			}
 			fprintf(fOut, "%s", compiledLine);
+			printf("compiled\n%s", compiledLine);
 			strcpy(compiledLine, "");
 		}
 	}
+	struct Header *search = searchHeader(header, "main");
+	if (search == NULL) {
+		printf("Compile Error: not main\n");
+		return RC_ERROR;
+	}
+	listHeaders(header);
+	fclose(fOut);
+	fOut = fopen(fileOut, "r+");
+	fprintf(fOut, "jmp %04x", search->cfa);
 	fclose(fIn);
+	fclose(fOut);
 
 	return RC_OK;
 }
