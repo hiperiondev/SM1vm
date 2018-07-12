@@ -30,6 +30,7 @@ char bWords[100][20];
  int doStatus = 0;
  int addrC = 0;
  int headerCount = 0;
+bool comment = false;
 struct Header {
 	   int type; /* 0: col, 1: var, 2:const */
 	  char name[40];
@@ -92,6 +93,11 @@ int doCol(char *compiledLine) {
 
 	for (int n = 0; n <= words; n++) {
 		addrC++;
+		if (!strcmp(lineSplited[n], ")")) comment = false;
+		if (!strcmp(lineSplited[n], "(")) comment = true;
+		if (comment) continue;
+		if (!strcmp(lineSplited[n], "\\")) return RC_OK;
+
 		if (!strcmp(lineSplited[n], ":")) {
 			doHeader(&header, lineSplited[++n], 0, false);
 			addrC--;
@@ -246,7 +252,7 @@ int sm1_compileFile(char* fileIn, char* fileOut, char* baseWords) {
 				return RC_ERROR;
 			}
 			fprintf(fOut, "%s", compiledLine);
-			printf("compiled\n%s", compiledLine);
+			//printf("compiled\n%s", compiledLine);
 			strcpy(compiledLine, "");
 		}
 	}
