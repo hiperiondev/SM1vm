@@ -35,7 +35,7 @@ struct Header {
 	  char name[40];
 	   int cfa;
 	   int value;
-	  bool inmediate;
+	  bool immediate;
 	struct Header *next;
 };
 struct Header *header = NULL;
@@ -48,12 +48,12 @@ int postOptimizer(FILE* fout) {
 	return RC_OK;
 }
 
-void doHeader(struct Header** head_ref, char *name, int type, bool inmediate) {
+void doHeader(struct Header** head_ref, char *name, int type, bool immediate) {
 	struct Header* new_header = (struct Header*) malloc(sizeof(struct Header));
 	strcpy(new_header->name, name);
 	     new_header->type = type;
 	      new_header->cfa = addrC;
-	new_header->inmediate = inmediate;
+	new_header->immediate = immediate;
 	     new_header->next = (*head_ref);
 	          (*head_ref) = new_header;
 }
@@ -74,7 +74,7 @@ void listHeaders(struct Header *node) {
 		printf("[%s]\n", node->name);
 		printf("     type: %s\n", typeHeader[node->type]);
 		printf("      cfa: %04x\n", node->cfa);
-		printf("    inmed: %s\n\n", node->inmediate ? "true" : "false");
+		printf("    immed: %s\n\n", node->immediate ? "true" : "false");
 		node = node->next;
 	}
 }
@@ -95,13 +95,31 @@ int doCol(char *compiledLine) {
 		if (!strcmp(lineSplited[n], ":")) {
 			doHeader(&header, lineSplited[++n], 0, false);
 			addrC--;
-			strcpy(compiledLine, "");
+			sprintf(compiledLine, ".comment doCol %s\n",lineSplited[n]);
 			continue;
 		}
 		if (!strcmp(lineSplited[n], ";")) {
-			strcpy(compiledLine, "exit\n");
+			strcat(compiledLine, "exit\n");
 			doStatus = 0;
-			break;
+			continue;
+		}
+		if (!strcmp(lineSplited[n], "variable")) {
+			doHeader(&header, lineSplited[++n], 1, false);
+			sprintf(compiledLine, "%s.comment doVar %s\ntop\n", compiledLine, lineSplited[n]);
+			continue;
+		}
+		if (!strcmp(lineSplited[n], "constant")) {
+			doHeader(&header, lineSplited[++n], 2, false);
+			sprintf(compiledLine, "%s.comment doConst %s\nlit %04x\nput d-1\ntop d-1\n",compiledLine, lineSplited[n], addrC);
+			continue;
+		}
+		if (!strcmp(lineSplited[n], "'")) {
+			struct Header *search = searchHeader(header, lineSplited[++n]);
+			if (search != NULL) {
+				sprintf(compiledLine, "lit %04x\n", search->cfa);
+				continue;
+			}
+			return RC_ERROR;
 		}
 		if (searchBwords(lineSplited[n]) == RC_OK) {
 			strcat(compiledLine, lineSplited[n]);
@@ -126,10 +144,9 @@ int doCol(char *compiledLine) {
 					continue;
 				}
 				if (search->type == 2) { // constant
-					sprintf(cfaStr, "%04x", search->value);
 					strcat(compiledLine, "lit ");
 					strcat(compiledLine, cfaStr);
-					strcat(compiledLine, "\n");
+					strcat(compiledLine, "\nget\n");
 					continue;
 				}
 			}
@@ -151,38 +168,22 @@ int doCol(char *compiledLine) {
 			}
 			char literal[9];
 			if (res < 0x8000) {
-				sprintf(literal, "%04x", (short) res);
+				sprintf(literal, "%04x", (short)res);
 				strcat(compiledLine, "lit ");
 				strcat(compiledLine, literal);
 				strcat(compiledLine, "\n");
+				continue;
 			} else {
-				sprintf(literal, "%04x", ~(short) res);
+				sprintf(literal, "%04x", ~(short)res);
 				strcat(compiledLine, "lit ");
 				strcat(compiledLine, literal);
 				strcat(compiledLine, "\nneg\n");
 				addrC++;
+				continue;
 			}
 		} else
 			return RC_ERROR;
 	}
-	return RC_OK;
-}
-
-int doVar(char *compiledLine, char *name) {
-	doHeader(&header, name, 1, false);
-	addrC--;
-	strcpy(compiledLine, "");
-	return RC_OK;
-}
-
-int doConst(char *compiledLine, char *name) {
-	doHeader(&header, name, 2, false);
-	addrC--;
-	strcpy(compiledLine, "");
-	return RC_OK;
-}
-
-short tick () {
 	return RC_OK;
 }
 
@@ -245,7 +246,7 @@ int sm1_compileFile(char* fileIn, char* fileOut, char* baseWords) {
 				return RC_ERROR;
 			}
 			fprintf(fOut, "%s", compiledLine);
-			//printf("compiled\n%s", compiledLine);
+			printf("compiled\n%s", compiledLine);
 			strcpy(compiledLine, "");
 		}
 	}
