@@ -28,7 +28,7 @@
 /////////////////////////////////////////////////////////////////////////////////////
 
 #include "SM1.h"
-#include "SM1_common.h"
+#include <utils/SM1_common.h>
 #include "SM1_assembler.h"
 #include "SM1_disassembler.h"
 #include "SM1_compiler.h"

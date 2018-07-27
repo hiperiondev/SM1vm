@@ -637,20 +637,8 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                         break;
                 case ALU_OP_NXT:
 #ifdef DEBUG
-                   DBG_PRINT("ALU_OP_SRG) ");
+                   DBG_PRINT("ALU_OP_NXT) ");
 #endif
-                   /*
-                      next
-	                       PC += CELL_SIZE;
-                           regA = GET(PC);
-                           POPRS(regB);
-                           regB--;
-                           if(regB < 0) PC += CELL_SIZE;
-                           else {
-                               PUSHRS(regB);
-                               PC = regA;
-                           }
-                    */
                    if (r == 0) {
                 	   vm->pc++;
                    }else {

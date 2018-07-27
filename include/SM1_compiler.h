@@ -3,7 +3,7 @@
  *
  *  License: GNU GPL V3
  *
- *  Created on: 3 Jul. 2018
+ *  Created on: 26 Jul. 2018
  *  Author: Emiliano Augusto Gonzalez (egonzalez.hiperion@gmail.com)
  */
 
@@ -15,7 +15,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include "utarray.h"
+#include <errno.h>
+#include <utils/utarray.h>
+#include <utils/switchs.h>
 
 #define UNDER_OVER
 //#define CARRY
@@ -24,46 +26,40 @@
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-  char lineSplited[40][80];
-  char bWords[100][20];
-   int words;
-   int bW = 0;
-   int doStatus = 0;
-   int addrC = 0;
-   int headerCount = 0;
-  bool comment = false;
+char bWords[100][20];
+int bW = 0;
+int addrC = 0;
+bool comment = false;
+int tupleCnt = 0;
+char tuple[3][20];
+
 struct Header {
-	   int type; /* 0: col, 1: var, 2:const */
-	  char name[40];
-	   int cfa;
-	   int value;
-	  bool immediate;
-	  bool compileOnly;
-  UT_array *headerReg;
-    struct Header *next;
+	int type; /* 0:create, 1: col, 2: var, 3:const */
+	char name[40];
+	int cfa;
+	bool immediate;
+	bool compileOnly;
+	bool included;
+	UT_array *headerReg;
+	struct Header *next;
 };
+
 struct Header *header = NULL;
 struct Header *lastHeader = NULL;
 
-int preOptimizer(FILE* fIn) {
-	return RC_OK;
-}
+/////////////////////////////////////////////////////////////////////////////////////
 
-int postOptimizer(FILE* fout) {
-	return RC_OK;
-}
-
-void doHeader(struct Header** head_ref, char *name, int type, bool immediate, bool compileOnly) {
+void doHeader(struct Header** head_ref, char *name) {
 	struct Header* new_header = (struct Header*) malloc(sizeof(struct Header));
-	utarray_new(new_header->headerReg,&ut_int_icd);
+	utarray_new(new_header->headerReg, &ut_int_icd);
 	strcpy(new_header->name, name);
-	       new_header->type = type;
-	        new_header->cfa = addrC;
-	  new_header->immediate = immediate;
-	new_header->compileOnly = compileOnly;
-	       new_header->next = (*head_ref);
-	             lastHeader = new_header;
-	            (*head_ref) = new_header;
+	new_header->type = 0;
+	new_header->immediate = false;
+	new_header->compileOnly = false;
+	new_header->cfa = 0;
+	new_header->next = (*head_ref);
+	lastHeader = new_header;
+	(*head_ref) = new_header;
 }
 
 struct Header* searchHeader(struct Header *header, char *name) {
@@ -76,13 +72,13 @@ struct Header* searchHeader(struct Header *header, char *name) {
 }
 
 void listHeaders(struct Header *node) {
-	char typeHeader[][10] = {"colonDef", "variable", "constant"};
+	char typeHeader[][10] = { "create", "colon", "variable", "constant" };
 	printf("\nHeaders:\n");
 	while (node != NULL) {
 		printf("[%s]\n", node->name);
 		printf("     type: %s\n", typeHeader[node->type]);
 		printf("      cfa: %04x\n", node->cfa);
-		printf("    immed: %s\n\n", node->immediate ? "true" : "false");
+		printf("    immed: %s\n", node->immediate ? "true" : "false");
 		printf(" compOnly: %s\n\n", node->compileOnly ? "true" : "false");
 		node = node->next;
 	}
@@ -96,187 +92,228 @@ int searchBwords(char *word) {
 	return RC_ERROR;
 }
 
-//////////////////////////////////////////////////////////////7
+int readTuple(FILE* fIn) {
+	while (tupleCnt < 3) {
+		strcpy(tuple[0], tuple[1]);
+		strcpy(tuple[1], tuple[2]);
+		if (fscanf(fIn, "%s", tuple[2]) == EOF) {
+			strcpy(tuple[2], "\000");
+			return 0;
+		}
+		tupleCnt++;
 
-void doVar(char *compiledLine, int n) {
-	doHeader(&header, lineSplited[n+1], 1, false, false);
-	//sprintf(compiledLine, "%s.comment doVar %s\n", compiledLine, lineSplited[n]);
-}
-
-void doConst(char *compiledLine, int n, int value){
-	doHeader(&header, lineSplited[n+2], 2, false, false);
-	utarray_push_back(lastHeader->headerReg, &value);
-}
-
-int doTick(char *compiledLine, int n) {
-	struct Header *search = searchHeader(header, lineSplited[n+1]);
-	if (search != NULL) {
-		sprintf(compiledLine, "lit %04x\n", search->cfa);
-		return RC_OK;
 	}
-	return RC_ERROR;
-}
-
-void doComma(int res){
-	utarray_push_back(lastHeader->headerReg, &res);
-}
-
-void doLit(int res, char* resultStr) {
-	char literal[9];
-	if (res < 0x8000) {
-		sprintf(literal, "%04x", (short) res);
-		strcat(resultStr, "lit ");
-		strcat(resultStr, literal);
-		strcat(resultStr, "\n");
-	} else {
-		sprintf(literal, "%04x", ~(short) res);
-		strcat(resultStr, "lit ");
-		strcat(resultStr, literal);
-		strcat(resultStr, "\nneg\n");
-	}
-
-}
-//////////////////////////////////////////////////////////////7
-
-int doComp(char *compiledLine) {
-	doStatus = 1;
-
-	for (int n = 0; n <= words; n++) {
-		addrC++;
-		// comments
-		if (!strcmp(lineSplited[n], ")")) comment = false;
-		if (!strcmp(lineSplited[n], "(")) comment = true;
-		if (comment) continue;
-		if (!strcmp(lineSplited[n], "\\")) return RC_OK;
-
-		// colon
-		if (!strcmp(lineSplited[n], ":")) {
-			doHeader(&header, lineSplited[++n], 0, false, false);
-			addrC--;
-			sprintf(compiledLine, ".comment doCol %s\n",lineSplited[n]);
-			continue;
-		}
-		// end colon
-		if (!strcmp(lineSplited[n], ";")) {
-			strcat(compiledLine, "exit\n");
-			doStatus = 0;
-			continue;
-		}
-		// variable
-		if (!strcmp(lineSplited[n], "variable")) {
-			doVar(compiledLine, n);
-			n++;
-			continue;
-		}
-		// constant
-		if (!strcmp(lineSplited[n], "constant")) {
-			printf("ERROR: constant not initialized\n");
-			return RC_ERROR;
-		}
-		// tick
-		if (!strcmp(lineSplited[n], "'")) {
-			if (doTick(compiledLine, n) == RC_OK) {
-				n++;
-				continue;
-			}
-			return RC_ERROR;
-		}
-		if (!strcmp(lineSplited[n], ",")) {
-			doComma(0);
-		}
-		// base words
-		if (searchBwords(lineSplited[n]) == RC_OK) {
-			strcat(compiledLine, lineSplited[n]);
-			strcat(compiledLine, "\n");
-			continue;
-		}
-		// headers
-		struct Header *search = searchHeader(header, lineSplited[n]);
-		if (search != NULL) {
-			if (search->cfa) {
-				char cfaStr[5];
-				sprintf(cfaStr, "%04x", search->cfa);
-				if (search->type == 0) { // colon definition
-					strcat(compiledLine, "cll ");
-					strcat(compiledLine, cfaStr);
-					strcat(compiledLine, "\n");
-					continue;
-				}
-				if (search->type == 1) { // variable ( .equ position )
-					strcat(compiledLine, "lit var_");
-					strcat(compiledLine, lineSplited[n]);
-					strcat(compiledLine, "\n");
-
-					continue;
-				}
-				if (search->type == 2) { // constant
-					int value = *(int*)utarray_front(search->headerReg);
-					char resultStr[30];
-					doLit(value,resultStr);
-					strcat(compiledLine, "lit ");
-					strcat(compiledLine, resultStr);
-					continue;
-				}
-			}
-		}
-		// literal
-		char *ptr;
-		bool lit = false;
-		long res = strtol(lineSplited[n], &ptr, 10);
-		if (strcmp(ptr, lineSplited[n]))
-			lit = true;
-		else {
-			res = strtol(lineSplited[n], &ptr, 16);
-			if (strcmp(ptr, lineSplited[n]))
-				lit = true;
-		}
-		if (lit) {
-			if (res > 0xffff) {
-				printf("ERROR: literal too long\n");
-				return RC_ERROR;
-			}
-			if (!strcmp(lineSplited[n + 1], "constant")) { // initialize constant
-				doConst(compiledLine, n, (short) res);
-				n++;
-				n++;
-				continue;
-			}
-			if (!strcmp(lineSplited[n + 1], ",")) { // comma with value
-				doComma(res);
-				n++;
-				continue;
-			}
-			char resultStr[30];
-			doLit(res, resultStr);
-			strcat(compiledLine, resultStr);
-			if (res > 0x7FFF) addrC++;
-			continue;
-		} else
-			return RC_ERROR;
-	}
-	return RC_OK;
+	return 1;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-int sm1_compileLine(char* line, char* compiledLine) {
-	words = getWords(line, lineSplited);
+void doCreate(char *name) {
+	doHeader(&header, name);
+}
 
-	if ((doStatus == 1) || (!strcmp(lineSplited[0], ":"))
-			|| (!strcmp(lineSplited[0], ";"))) {
-		doComp(compiledLine);
-		return RC_OK;
+void doCol(char *name) {
+	doHeader(&header, name);
+	lastHeader->type = 1;
+	lastHeader->cfa = addrC;
+}
+
+void doVar(char *name) {
+	doHeader(&header, name);
+	lastHeader->type = 2;
+}
+
+void doConst(char *name, int value) {
+	doHeader(&header, name);
+	lastHeader->type = 3;
+	utarray_push_back(lastHeader->headerReg, &value);
+}
+
+char* doTick(char *word) {
+	static char resultStr[50];
+	struct Header *search = searchHeader(header, word);
+	if (search != NULL) {
+		sprintf(resultStr, "lit %s", word);
+		return resultStr;
+	}
+	return "!!ERROR!!";
+}
+void doAllot(int qty) {
+	int val = 0;
+	for (int n = 0; n < qty; n++)
+		utarray_push_back(lastHeader->headerReg, &val);
+}
+
+void doComma(int res) {
+	utarray_push_back(lastHeader->headerReg, &res);
+}
+
+char* doLit(int number) {
+	if ((number > 0xffff) || (number < 0))
+		return "!!ERROR!!";
+	char literal[9];
+	static char resultStr[20];
+	if (number < 0x8000) {
+		sprintf(literal, "%04x", (short) number);
+		sprintf(resultStr, "lit ");
+		strcat(resultStr, literal);
+	} else {
+		sprintf(literal, "%04x", ~(short) number);
+		sprintf(resultStr, "lit ");
+		strcat(resultStr, literal);
+		strcat(resultStr, "\nneg");
+	}
+	return resultStr;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////
+
+char* compileTuple() {
+	static char compiledTuple[50];
+	strcpy(compiledTuple, "");
+	static bool comment = false;
+
+	switchs(tuple[0])
+			{
+			cases("(")
+				comment = true;
+				--tupleCnt;
+				break;
+			cases(")")
+				comment = false;
+				--tupleCnt;
+				break;
+			cases(":")
+				doCol(tuple[1]);
+				sprintf(compiledTuple, ".comment doCol %s(%04x)", tuple[1], addrC);
+				tupleCnt -= 2;
+				break;
+			cases(";")
+				strcpy(compiledTuple, "exit");
+				--tupleCnt;
+				break;
+			cases("variable")
+				sprintf(compiledTuple, ".comment doVar %s", tuple[1]);
+				doVar(tuple[1]);
+				tupleCnt -= 2;
+				break;
+			cases("constant")
+				printf("ERROR: constant not initialized\n");
+				strcpy(compiledTuple, "!!ERROR!!");
+				--tupleCnt;
+				break;
+			cases("'")
+				strcpy(compiledTuple, doTick(tuple[1]));
+				if (!strcmp(compiledTuple, "!!ERROR!!")) {
+					printf("ERROR: doTick - word not found\n");
+				}
+				--tupleCnt;
+				break;
+			cases(",")
+			cases("c,")
+				printf("ERROR: allot not initialized\n");
+				strcpy(compiledTuple, "!!ERROR!!");
+				--tupleCnt;
+				break;
+			cases("allot")
+			    printf("ERROR: allot not initialized\n");
+				strcpy(compiledTuple, "!!ERROR!!");
+				--tupleCnt;
+			    break;
+			defaults
+			}switchs_end;
+
+	if (comment || (tupleCnt < 3))
+		return compiledTuple;
+
+	// base words
+	if (searchBwords(tuple[0]) == RC_OK) {
+		strcat(compiledTuple, tuple[0]);
+		--tupleCnt;
+		return compiledTuple;
 	}
 
-	return RC_OK;
+	// headers
+	struct Header *search = searchHeader(header, tuple[0]);
+	if (search != NULL) {
+		// colon definition
+		if (search->type == 1) { // colon definition
+			char cfaStr[5];
+			sprintf(cfaStr, "%04x", search->cfa);
+			strcpy(compiledTuple, "cll ");
+			strcat(compiledTuple, cfaStr);
+			--tupleCnt;
+			return compiledTuple;
+		}
+		// variable ( .equ position )
+		if (search->type == 2) {
+			strcpy(compiledTuple, "lit ");
+			strcat(compiledTuple, tuple[0]);
+			--tupleCnt;
+			return compiledTuple;
+		}
+		// constant
+		if (search->type == 3) {
+			int value = *(int*) utarray_front(search->headerReg);
+			strcpy(compiledTuple, doLit(value));
+			--tupleCnt;
+			return compiledTuple;
+		}
+	}
+
+	// literal
+	char *ptr;
+	bool lit = false;
+	int res = (int)strtol(tuple[0], &ptr, 10);
+	if(tuple[0] != ptr){
+		lit = true;
+	}
+	/*
+	else {
+		res = strtol(tuple[0], &ptr, 16);
+		if(tuple[0] != ptr){
+			lit = true;
+		}
+	}
+	*/
+	if (lit) {
+		switchs(tuple[1])
+				{
+				cases("constant")
+					doConst(tuple[2], res);
+					tupleCnt -= 3;
+					sprintf(compiledTuple, ".comment doConst %s (%04x)", tuple[1], res);
+					break;
+				cases(",")
+					doComma(res);
+					tupleCnt -= 2;
+					break;
+				cases("c,")
+					doComma((uint8_t) res);
+					tupleCnt -= 2;
+					break;
+				defaults
+				}switchs_end;
+		if (tupleCnt < 3)
+			return compiledTuple;
+		--tupleCnt;
+	printf("endLit\n");
+		return doLit(res);
+	}
+
+	return "!!ERROR!!";
 }
+
+/////////////////////////////////////////////////////////////////////////////////////
 
 int sm1_compileFile(char* fileIn, char* fileOut, char* baseWords) {
 	FILE* fIn;
 	FILE* fOut;
 	FILE* fWords;
-	 char buf[80];
-	 char compiledLine[500];
+	char buf[80];
+	char lineSplited[40][80];
+	char compiled[50];
 	remove(fileOut);
 
 	if ((fWords = fopen(baseWords, "r")) == NULL) {
@@ -304,34 +341,38 @@ int sm1_compileFile(char* fileIn, char* fileOut, char* baseWords) {
 		return RC_ERROR;
 	}
 
+    //////////////////////////////////////
+
 	printf("\n--- start compiling %s\n", fileIn);
-	int cntLine = 0;
-	fprintf(fOut, "jmp 0000\n");
-	while (fgets(buf, sizeof(buf), fIn) != NULL) {
-		buf[strlen(buf) - 1] = '\0';
-		if (strcmp(buf, "") != 0) {
-			printf("%03d %s\n", ++cntLine, buf);
-			if (sm1_compileLine(buf, compiledLine) != RC_OK) {
-				printf("Compile Error\n");
-				return RC_ERROR;
-			}
-			fprintf(fOut, "%s", compiledLine);
-			//printf("compiled\n%s", compiledLine);
-			strcpy(compiledLine, "");
+	fprintf(fOut, ".include %s.map\njmp main\n", fileOut);
+
+	int res;
+	do {
+		++addrC;
+		res = readTuple(fIn);
+		strcpy(compiled, compileTuple());
+		fprintf(fOut, "%s\n", compiled);
+		if (!strcmp(strlwr(compiled), "!!error!!")) {
+			printf("ERROR: compiler error\n");
+			exit(1);
 		}
-	}
+		printf ("%s \n",compiled);
+	} while (res);
+
 	struct Header *search = searchHeader(header, "main");
 	if (search == NULL) {
 		printf("Compile Error: not main\n");
 		return RC_ERROR;
 	}
 	printf("--- end compiling %s\n", fileIn);
+
+	///////////////////////////////////////
+
 	listHeaders(header);
-	fclose(fOut);
-	fOut = fopen(fileOut, "r+");
-	fprintf(fOut, "jmp %04x", search->cfa);
 	fclose(fIn);
 	fclose(fOut);
+
+	// TODO: compile dictionary map
 
 	return RC_OK;
 }

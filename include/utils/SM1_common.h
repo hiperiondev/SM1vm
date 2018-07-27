@@ -48,9 +48,11 @@ char *removeSubStr(char *str, const char *substr) {
 }
 
 void removePrefix(char *str) {
-	strcpy(str, removeSubStr(str, "ALU_"));
-	strcpy(str, removeSubStr(str, "OP_"));
-	strcpy(str, removeSubStr(str, "F_"));
+	char strLocal[20];
+	strcpy(strLocal, removeSubStr(str, "ALU_"));
+	strcpy(strLocal, removeSubStr(str, "OP_"));
+	strcpy(strLocal, removeSubStr(str, "F_"));
+	strcpy(str, strLocal);
 }
 
 const char* ALU[] = {
