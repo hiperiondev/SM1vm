@@ -29,6 +29,9 @@
 char bWords[100][20];
 int bW = 0;
 int addrC = 0;
+int ifCnt = 1;
+int ifStk[20];
+int ifStkP = -1;
 bool comment = false;
 int tupleCnt = 0;
 char tuple[3][20];
@@ -79,7 +82,8 @@ void listHeaders(struct Header *node) {
 		printf("     type: %s\n", typeHeader[node->type]);
 		printf("      cfa: %04x\n", node->cfa);
 		printf("    immed: %s\n", node->immediate ? "true" : "false");
-		printf(" compOnly: %s\n\n", node->compileOnly ? "true" : "false");
+		printf(" compOnly: %s\n", node->compileOnly ? "true" : "false");
+		printf("      Reg: %d\n\n", utarray_len(node->headerReg));
 		node = node->next;
 	}
 }
@@ -119,8 +123,10 @@ void doCol(char *name) {
 }
 
 void doVar(char *name) {
+	int value = 0;
 	doHeader(&header, name);
 	lastHeader->type = 2;
+	utarray_push_back(lastHeader->headerReg, &value);
 }
 
 void doConst(char *name, int value) {
@@ -192,6 +198,10 @@ char* compileTuple() {
 			cases(";")
 				strcpy(compiledTuple, "exit");
 				--tupleCnt;
+				if (!strcmp(tuple[1], "immediate")) {
+					lastHeader->immediate = true;
+					--tupleCnt;
+				}
 				break;
 			cases("variable")
 				sprintf(compiledTuple, ".comment doVar %s", tuple[1]);
@@ -221,6 +231,39 @@ char* compileTuple() {
 				strcpy(compiledTuple, "!!ERROR!!");
 				--tupleCnt;
 			    break;
+			cases("if")
+			    sprintf(compiledTuple, "jmz if_%04x", ifCnt);
+			    ifStkP++;
+			    ifStk[ifStkP] = ifCnt++;
+			    --tupleCnt;
+			    break;
+			cases("then")
+			    if (ifStkP == -1) {
+			    	printf("ERROR: then without if\n");
+			    	strcpy(compiledTuple, "!!ERROR!!");
+			    	--tupleCnt;
+			    	break;
+			    }
+			    char elseC[6];
+			    strcpy(elseC, "");
+			    if (ifStk[ifStkP] == 0) {
+			    	strcpy(elseC, "_else");
+			    	ifStkP--;
+			    }
+				sprintf(compiledTuple, ".label if_%04x%s", ifStk[ifStkP--], elseC);
+				--tupleCnt;
+				break;
+			cases("else")
+				if (ifStkP == -1) {
+					printf("ERROR: else without if\n");
+					strcpy(compiledTuple, "!!ERROR!!");
+					--tupleCnt;
+					break;
+				}
+				sprintf(compiledTuple, "jmp if_%04x_else\n.label if_%04x", ifStk[ifStkP], ifStk[ifStkP]);
+				ifStk[++ifStkP] = 0;
+				--tupleCnt;
+				break;
 			defaults
 			}switchs_end;
 
@@ -298,7 +341,6 @@ char* compileTuple() {
 		if (tupleCnt < 3)
 			return compiledTuple;
 		--tupleCnt;
-	printf("endLit\n");
 		return doLit(res);
 	}
 
@@ -344,7 +386,7 @@ int sm1_compileFile(char* fileIn, char* fileOut, char* baseWords) {
     //////////////////////////////////////
 
 	printf("\n--- start compiling %s\n", fileIn);
-	fprintf(fOut, ".include %s.map\njmp main\n", fileOut);
+	fprintf(fOut, ".include %s.map\n\njmp main\n\n", fileOut);
 
 	int res;
 	do {
