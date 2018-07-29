@@ -104,7 +104,7 @@ int directives(char* line, char* fileOut) {
 		}
 		add_str_by_str(word, lineSplited[1], str);
 		get_str_by_str(word, lineSplited[1], &hresult);
-		printf(".word %s %s\n", lineSplited[1], hresult);
+		printf(".word %s (%s)\n", lineSplited[1], hresult);
 		return 0;
 	}
 	if (opCmp(lineSplited[0], ".label") == 0) {
@@ -144,8 +144,10 @@ uint16_t sm1_assembleLine(char* line) {
 	get_str_by_str(equ, lineSplited[1], &hresult);
 	if (hresult == NULL)
 		get_str_by_str(label, lineSplited[1], &hresult);
+
 	if (hresult != NULL)
 		value = (int) strtol(hresult, NULL, 16);
+
 
 	if (opCmp(lineSplited[0], "lit") == 0) {
 		if (value < 32768)
@@ -177,6 +179,7 @@ uint16_t sm1_assembleLine(char* line) {
 	for (int w = 0; w < 32; w++) {
 		strcpy(str, ALU[w]);
 		removePrefix(str);
+
 		if (opCmp(str, lineSplited[0]) == 0) {
 			value = w << 8;
 			break;
@@ -187,7 +190,7 @@ uint16_t sm1_assembleLine(char* line) {
 		printf("ASSEMBLER ERROR: unknown mnemonic\n");
 		exit(1);
 	}
-
+	printf("         |> %s\n", hresult);
 	value |= 0x6000;
 
 	int pos = 1, fl = 0;

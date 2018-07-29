@@ -9,9 +9,34 @@
 #include <string.h>
 #define EP(x) [x] = #x  /* enum print */
 
+void trim(char * s) {
+    char * p = s;
+    int l = strlen(p);
+
+    while(isspace(p[l - 1])) p[--l] = 0;
+    while(* p && isspace(* p)) ++p, --l;
+
+    memmove(s, p, l + 1);
+}
+
+void simplifyWhiteSpace(char * src) {
+	char *dst = src;
+
+	for (; *src; ++dst, ++src) {
+		*dst = *src;
+		if (isspace(*src))
+			while (isspace(*(src + 1)))
+				++src;
+	}
+
+	*dst = '\0';
+}
+
 int getWords(char *base, char target[40][80]) {
 	int n = 0, i, j = 0;
 
+	trim(base);
+	simplifyWhiteSpace(base);
 	for (i = 0; 1; i++) {
 		if (base[i] != ' ') {
 			target[n][j++] = base[i];
@@ -23,6 +48,7 @@ int getWords(char *base, char target[40][80]) {
 		if (base[i] == '\0')
 			break;
 	}
+
 	return n;
 }
 
