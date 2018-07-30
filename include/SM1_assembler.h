@@ -26,6 +26,8 @@ int macroIndex = 0;
 char macroName[40] = "";
 int addr = -1;
 int isStr = 0;
+int aluPrecedent;
+bool isAlu = false;
 char stringResult[512];
 jwHashTable*   equ = NULL;
 jwHashTable*  word = NULL;
@@ -361,8 +363,25 @@ int sm1_assembleFile(char* fileIn, char* fileOut) {
 				if (isStr > 0) {
 					addr += isStr;
 					fprintf(fOut, stringResult);
-				} else
+				} else {
+					if (asmResult & OP_ALU) {
+						if ((asmResult == 0x6010) && (isAlu)) {
+							fprintf(fOut, "%04x\n", aluPrecedent | ALU_F_R2P);
+							isAlu = false;
+							printf("            ^_  compress R2P\n");
+							continue;
+						}
+						if (asmResult == 0x6010) {
+							fprintf(fOut, "%04x\n", asmResult);
+							continue;
+						}
+						aluPrecedent = asmResult;
+						isAlu = true;
+						continue;
+					}
+					isAlu = false;
 					fprintf(fOut, "%04x\n", asmResult);
+				}
 			}
 		}
 	}
