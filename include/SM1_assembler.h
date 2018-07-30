@@ -294,7 +294,7 @@ uint16_t sm1_assembleLine(char* line, bool pass) {
 				break;
 			}
 		}
-
+		pos++;
 		for (w = 0; w < 6; w++) {
 			strcpy(str, DELTA[w]);
 			removePrefix(str);
@@ -365,7 +365,8 @@ int sm1_assembleFile(char* fileIn, char* fileOut) {
 					fprintf(fOut, stringResult);
 				} else {
 					if (asmResult & OP_ALU) {
-						if ((asmResult == 0x6010) && (isAlu)) {
+						if ((asmResult == 0x6018)
+								&& (isAlu)  && !(aluPrecedent & 0x1C)) {
 							fprintf(fOut, "%04x\n", aluPrecedent | ALU_F_R2P);
 							isAlu = false;
 							printf("            ^_  compress R2P\n");
