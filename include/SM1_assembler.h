@@ -119,13 +119,33 @@ int directives(char* line, char* fileOut, bool pass) {
 	}
 	if (opCmp(lineSplited[0], ".label") == 0) {
 		sprintf(str, "%04x", addr + 1);
-		if (pass) {
+		if (pass)
 			add_str_by_str(label, lineSplited[1], str);
-		}
-			get_str_by_str(label, lineSplited[1], &hresult);
-			printf(".label %s (%s)\n", lineSplited[1], hresult);
-
+		get_str_by_str(label, lineSplited[1], &hresult);
+		printf(".label %s (%s)\n", lineSplited[1], hresult);
 		return 0;
+	}
+	if (opCmp(lineSplited[0], ".address") == 0) {
+		char *ptr;
+		int value;
+		if (opCmp(lineSplited[1], "offset") == 0) {
+			value = (int) strtol(lineSplited[2], &ptr, 10);
+			if (lineSplited[2] == ptr) {
+				perror("Error: value not decimal integer");
+				return RC_ERROR;
+			}
+			addr += value;
+			return 0;
+		} else {
+			value = (int) strtol(lineSplited[1], &ptr, 10);
+			if (lineSplited[1] == ptr) {
+				perror("Error: value not decimal integer");
+				return RC_ERROR;
+			}
+			addr = value;
+			return 0;
+		}
+
 	}
 	if (macroIndex) {
 		sprintf(str, "%d", macroIndex++);
