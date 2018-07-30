@@ -51,13 +51,14 @@ These conditional functions are:
 ```
 NOTE: Directives can't be used inside macro.
 ## FORTH
+**Compiler:
 ```
 [TODO]
 ```
 
 ## Usage example
 ```
-SM1 [-d|-a] file.in [file.out]
+SM1 [-d|-a|-c] file.in [file.out] [basewords] [ramSize]
 ```
 
 _For more examples and usage, please refer to the [Wiki][wiki]._

@@ -100,15 +100,15 @@ int main(int argc, char **argv) {
     DBG_PRINT("START...\n");
 #endif
 	if (argc == 1) {
-		printf("\nUse: SM1 [-d|-a|-c] file.in [file.out] [baseword]\n");
+		printf("\nUse: SM1 [-d|-a|-c] file.in [file.out] [basewords] [ramSize]\n");
 		exit(1);
 	}
 
 	if (!strcmp(argv[1], "-c")) {
 		printf("-- COMPILER --\n");
-		sm1_compileFile(argv[2], argv[3], argv[4]);
+		sm1_compileFile(argv[2], argv[3], argv[4], argv[5]);
 	} else
-	if (!strcmp(argv[1], "-d")) {       // disassembler
+	if (!strcmp(argv[1], "-d")) { // disassembler
 		int add;
 		for (add = 0; add < RAM_SIZE; add++) {
 			uint16_t word = sm1_mem_get(add, vm);

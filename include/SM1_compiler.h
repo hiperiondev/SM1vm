@@ -193,6 +193,13 @@ char* compileTuple() {
 			cases(":")
 				doCol(tuple[1]);
 				sprintf(compiledTuple, ".label doCol_%s", tuple[1]);
+				lastHeader->included = true;
+				tupleCnt -= 2;
+				break;
+			cases("*:")
+				doCol(tuple[1]);
+				sprintf(compiledTuple, ".label doCol_%s", tuple[1]);
+				lastHeader->included = false;
 				tupleCnt -= 2;
 				break;
 			cases(";")
@@ -209,6 +216,7 @@ char* compileTuple() {
 				tupleCnt -= 2;
 				break;
 			cases("constant")
+			cases("*constant")
 				printf("ERROR: constant not initialized\n");
 				strcpy(compiledTuple, "!!ERROR!!");
 				--tupleCnt;
@@ -325,8 +333,16 @@ char* compileTuple() {
 				{
 				cases("constant")
 					doConst(tuple[2], res);
+				    lastHeader->included = true;
 					tupleCnt -= 3;
 					sprintf(compiledTuple, ".comment doConst %s (%04x)", tuple[1], res);
+					break;
+			    cases("*constant")
+					doConst(tuple[2], res);
+					lastHeader->included = false;
+					tupleCnt -= 3;
+					sprintf(compiledTuple, ".comment doConst %s (%04x)",
+							tuple[1], res);
 					break;
 				cases(",")
 					doComma(res);
@@ -349,7 +365,7 @@ char* compileTuple() {
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-int sm1_compileFile(char* fileIn, char* fileOut, char* baseWords) {
+int sm1_compileFile(char* fileIn, char* fileOut, char* baseWords, char* ramSizeChar) {
 	FILE* fIn;
 	FILE* fOut;
 	FILE* fWords;
@@ -357,6 +373,13 @@ int sm1_compileFile(char* fileIn, char* fileOut, char* baseWords) {
 	char lineSplited[40][80];
 	char compiled[50];
 	remove(fileOut);
+
+	char *ptr;
+	int ramSize = (int) strtol(ramSizeChar, &ptr, 10);
+	if (ramSizeChar == ptr) {
+		perror("Error: ramSize not integer");
+		return RC_ERROR;
+	}
 
 	if ((fIn = fopen(fileIn, "r")) == NULL) {
 		perror("Error: can't open source-file");
@@ -391,20 +414,24 @@ int sm1_compileFile(char* fileIn, char* fileOut, char* baseWords) {
 
     //////////////////////////////////////
 
-	printf("\n--- start compiling %s\n", fileIn);
+	printf("\n--- start compiling %s (ramSize = %d)\n", fileIn, ramSize);
 	fprintf(fOut, "jmp docol_main\n");
 
 	int res;
 	do {
 		++addrC;
+		if (addrC > ramSize) {
+			printf("ERROR: ramSize exceeded!\n");
+			exit(1);
+		}
 		res = readTuple(fIn);
 		strcpy(compiled, compileTuple());
-		if (strcmp(strlwr(compiled), "")) fprintf(fOut, "%s\n", compiled);
+		if (strcmp(compiled, "")) fprintf(fOut, "%s\n", compiled);
 		if (!strcmp(strlwr(compiled), "!!error!!")) {
 			printf("ERROR: compiler error\n");
 			exit(1);
 		}
-		if (strcmp(strlwr(compiled), "")) printf ("%s \n",compiled);
+		if (strcmp(compiled, "")) printf ("%s \n",compiled);
 	} while (res);
 
 	struct Header *search = searchHeader(header, "main");
