@@ -48,10 +48,11 @@ These conditional functions are:
 .comment: Comment line.
 .org:     Set the location counter to an absolute value. Only accept decimal number. 
           If number is preceded by "offset" location counter is incremented by this value. 
+.data:    Insert uint_16 value. 
 ```
 NOTE: Directives can't be used inside macro.
 ## FORTH
-**Compiler:
+ **Compiler:
 ```
 [TODO]
 ```

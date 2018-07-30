@@ -226,6 +226,13 @@ uint16_t sm1_assembleLine(char* line, bool pass) {
 		exit(1);
 	}
 
+	if (opCmp(lineSplited[0], ".data") == 0) {
+		if (value < 65535)
+			return value;
+		printf("ASSEMBLER ERROR: .data too long\n");
+		exit(1);
+	}
+
 	value = 0xffff;
 	for (int w = 0; w < 32; w++) {
 		strcpy(str, ALU[w]);
