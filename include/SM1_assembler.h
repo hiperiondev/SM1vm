@@ -26,8 +26,9 @@ int macroIndex = 0;
 char macroName[40] = "";
 int addr = -1;
 int isStr = 0;
-int aluPrecedent;
+int aluPrecedent[2];
 bool isAlu = false;
+bool isCall = false;
 char stringResult[512];
 jwHashTable*   equ = NULL;
 jwHashTable*  word = NULL;
@@ -364,23 +365,42 @@ int sm1_assembleFile(char* fileIn, char* fileOut) {
 					addr += isStr;
 					fprintf(fOut, stringResult);
 				} else {
-					if (asmResult & OP_ALU) {
-						if ((asmResult == 0x6018)
-								&& (isAlu)  && !(aluPrecedent & 0x1C)) {
-							fprintf(fOut, "%04x\n", aluPrecedent | ALU_F_R2P);
+					/* (r2p r-1)|CALL/JMP optimization */
+					if ((asmResult & OP_ALU) == OP_ALU) {
+						if ((asmResult == 0x6018) && (isAlu)
+								&& !(aluPrecedent[0] & 0x1C)) {
+							fprintf(fOut, "%04x\n", aluPrecedent[0] | ALU_F_R2P);
 							isAlu = false;
 							printf("            ^_  compress R2P\n");
 							continue;
 						}
-						if (asmResult == 0x6010) {
-							fprintf(fOut, "%04x\n", asmResult);
+						if ((asmResult == 0x6018) && isCall) {
+							fprintf(fOut, "%04x\n", aluPrecedent[1]);
+							isCall = false;
+							printf("            ^_  compress CALL/JMP\n");
 							continue;
 						}
-						aluPrecedent = asmResult;
+						if (asmResult == 0x6018) {
+							if (isAlu)
+								fprintf(fOut, "%04x\n", aluPrecedent[0]);
+							fprintf(fOut, "%04x\n", asmResult);
+							isAlu = false;
+							continue;
+						}
+						aluPrecedent[0] = asmResult;
 						isAlu = true;
 						continue;
 					}
+
+					if ((asmResult & OP_CLL) == OP_CLL) {
+						aluPrecedent[1] = ARG_OP(asmResult);
+						isCall = true;
+						continue;
+					}
+					/***********************/
+
 					isAlu = false;
+					isCall = false;
 					fprintf(fOut, "%04x\n", asmResult);
 				}
 			}
