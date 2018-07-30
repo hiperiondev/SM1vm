@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <utils/hashtable/jwHash.h>
 
 #define UNDER_OVER
@@ -29,17 +30,18 @@ jwHashTable*  word = NULL;
 jwHashTable* label = NULL;
 jwHashTable* macro = NULL;
 
+/////////////////////////////////////////////////////////////////////////////////////
+
 int sm1_assembleFile(char* fileIn, char* fileOut);
+uint16_t sm1_assembleLine(char* line, bool pass);
 
-uint16_t sm1_assembleLine(char* line);
-
-
+/////////////////////////////////////////////////////////////////////////////////////
 
 int opCmp(char *op, char *value){
 	return strcmp(strlwr(op), value);
 }
 
-int directives(char* line, char* fileOut) {
+int directives(char* line, char* fileOut, bool pass) {
 	char lineSplited[40][80], str[40] = "";
 	int words = getWords(line, lineSplited);
 	char * hresult;
@@ -55,7 +57,7 @@ int directives(char* line, char* fileOut) {
 			strcat(str, macroName);
 			if (get_str_by_str(macro, str, &hresult) == HASHNOTFOUND)
 				break;
-			sm1_assembleLine(hresult);
+			sm1_assembleLine(hresult, pass);
 		}
 		printf("]\n");
 		macroIndex = 0;
@@ -67,9 +69,11 @@ int directives(char* line, char* fileOut) {
 		return 0;
 	}
 	if (opCmp(lineSplited[0], ".equ") == 0) {
-		add_str_by_str(equ, lineSplited[1], lineSplited[2]);
-		get_str_by_str(equ, lineSplited[1], &hresult);
-		printf(".equ %s %s\n", lineSplited[1], hresult);
+		if (pass) {
+			add_str_by_str(equ, lineSplited[1], lineSplited[2]);
+			get_str_by_str(equ, lineSplited[1], &hresult);
+			printf(".equ %s %s\n", lineSplited[1], hresult);
+		}
 		return 0;
 	}
 	if (opCmp(lineSplited[0], ".macro") == 0) {
@@ -78,14 +82,16 @@ int directives(char* line, char* fileOut) {
 			exit(1);
 		}
 		macroIndex = 1;
-		strcpy(macroName, lineSplited[1]);
-		add_str_by_str(macro, macroName, macroName);
-		get_str_by_str(macro, macroName, &hresult);
-		printf(".macro %s \n", hresult);
+		if (pass) {
+			strcpy(macroName, lineSplited[1]);
+			add_str_by_str(macro, macroName, macroName);
+			get_str_by_str(macro, macroName, &hresult);
+			printf(".macro %s \n", hresult);
+		}
 		return 0;
 	}
 	if (opCmp(lineSplited[0], ".endm") == 0) {
-		printf(".endm\n");
+		if(pass) printf(".endm\n");
 		macroIndex = 0;
 		return 0;
 	}
@@ -102,23 +108,29 @@ int directives(char* line, char* fileOut) {
 			strcat(str, " ");
 			ptr++;
 		}
-		add_str_by_str(word, lineSplited[1], str);
 		get_str_by_str(word, lineSplited[1], &hresult);
-		printf(".word %s (%s)\n", lineSplited[1], hresult);
+		if (pass) {
+			add_str_by_str(word, lineSplited[1], str);
+			get_str_by_str(word, lineSplited[1], &hresult);
+			printf(".word %s (%s)\n", lineSplited[1], hresult);
+		}
 		return 0;
 	}
 	if (opCmp(lineSplited[0], ".label") == 0) {
 		sprintf(str, "%04x", addr + 1);
-		add_str_by_str(label, lineSplited[1], str);
-		get_str_by_str(label, lineSplited[1], &hresult);
-		printf(".label %s (%s)\n", lineSplited[1], hresult);
+		if (pass) {
+			add_str_by_str(label, lineSplited[1], str);
+			get_str_by_str(label, lineSplited[1], &hresult);
+			printf(".label %s (%s)\n", lineSplited[1], hresult);
+		}
 		return 0;
 	}
 	if (macroIndex) {
 		sprintf(str, "%d", macroIndex++);
 		strcat(str, "#_");
 		strcat(str, macroName);
-		add_str_by_str(macro, str, line);
+		if (pass)
+			add_str_by_str(macro, str, line);
 	}
 
 	return 1;
@@ -126,28 +138,42 @@ int directives(char* line, char* fileOut) {
 
 //////////////////////////////////////////////////////////////
 
-uint16_t sm1_assembleLine(char* line) {
+uint16_t sm1_assembleLine(char* line, bool pass) {
 	int words, value, w;
+	bool lit = false;
 	char lineSplited[40][80], str[20];
 	char * hresult = NULL;
 	words = getWords(line, lineSplited);
-	value = (int) strtol(lineSplited[1], NULL, 16);
+
+	char *ptr;
+	value = (int) strtol(lineSplited[1], &ptr, 16);
+	if (lineSplited[1] != ptr) {
+		lit = true;
+	}
 
 	addr++;
-	printf("    %04x ", addr);
-	printf("%s\n", line);
+	if (!pass) {
+		printf("    %04x ", addr);
+		printf("%s\n", line);
+	}
 
 	get_str_by_str(word, lineSplited[0], &hresult);
-	if (hresult != NULL)
+	if (hresult != NULL) {
 		words = getWords(hresult, lineSplited);
+	} else {
+		get_str_by_str(equ, lineSplited[1], &hresult);
+		if (hresult == NULL)
+			get_str_by_str(label, lineSplited[1], &hresult);
 
-	get_str_by_str(equ, lineSplited[1], &hresult);
-	if (hresult == NULL)
-		get_str_by_str(label, lineSplited[1], &hresult);
-
-	if (hresult != NULL)
-		value = (int) strtol(hresult, NULL, 16);
-
+		if (hresult != NULL) {
+			value = (int) strtol(hresult, NULL, 16);
+			printf("             ^_ (%04x)\n", value);
+		} else {
+			if (!lit && !pass) {
+				printf("             ^_ ERROR: unknown value\n");
+			}
+		}
+	}
 
 	if (opCmp(lineSplited[0], "lit") == 0) {
 		if (value < 32768)
@@ -190,7 +216,8 @@ uint16_t sm1_assembleLine(char* line) {
 		printf("ASSEMBLER ERROR: unknown mnemonic\n");
 		exit(1);
 	}
-	printf("         |> %s\n", hresult);
+	if (!pass)
+		printf("         ^_ %s\n", hresult);
 	value |= 0x6000;
 
 	int pos = 1, fl = 0;
@@ -248,14 +275,28 @@ int sm1_assembleFile(char* fileIn, char* fileOut) {
 		return 1;
 	}
 
+	printf ("\n\n -- First pass --\n\n");
 	while (fgets(buf, sizeof(buf), fIn) != NULL) {
 		buf[strlen(buf) - 1] = '\0';
 		if (strcmp(buf, "") != 0) {
-			if (directives(buf, fileOut) && !macroIndex) {
-				fprintf(fOut, "%04x\n", sm1_assembleLine(buf));
+			if (directives(buf, fileOut, true) && !macroIndex) {
+				sm1_assembleLine(buf, true);
 			}
 		}
 	}
+
+	addr = -1;
+	rewind(fIn);
+	printf ("\n\n -- Second pass --\n\n");
+	while (fgets(buf, sizeof(buf), fIn) != NULL) {
+		buf[strlen(buf) - 1] = '\0';
+		if (strcmp(buf, "") != 0) {
+			if (directives(buf, fileOut, false) && !macroIndex) {
+				fprintf(fOut, "%04x\n", sm1_assembleLine(buf, false));
+			}
+		}
+	}
+
 	fclose(fIn);
 
 	return 0;
