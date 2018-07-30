@@ -139,7 +139,7 @@ char* doTick(char *word) {
 	static char resultStr[50];
 	struct Header *search = searchHeader(header, word);
 	if (search != NULL) {
-		sprintf(resultStr, "lit %s", word);
+		sprintf(resultStr, "    lit %s", word);
 		return resultStr;
 	}
 	return "!!ERROR!!";
@@ -161,13 +161,13 @@ char* doLit(int number) {
 	static char resultStr[20];
 	if (number < 0x8000) {
 		sprintf(literal, "%04x", (short) number);
-		sprintf(resultStr, "lit ");
+		sprintf(resultStr, "    lit ");
 		strcat(resultStr, literal);
 	} else {
 		sprintf(literal, "%04x", ~(short) number);
-		sprintf(resultStr, "lit ");
+		sprintf(resultStr, "    lit ");
 		strcat(resultStr, literal);
-		strcat(resultStr, "\nneg");
+		strcat(resultStr, "\n    neg");
 	}
 	return resultStr;
 }
@@ -192,11 +192,11 @@ char* compileTuple() {
 				break;
 			cases(":")
 				doCol(tuple[1]);
-				sprintf(compiledTuple, ".comment doCol %s(%04x)", tuple[1], addrC);
+				sprintf(compiledTuple, ".label doCol_%s", tuple[1]);
 				tupleCnt -= 2;
 				break;
 			cases(";")
-				strcpy(compiledTuple, "exit");
+				strcpy(compiledTuple, "    exit");
 				--tupleCnt;
 				if (!strcmp(tuple[1], "immediate")) {
 					lastHeader->immediate = true;
@@ -232,7 +232,7 @@ char* compileTuple() {
 				--tupleCnt;
 			    break;
 			cases("if")
-			    sprintf(compiledTuple, "jmz if_%04x", ifCnt);
+			    sprintf(compiledTuple, "    jmz if_%04x", ifCnt);
 			    ifStkP++;
 			    ifStk[ifStkP] = ifCnt++;
 			    --tupleCnt;
@@ -260,7 +260,7 @@ char* compileTuple() {
 					--tupleCnt;
 					break;
 				}
-				sprintf(compiledTuple, "jmp if_%04x_else\n.label if_%04x", ifStk[ifStkP], ifStk[ifStkP]);
+				sprintf(compiledTuple, "    jmp if_%04x_else\n.label if_%04x", ifStk[ifStkP], ifStk[ifStkP]);
 				ifStk[++ifStkP] = 0;
 				--tupleCnt;
 				break;
@@ -272,7 +272,7 @@ char* compileTuple() {
 
 	// base words
 	if (searchBwords(tuple[0]) == RC_OK) {
-		strcat(compiledTuple, tuple[0]);
+		sprintf(compiledTuple, "    %s",tuple[0]);
 		--tupleCnt;
 		return compiledTuple;
 	}
@@ -284,14 +284,14 @@ char* compileTuple() {
 		if (search->type == 1) { // colon definition
 			char cfaStr[5];
 			sprintf(cfaStr, "%04x", search->cfa);
-			strcpy(compiledTuple, "cll ");
+			strcpy(compiledTuple, "    cll ");
 			strcat(compiledTuple, cfaStr);
 			--tupleCnt;
 			return compiledTuple;
 		}
 		// variable ( .equ position )
 		if (search->type == 2) {
-			strcpy(compiledTuple, "lit ");
+			strcpy(compiledTuple, "    lit ");
 			strcat(compiledTuple, tuple[0]);
 			--tupleCnt;
 			return compiledTuple;
@@ -358,21 +358,6 @@ int sm1_compileFile(char* fileIn, char* fileOut, char* baseWords) {
 	char compiled[50];
 	remove(fileOut);
 
-	if ((fWords = fopen(baseWords, "r")) == NULL) {
-		perror("Error: can't open basewords-file");
-		return RC_ERROR;
-	}
-	printf("\n--- start base words %s\n", baseWords);
-	while (fgets(buf, sizeof(buf), fWords) != NULL) {
-		getWords(buf, lineSplited);
-		if ((!strcmp(strlwr(lineSplited[0]), ".word"))
-				|| (!strcmp(strlwr(lineSplited[0]), ".macro"))) {
-			strcpy(bWords[bW++], lineSplited[1]);
-			printf("%s %s\n", lineSplited[0], lineSplited[1]);
-		}
-	}
-	fclose(fWords);
-	printf("--- end base words %s\n", baseWords);
 	if ((fIn = fopen(fileIn, "r")) == NULL) {
 		perror("Error: can't open source-file");
 		return RC_ERROR;
@@ -383,10 +368,31 @@ int sm1_compileFile(char* fileIn, char* fileOut, char* baseWords) {
 		return RC_ERROR;
 	}
 
+	if ((fWords = fopen(baseWords, "r")) == NULL) {
+		perror("Error: can't open basewords-file");
+		return RC_ERROR;
+	}
+	printf("\n--- start base words %s\n", baseWords);
+	fprintf(fOut, ".comment ---------------------------------\n");
+	fprintf(fOut, ".comment base words\n\n");
+	while (fgets(buf, sizeof(buf), fWords) != NULL) {
+		getWords(buf, lineSplited);
+		if ((!strcmp(strlwr(lineSplited[0]), ".word"))
+				|| (!strcmp(strlwr(lineSplited[0]), ".macro"))) {
+			strcpy(bWords[bW++], lineSplited[1]);
+			printf("%s %s\n", lineSplited[0], lineSplited[1]);
+		}
+		fprintf(fOut, "%s\n", buf);
+	}
+	fclose(fWords);
+	printf("--- end base words %s\n", baseWords);
+	fprintf(fOut, "\n.comment end base words\n");
+	fprintf(fOut, ".comment ---------------------------------\n\n");
+
     //////////////////////////////////////
 
 	printf("\n--- start compiling %s\n", fileIn);
-	fprintf(fOut, ".include %s.map\n\njmp main\n", fileOut);
+	fprintf(fOut, "jmp docol_main\n");
 
 	int res;
 	do {

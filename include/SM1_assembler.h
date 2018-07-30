@@ -65,7 +65,8 @@ int directives(char* line, char* fileOut, bool pass) {
 	}
 
 	if (opCmp(lineSplited[0], ".comment") == 0) {
-		printf("%s\n", line);
+		if (pass)
+			printf("%s\n", line);
 		return 0;
 	}
 	if (opCmp(lineSplited[0], ".equ") == 0) {
@@ -120,9 +121,10 @@ int directives(char* line, char* fileOut, bool pass) {
 		sprintf(str, "%04x", addr + 1);
 		if (pass) {
 			add_str_by_str(label, lineSplited[1], str);
+		}
 			get_str_by_str(label, lineSplited[1], &hresult);
 			printf(".label %s (%s)\n", lineSplited[1], hresult);
-		}
+
 		return 0;
 	}
 	if (macroIndex) {
