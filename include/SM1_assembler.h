@@ -25,6 +25,8 @@ const uint8_t VMFLAGS_CODE[] = { 0x80, 0x40, 0x20, 0x10 };
 int macroIndex = 0;
 char macroName[40] = "";
 int addr = -1;
+int isStr = 0;
+char stringResult[512];
 jwHashTable*   equ = NULL;
 jwHashTable*  word = NULL;
 jwHashTable* label = NULL;
@@ -166,7 +168,9 @@ int directives(char* line, char* fileOut, bool pass) {
 uint16_t sm1_assembleLine(char* line, bool pass) {
 	int words, value, w;
 	bool lit = false;
-	char lineSplited[40][80], str[20];
+	int len = 0;
+	isStr = 0;
+	char lineSplited[40][80], str[40];
 	char * hresult = NULL;
 	words = getWords(line, lineSplited);
 
@@ -227,10 +231,35 @@ uint16_t sm1_assembleLine(char* line, bool pass) {
 	}
 
 	if (opCmp(lineSplited[0], ".data") == 0) {
-		if (value < 65535)
+		if (value < 65536) {
 			return value;
+		}
 		printf("ASSEMBLER ERROR: .data too long\n");
 		exit(1);
+	}
+	if (opCmp(lineSplited[0], ".string") == 0) {
+		strcpy(str, "");
+		for (int cnt = 1; cnt < words - 1; cnt++) {
+			strcat(str, lineSplited[cnt]);
+			strcat(str, " ");
+		}
+		strcat(str, lineSplited[words - 1]);
+		len = strlen(str);
+		if ((len % 2) == 1) {
+			strcat(str, "\0");
+			len++;
+		}
+		strcpy(stringResult, "");
+		char tmpStr[20];
+		int cnt = 0;
+		while (cnt < len) {
+			sprintf(tmpStr, "%02x%02x\n", str[cnt], str[cnt + 1]);
+			cnt += 2;
+			isStr++;
+			strcat(stringResult, tmpStr);
+		}
+
+		return 0;
 	}
 
 	value = 0xffff;
@@ -289,6 +318,7 @@ int sm1_assembleFile(char* fileIn, char* fileOut) {
 	FILE* fIn;
 	FILE* fOut;
 	char buf[80];
+	int asmResult;
 	if (equ == NULL) {
 		  equ = create_hash(100);
 		 word = create_hash(100);
@@ -313,6 +343,9 @@ int sm1_assembleFile(char* fileIn, char* fileOut) {
 		if (strcmp(buf, "") != 0) {
 			if (directives(buf, fileOut, true) && !macroIndex) {
 				sm1_assembleLine(buf, true);
+				if (isStr > 0) {
+					addr += isStr;
+				}
 			}
 		}
 	}
@@ -324,11 +357,15 @@ int sm1_assembleFile(char* fileIn, char* fileOut) {
 		buf[strlen(buf) - 1] = '\0';
 		if (strcmp(buf, "") != 0) {
 			if (directives(buf, fileOut, false) && !macroIndex) {
-				fprintf(fOut, "%04x\n", sm1_assembleLine(buf, false));
+				asmResult = sm1_assembleLine(buf, false);
+				if (isStr > 0) {
+					addr += isStr;
+					fprintf(fOut, stringResult);
+				} else
+					fprintf(fOut, "%04x\n", asmResult);
 			}
 		}
 	}
-
 	fclose(fIn);
 
 	return 0;
