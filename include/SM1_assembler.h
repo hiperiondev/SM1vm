@@ -70,6 +70,9 @@ int directives(char* line, char* fileOut, bool pass) {
 		return 0;
 	}
 	if (opCmp(lineSplited[0], ".equ") == 0) {
+		if (opCmp(lineSplited[1], "$HERE$") == 0) {
+			sprintf(lineSplited[2], "%04x", addr);
+		}
 		if (pass) {
 			add_str_by_str(equ, lineSplited[1], lineSplited[2]);
 			get_str_by_str(equ, lineSplited[1], &hresult);

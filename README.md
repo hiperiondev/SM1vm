@@ -34,7 +34,7 @@ These conditional functions are:
 ## Assembler
  The assembler accept these directives:
 ```
-.equ:     Assigns a value to a label.
+.equ:     Assigns a value to a label. Value $HERE$ represent actual address pointer.
 .macro:   Start of a macro. Takes the name as parameter.
           When the name of the macro is written later in the program, 
           the macro definition is expanded at the place it was used. 
