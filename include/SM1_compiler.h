@@ -386,19 +386,19 @@ int sm1_compileFile(char* fileIn, char* fileOut, char* baseWords) {
     //////////////////////////////////////
 
 	printf("\n--- start compiling %s\n", fileIn);
-	fprintf(fOut, ".include %s.map\n\njmp main\n\n", fileOut);
+	fprintf(fOut, ".include %s.map\n\njmp main\n", fileOut);
 
 	int res;
 	do {
 		++addrC;
 		res = readTuple(fIn);
 		strcpy(compiled, compileTuple());
-		fprintf(fOut, "%s\n", compiled);
+		if (strcmp(strlwr(compiled), "")) fprintf(fOut, "%s\n", compiled);
 		if (!strcmp(strlwr(compiled), "!!error!!")) {
 			printf("ERROR: compiler error\n");
 			exit(1);
 		}
-		printf ("%s \n",compiled);
+		if (strcmp(strlwr(compiled), "")) printf ("%s \n",compiled);
 	} while (res);
 
 	struct Header *search = searchHeader(header, "main");
