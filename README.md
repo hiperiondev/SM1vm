@@ -46,7 +46,8 @@ These conditional functions are:
 .word:    Define new mnemonic from complete line. Ex. dup@  get t2n d+1
 .label:   Assign the address at this point to label.
 .comment: Comment line.
-.address: Modify actual address pointer. Only accept decimal number. If number is preceded by "offset" address pointer is incremented by this value. 
+.org:     Set the location counter to an absolute value. Only accept decimal number. 
+          If number is preceded by "offset" location counter is incremented by this value. 
 ```
 NOTE: Directives can't be used inside macro.
 ## FORTH

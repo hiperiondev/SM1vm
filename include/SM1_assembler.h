@@ -128,7 +128,7 @@ int directives(char* line, char* fileOut, bool pass) {
 		printf(".label %s (%s)\n", lineSplited[1], hresult);
 		return 0;
 	}
-	if (opCmp(lineSplited[0], ".address") == 0) {
+	if (opCmp(lineSplited[0], ".org") == 0) {
 		char *ptr;
 		int value;
 		if (opCmp(lineSplited[1], "offset") == 0) {
