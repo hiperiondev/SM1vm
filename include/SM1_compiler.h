@@ -97,15 +97,17 @@ int searchBwords(char *word) {
 }
 
 int readTuple(FILE* fIn) {
+	static int eofCnt;
 	while (tupleCnt < 3) {
 		strcpy(tuple[0], tuple[1]);
 		strcpy(tuple[1], tuple[2]);
 		if (fscanf(fIn, "%s", tuple[2]) == EOF) {
 			strcpy(tuple[2], "\000");
-			return 0;
+			eofCnt++;
 		}
 		tupleCnt++;
-
+		if (eofCnt == 2)
+			return 0;
 	}
 	return 1;
 }
@@ -226,7 +228,7 @@ char* compileTuple() {
 				if (!strcmp(compiledTuple, "!!ERROR!!")) {
 					printf("ERROR: doTick - word not found\n");
 				}
-				--tupleCnt;
+				tupleCnt -= 2;
 				break;
 			cases(",")
 			cases("c,")
