@@ -54,7 +54,7 @@ These conditional functions are:
 NOTE: Directives can't be used inside macro.
 
 ## FORTH
- **Compiler:
+ **Compiler**
 ```
 [TODO]
 ```

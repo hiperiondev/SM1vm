@@ -26,7 +26,7 @@ int macroIndex = 0;
 char macroName[40] = "";
 int addr = -1;
 int isStr = 0;
-int aluPrecedent[2];
+int aluPrecedent;
 bool isAlu = false;
 bool isCall = false;
 char stringResult[512];
@@ -345,9 +345,49 @@ int sm1_assembleFile(char* fileIn, char* fileOut) {
 		buf[strlen(buf) - 1] = '\0';
 		if (strcmp(buf, "") != 0) {
 			if (directives(buf, fileOut, true) && !macroIndex) {
-				sm1_assembleLine(buf, true);
+				asmResult = sm1_assembleLine(buf, true);
 				if (isStr > 0) {
 					addr += isStr;
+				}else {
+					/* (r2p r-1)|CALL/JMP optimization */
+					if ((asmResult & OP_ALU) == OP_ALU) {
+						if ((asmResult == 0x6018) && (isAlu)
+								&& !(aluPrecedent & 0x1C)) {
+							fprintf(fOut, "%04x\n", aluPrecedent | ALU_F_R2P);
+							isAlu = false;
+							printf("            ^_  compress R2P\n");
+							addr--;
+							continue;
+						}
+						if ((asmResult == 0x6018) && isCall) {
+							fprintf(fOut, "%04x\n", aluPrecedent);
+							isCall = false;
+							printf("            ^_  compress CALL/JMP\n");
+							addr--;
+							continue;
+						}
+						if (asmResult == 0x6018) {
+							if (isAlu)
+								fprintf(fOut, "%04x\n", aluPrecedent);
+							fprintf(fOut, "%04x\n", asmResult);
+							isAlu = false;
+							continue;
+						}
+						aluPrecedent = asmResult;
+						isAlu = true;
+						continue;
+					}
+
+					if ((asmResult & OP_CLL) == OP_CLL) {
+						aluPrecedent = ARG_OP(asmResult);
+						isCall = true;
+						continue;
+					}
+					/***********************/
+
+					isAlu = false;
+					isCall = false;
+					fprintf(fOut, "%04x\n", asmResult);
 				}
 			}
 		}
@@ -368,32 +408,34 @@ int sm1_assembleFile(char* fileIn, char* fileOut) {
 					/* (r2p r-1)|CALL/JMP optimization */
 					if ((asmResult & OP_ALU) == OP_ALU) {
 						if ((asmResult == 0x6018) && (isAlu)
-								&& !(aluPrecedent[0] & 0x1C)) {
-							fprintf(fOut, "%04x\n", aluPrecedent[0] | ALU_F_R2P);
+								&& !(aluPrecedent & 0x1C)) {
+							fprintf(fOut, "%04x\n", aluPrecedent | ALU_F_R2P);
 							isAlu = false;
 							printf("            ^_  compress R2P\n");
+							addr--;
 							continue;
 						}
 						if ((asmResult == 0x6018) && isCall) {
-							fprintf(fOut, "%04x\n", aluPrecedent[1]);
+							fprintf(fOut, "%04x\n", aluPrecedent);
 							isCall = false;
 							printf("            ^_  compress CALL/JMP\n");
+							addr--;
 							continue;
 						}
 						if (asmResult == 0x6018) {
 							if (isAlu)
-								fprintf(fOut, "%04x\n", aluPrecedent[0]);
+								fprintf(fOut, "%04x\n", aluPrecedent);
 							fprintf(fOut, "%04x\n", asmResult);
 							isAlu = false;
 							continue;
 						}
-						aluPrecedent[0] = asmResult;
+						aluPrecedent = asmResult;
 						isAlu = true;
 						continue;
 					}
 
 					if ((asmResult & OP_CLL) == OP_CLL) {
-						aluPrecedent[1] = ARG_OP(asmResult);
+						aluPrecedent = ARG_OP(asmResult);
 						isCall = true;
 						continue;
 					}
