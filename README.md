@@ -34,22 +34,22 @@ These conditional functions are:
 ## Assembler
  The assembler accept these directives:
 ```
-.equ:     Assigns a value to a label. Value $HERE$ represent actual address pointer.
-.macro:   Start of a macro. Takes the name as parameter.
+    .equ: Assigns a value to a label. Value $HERE$ represent actual address pointer.
+  .macro: Start of a macro. Takes the name as parameter.
           When the name of the macro is written later in the program, 
           the macro definition is expanded at the place it was used. 
           A macro can take up to 10 parameters. 
           These parameters are referred to as @0-@9 within the Macro definition.
           Can't define macro inside macro.
-.endm:    End of a macro definition.
+   .endm: End of a macro definition.
 .include: Start reading from a specified file.
-.word:    Define new mnemonic from complete line. Ex. dup@  get t2n d+1
-.label:   Assign the address at this point to label.
+   .word: Define new mnemonic from complete line. Ex. dup@ get t2n d+1
+  .label: Assign the address at this point to label.
 .comment: Comment line.
-.org:     Set the location counter to an absolute value. Only accept decimal number. 
+    .org: Set the location counter to an absolute value. Only accept decimal number. 
           If number is preceded by "offset" location counter is incremented by this value. 
-.data:    Insert uint_16 value. 
-.string:  Insert string text.
+   .data: Insert uint_16 value. 
+ .string: Insert string text.
 ```
 NOTE: Directives can't be used inside macro.
 

@@ -232,7 +232,7 @@ char* compileTuple() {
 				break;
 			cases(",")
 			cases("c,")
-				printf("ERROR: allot not initialized\n");
+				printf("ERROR: comma not initialized\n");
 				strcpy(compiledTuple, "!!ERROR!!");
 				--tupleCnt;
 				break;
@@ -339,7 +339,7 @@ char* compileTuple() {
 					tupleCnt -= 3;
 					sprintf(compiledTuple, ".comment doConst %s (%04x)", tuple[1], res);
 					break;
-			    cases("*constant")
+				cases("*constant")
 					doConst(tuple[2], res);
 					lastHeader->included = false;
 					tupleCnt -= 3;
