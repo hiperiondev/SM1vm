@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
 #include <stdbool.h>
 #include <utils/jwHash.h>
 
@@ -50,17 +51,18 @@ int opCmp(char *op, char *value){
 
 int directives(char* line, char* fileOut, bool pass) {
 	char lineSplited[40][80], str[40] = "";
-	int words = getWords(line, lineSplited);
+	 int words = getWords(line, lineSplited);
 	char * hresult;
 
 	// search macro and insert
 	if (get_str_by_str(macro, lineSplited[0], &hresult) != HASHNOTFOUND) {
-		char macroArgs[10][20];
+		char macroArgs[40][80];
 		char macroLine[40][80];
-		int macroArgsCnt = words - 1;
-		int macroArgsCnt_ = macroArgsCnt;
-		while (macroArgsCnt != 0) {
-			strcpy(macroArgs[macroArgsCnt_], lineSplited[macroArgsCnt_--]);
+		 int macroArgsCnt = words - 1;
+		 int macroArgsCntTmp = macroArgsCnt;
+		while (macroArgsCntTmp != 0) {
+			strcpy(macroArgs[macroArgsCntTmp], lineSplited[macroArgsCntTmp]);
+			--macroArgsCntTmp;
 		}
 		macroIndex = 1;
 		strcpy(macroName, lineSplited[0]);
@@ -75,17 +77,12 @@ int directives(char* line, char* fileOut, bool pass) {
 			strcpy(hresult, "");
 			for (int n = 0; n <= words - 1; n++) {
 				if (macroLine[n][0] == '@') {
-					char *ptr;
-					bool num = false;
-					int res = (int) strtol(macroLine[n][1], &ptr, 10);
-					if (macroLine[n][1] != ptr) {
-						num = true;
-					}
-					if (!num || (res >= macroArgsCnt))
+					if (!isdigit(macroLine[n][1]) || ((macroLine[n][1] - '0') >= macroArgsCnt))
 						break;
-					strcpy(macroLine[n], macroArgs[res]);
+					strcpy(macroLine[n], macroArgs[macroLine[n][1] - '0']);
 				}
-				sprintf(hresult, "%s %s", hresult, macroLine[n]);
+				strcat(hresult, macroLine[n]);
+				strcat(hresult, " ");
 			}
 
 			sm1_assembleLine(hresult, pass);
