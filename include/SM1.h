@@ -128,7 +128,7 @@ enum {
         ALU_OP_RCV = 0x19, /* receive t */
         ALU_OP_UMD = 0x1a, /* u/mod */
         ALU_OP_MOD = 0x1b, /* /mod */
-        ALU_OP_CRI = 0x1c, /* compare top and snd element of return stack. If not eq increment snd */
+        ALU_OP_CRI = 0x1c, /* compare top and snd element of return stack. If not eq increment snd else drop top and snd*/
         ALU_OP_NP1 = 0x1d, /* not defined */
         ALU_OP_NP2 = 0x1e, /* not defined */
         ALU_OP_BYE = 0x1f  /* return */
@@ -612,43 +612,46 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #ifdef DEBUG
                    DBG_PRINT("ALU_OP_REG) ");
 #endif
-                        if (t == 0xff) {
-                            alu = vm->status;
-                            break;
-                        }
-                        if (t > vm->reg_size - 1) return RC_REG_UNKNOWN;
-                        alu = vm->reg[t];
+                   if (t == 0xff) {
+                        alu = vm->status;
+                         break;
+                   }
+                   if (t > vm->reg_size - 1) return RC_REG_UNKNOWN;
+                   alu = vm->reg[t];
 #ifdef AUTOINCR
-                        if ((t == 0) && (vm->status & ST_AUTOINC0)) vm->reg[t]++;
-                        if ((t == 1) && (vm->status & ST_AUTOINC1)) vm->reg[t]++;
-                        if ((t == 2) && (vm->status & ST_AUTOINC2)) vm->reg[t]++;
+                   if ((t == 0) && (vm->status & ST_AUTOINC0)) vm->reg[t]++;
+                   if ((t == 1) && (vm->status & ST_AUTOINC1)) vm->reg[t]++;
+                   if ((t == 2) && (vm->status & ST_AUTOINC2)) vm->reg[t]++;
 #endif
-                        break;
+                   break;
                 case ALU_OP_SRG:
 #ifdef DEBUG
                    DBG_PRINT("ALU_OP_SRG) ");
 #endif
-                        if (t == 0xff) {
-                            vm->status = t;
-                            break;
-                        }
-                        if (t > vm->reg_size - 1) return RC_REG_UNKNOWN;
-                        vm->reg[t] = n;
+                   if (t == 0xff) {
+                        vm->status = t;
                         break;
+                   }
+                   if (t > vm->reg_size - 1) return RC_REG_UNKNOWN;
+                   vm->reg[t] = n;
+                   break;
                 case ALU_OP_CRI:
 #ifdef DEBUG
                    DBG_PRINT("ALU_OP_CRI) ");
 #endif
                    alu = -(r == vm->rs[vm->rp+1]);
-                   if (!alu)
+                   if (!alu) {
                        ++vm->rs[vm->rp + 1];
+                   } else {
+                       vm->rp -= 2;
+                   }
                    break;
                 case ALU_OP_BYE:
 #ifdef DEBUG
                     DBG_PRINT("ALU_OP_BYE) ");
 #endif
-                    return RC_BYE;
-                    break;
+                   return RC_BYE;
+                   break;
                 default:
 #ifdef DEBUG
                     DBG_PRINT("RC_OP_UNKNOWN\n");

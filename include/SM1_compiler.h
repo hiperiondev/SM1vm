@@ -361,7 +361,7 @@ char* compileTuple() {
                     --tupleCnt;
                     break;
                 }
-                sprintf(compiledTuple, "    cri\n    jmz do_%04x\n   dropr\n   dropr",
+                sprintf(compiledTuple, "    cri\n    jmz do_%04x",
                         beginStk[beginStkP]);
                 --beginStkP;
                 --tupleCnt;
