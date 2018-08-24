@@ -215,23 +215,23 @@ static  uint8_t sm1_mem_put  (uint16_t addr, uint16_t value, vm_t*);
 static uint16_t sm1_mem_get  (uint16_t addr, vm_t*);
 
 static inline vm_t* sm1_init(uint16_t ramSize, uint8_t rsSize, uint8_t dsSize,  uint8_t regQty) {
-	vm_t* vm =     (vm_t *) malloc(sizeof(vm_t));
-	vm->RAM  = (uint16_t *) malloc(sizeof(uint16_t) * ramSize);
-	vm->rs   = (uint16_t *) malloc(sizeof(uint16_t) * rsSize);
-	vm->ds   = (uint16_t *) malloc(sizeof(uint16_t) * dsSize);
-	vm->reg  = (uint16_t *) malloc(sizeof(uint16_t) * regQty);
-	vm->reg_size = regQty;
+    vm_t* vm =     (vm_t *) malloc(sizeof(vm_t));
+    vm->RAM  = (uint16_t *) malloc(sizeof(uint16_t) * ramSize);
+    vm->rs   = (uint16_t *) malloc(sizeof(uint16_t) * rsSize);
+    vm->ds   = (uint16_t *) malloc(sizeof(uint16_t) * dsSize);
+    vm->reg  = (uint16_t *) malloc(sizeof(uint16_t) * regQty);
+    vm->reg_size = regQty;
 #ifdef UNDER_OVER
-	vm->ds_size  = dsSize;
-	vm->rs_size  = rsSize;
-	vm->RAM_size = ramSize;
+    vm->ds_size  = dsSize;
+    vm->rs_size  = rsSize;
+    vm->RAM_size = ramSize;
 #endif
 
-	vm->pc = 0;
-	vm->dp = 0;
-	vm->rp = 0;
+    vm->pc = 0;
+    vm->dp = 0;
+    vm->rp = 0;
 
-	return vm;
+    return vm;
 }
 
 static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
@@ -380,11 +380,11 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                     DBG_PRINT("ALU_OP_GET)  ");
 #endif
 #ifdef INDIRECT
-                	if (vm->status & ST_INDGET) {
-                		if (t > vm->reg_size - 1) return RC_REG_UNKNOWN;
-                		aux = t;
-                		t = vm->reg[t];
-                	}
+                    if (vm->status & ST_INDGET) {
+                        if (t > vm->reg_size - 1) return RC_REG_UNKNOWN;
+                        aux = t;
+                        t = vm->reg[t];
+                    }
 #endif
 #ifdef UNDER_OVER
                     if ((t>>1) > vm->RAM_size) return RC_MEM_OVERFLOW;
@@ -404,11 +404,11 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                     DBG_PRINT("ALU_OP_PUT) ");
 #endif
 #ifdef INDIRECT
-                	if (vm->status & ST_INDPUT) {
-                		if (t > vm->reg_size - 1) return RC_REG_UNKNOWN;
-                		aux = t;
-                		t = vm->reg[t];
-                	}
+                    if (vm->status & ST_INDPUT) {
+                        if (t > vm->reg_size - 1) return RC_REG_UNKNOWN;
+                        aux = t;
+                        t = vm->reg[t];
+                    }
 #endif
 #ifdef UNDER_OVER
                     if ((t>>1) > vm->RAM_size) return RC_MEM_OVERFLOW;
@@ -577,7 +577,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                     DBG_PRINT("ALU_OP_RCV) ");
 #endif
                     if (!(vm->status & ST_RCVTN))
-                    	break;
+                        break;
                     alu = vm->t_ext;
                     vm->status &= ~ST_RCVTN;
                     break; //TODO: Receive t and n
@@ -613,8 +613,8 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                    DBG_PRINT("ALU_OP_REG) ");
 #endif
                         if (t == 0xff) {
-                        	alu = vm->status;
-                        	break;
+                            alu = vm->status;
+                            break;
                         }
                         if (t > vm->reg_size - 1) return RC_REG_UNKNOWN;
                         alu = vm->reg[t];
@@ -628,10 +628,10 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #ifdef DEBUG
                    DBG_PRINT("ALU_OP_SRG) ");
 #endif
-	                    if (t == 0xff) {
-			                vm->status = t;
-			                break;
-		                }
+                        if (t == 0xff) {
+                            vm->status = t;
+                            break;
+                        }
                         if (t > vm->reg_size - 1) return RC_REG_UNKNOWN;
                         vm->reg[t] = n;
                         break;

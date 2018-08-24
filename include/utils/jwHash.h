@@ -34,58 +34,58 @@ limitations under the License.
 // resuts codes
 typedef enum 
 {
-	HASHOK,
-	HASHADDED,
-	HASHREPLACEDVALUE,
-	HASHALREADYADDED,
-	HASHDELETED,
-	HASHNOTFOUND,
+    HASHOK,
+    HASHADDED,
+    HASHREPLACEDVALUE,
+    HASHALREADYADDED,
+    HASHDELETED,
+    HASHNOTFOUND,
 } HASHRESULT;
 
 typedef enum
 {
-	HASHPTR,
-	HASHNUMERIC,
-	HASHSTRING,
+    HASHPTR,
+    HASHNUMERIC,
+    HASHSTRING,
 } HASHVALTAG;
-	
+
 
 typedef struct jwHashEntry jwHashEntry;
 struct jwHashEntry
 {
-	union
-	{
-		char  *strValue;
-		double dblValue;
-		int	   intValue;
-	} key;
-	HASHVALTAG valtag;
-	union
-	{
-		char  *strValue;
-		double dblValue;
-		int	   intValue;
-		void  *ptrValue;
-	} value;
-	jwHashEntry *next;
+    union
+    {
+        char  *strValue;
+        double dblValue;
+        int       intValue;
+    } key;
+    HASHVALTAG valtag;
+    union
+    {
+        char  *strValue;
+        double dblValue;
+        int       intValue;
+        void  *ptrValue;
+    } value;
+    jwHashEntry *next;
 };
 
 typedef struct jwHashTable jwHashTable;
 struct jwHashTable
 {
-	jwHashEntry **bucket;			// pointer to array of buckets
-	size_t buckets;
-	size_t bucketsinitial;			// if we resize, may need to hash multiple times
-	HASHRESULT lastError;
+    jwHashEntry **bucket;            // pointer to array of buckets
+    size_t buckets;
+    size_t bucketsinitial;            // if we resize, may need to hash multiple times
+    HASHRESULT lastError;
 #ifdef HASHTHREADED
-	volatile int *locks;			// array of locks
-	volatile int lock;				// lock for entire table
+    volatile int *locks;            // array of locks
+    volatile int lock;                // lock for entire table
 #endif
 };
 
 // Create/delete hash table
 jwHashTable *create_hash( size_t buckets );
-void *delete_hash( jwHashTable *table );		// clean up all memory
+void *delete_hash( jwHashTable *table );        // clean up all memory
 
 
 // Add to table - keyed by string

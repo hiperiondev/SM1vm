@@ -20,65 +20,65 @@ void trim(char * s) {
 }
 
 void simplifyWhiteSpace(char * src) {
-	char *dst = src;
+    char *dst = src;
 
-	for (; *src; ++dst, ++src) {
-		*dst = *src;
-		if (isspace(*src))
-			while (isspace(*(src + 1)))
-				++src;
-	}
+    for (; *src; ++dst, ++src) {
+        *dst = *src;
+        if (isspace(*src))
+            while (isspace(*(src + 1)))
+                ++src;
+    }
 
-	*dst = '\0';
+    *dst = '\0';
 }
 
 int getWords(char *base, char target[40][80]) {
-	int n = 0, i, j = 0;
+    int n = 0, i, j = 0;
 
-	trim(base);
-	simplifyWhiteSpace(base);
-	for (i = 0; 1; i++) {
-		if (base[i] != ' ') {
-			target[n][j++] = base[i];
-		} else {
-			target[n][j++] = '\0';
-			n++;
-			j = 0;
-		}
-		if (base[i] == '\0')
-			break;
-	}
+    trim(base);
+    simplifyWhiteSpace(base);
+    for (i = 0; 1; i++) {
+        if (base[i] != ' ') {
+            target[n][j++] = base[i];
+        } else {
+            target[n][j++] = '\0';
+            n++;
+            j = 0;
+        }
+        if (base[i] == '\0')
+            break;
+    }
 
-	return n;
+    return n;
 }
 
 char* strlwr(char *str) {
-	unsigned char *p = (unsigned char *) str;
-	while (*p) {
-		*p = tolower((unsigned char) *p);
-		p++;
-	}
-	return str;
+    unsigned char *p = (unsigned char *) str;
+    while (*p) {
+        *p = tolower((unsigned char) *p);
+        p++;
+    }
+    return str;
 }
 
 char *removeSubStr(char *str, const char *substr) {
-	size_t m1 = strlen(str);
-	size_t m2 = strlen(substr);
-	if (!(m1 < m2)) {
-		for (char *p = str; (p = strstr(p, substr)) != NULL;) {
-			size_t n = m1 - (p + m2 - str);
-			memmove(p, p + m2, n + 1);
-		}
-	}
-	return str;
+    size_t m1 = strlen(str);
+    size_t m2 = strlen(substr);
+    if (!(m1 < m2)) {
+        for (char *p = str; (p = strstr(p, substr)) != NULL;) {
+            size_t n = m1 - (p + m2 - str);
+            memmove(p, p + m2, n + 1);
+        }
+    }
+    return str;
 }
 
 void removePrefix(char *str) {
-	char strLocal[20];
-	strcpy(strLocal, removeSubStr(str, "ALU_"));
-	strcpy(strLocal, removeSubStr(str, "OP_"));
-	strcpy(strLocal, removeSubStr(str, "F_"));
-	strcpy(str, strLocal);
+    char strLocal[20];
+    strcpy(strLocal, removeSubStr(str, "ALU_"));
+    strcpy(strLocal, removeSubStr(str, "OP_"));
+    strcpy(strLocal, removeSubStr(str, "F_"));
+    strcpy(str, strLocal);
 }
 
 const char* ALU[] = {
