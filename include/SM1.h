@@ -639,12 +639,9 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #ifdef DEBUG
                    DBG_PRINT("ALU_OP_CRI) ");
 #endif
-                   if (r == vm->rs[vm->rp+1]){
-                        alu = 0;
-                        break;
-                   }
-                   alu = 1;
-                   ++vm->rs[vm->rp+1];
+                   alu = -(r == vm->rs[vm->rp+1]);
+		           if (!alu)
+			           ++vm->rs[vm->rp + 1];
                    break;
                 case ALU_OP_BYE:
 #ifdef DEBUG

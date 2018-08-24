@@ -35,6 +35,9 @@ char bWords[100][20];
  int beginCnt = 1;
  int beginStk[20];
  int beginStkP = -1;
+ int doCnt = 1;
+ int doStk[20];
+ int doStkP = -1;
 bool comment = false;
  int tupleCnt = 0;
 char tuple[3][20];
@@ -327,6 +330,24 @@ char* compileTuple() {
 				}
 				sprintf(compiledTuple, "    jmp begin_%04x\n.label begin_%04x_repeat",
 						beginStk[beginStkP], beginStk[beginStkP]);
+				--beginStkP;
+				--tupleCnt;
+				break;
+			cases("do") //TODO: optimization: insert values in rstk
+				sprintf(compiledTuple, "   >r\n   >r\n.label do_%04x", doCnt);
+				doStkP++;
+				doStk[doStkP] = doCnt++;
+				--tupleCnt;
+				break;
+			cases("loop")
+				if (doStkP == -1) {
+					printf("ERROR: loop without do\n");
+					strcpy(compiledTuple, "!!ERROR!!");
+					--tupleCnt;
+					break;
+				}
+				sprintf(compiledTuple, "    cri\n    jmz do_%04x",
+						beginStk[beginStkP]);
 				--beginStkP;
 				--tupleCnt;
 				break;
