@@ -82,62 +82,62 @@ void removePrefix(char *str) {
 }
 
 const char* ALU[] = {
-		EP(ALU_OP_TOP),
-		EP(ALU_OP_SCN),
-		EP(ALU_OP_TRS),
-		EP(ALU_OP_GET),
-		EP(ALU_OP_PUT),
-		EP(ALU_OP_DPL),
-		EP(ALU_OP_DML),
-		EP(ALU_OP_AND),
-		EP(ALU_OP_BOR),
-		EP(ALU_OP_XOR),
-		EP(ALU_OP_NEG),
-		EP(ALU_OP_DEC),
-		EP(ALU_OP_EQ0),
-		EP(ALU_OP_EQU),
-		EP(ALU_OP_UCP),
-		EP(ALU_OP_CMP),
-		EP(ALU_OP_RSH),
-		EP(ALU_OP_LSH),
-		EP(ALU_OP_GSP),
-		EP(ALU_OP_GRS),
-		EP(ALU_OP_SSP),
-		EP(ALU_OP_SRP),
-		EP(ALU_OP_SND),
-		EP(ALU_OP_RCV),
-		EP(ALU_OP_UMD),
-		EP(ALU_OP_MOD),
-		EP(ALU_OP_REG),
-		EP(ALU_OP_SRG),
-		EP(ALU_OP_NP0),
-		EP(ALU_OP_NP1),
-		EP(ALU_OP_NP2),
-		EP(ALU_OP_BYE)
+    EP(ALU_OP_TOP),
+    EP(ALU_OP_SCN),
+    EP(ALU_OP_TRS),
+    EP(ALU_OP_GET),
+    EP(ALU_OP_PUT),
+    EP(ALU_OP_DPL),
+    EP(ALU_OP_DML),
+    EP(ALU_OP_AND),
+    EP(ALU_OP_BOR),
+    EP(ALU_OP_XOR),
+    EP(ALU_OP_NEG),
+    EP(ALU_OP_DEC),
+    EP(ALU_OP_EQ0),
+    EP(ALU_OP_EQU),
+    EP(ALU_OP_UCP),
+    EP(ALU_OP_CMP),
+    EP(ALU_OP_RSH),
+    EP(ALU_OP_LSH),
+    EP(ALU_OP_GSP),
+    EP(ALU_OP_GRS),
+    EP(ALU_OP_SSP),
+    EP(ALU_OP_SRP),
+    EP(ALU_OP_SND),
+    EP(ALU_OP_RCV),
+    EP(ALU_OP_UMD),
+    EP(ALU_OP_MOD),
+    EP(ALU_OP_REG),
+    EP(ALU_OP_SRG),
+    EP(ALU_OP_NP0),
+    EP(ALU_OP_NP1),
+    EP(ALU_OP_NP2),
+    EP(ALU_OP_BYE)
 };
 
 const char* OPTYPE[] = {
-		EP(OP_LIT),
-		EP(OP_ALU),
-		EP(OP_JMP),
-		EP(OP_JMZ),
-		EP(OP_CLL)
+    EP(OP_LIT),
+    EP(OP_ALU),
+    EP(OP_JMP),
+    EP(OP_JMZ),
+    EP(OP_CLL)
 };
 
 const char* VMFLAGS[] = {
-		EP(ALU_F_T2N),
-		EP(ALU_F_T2R),
-		EP(ALU_F_N2T),
-		EP(ALU_F_R2P)
+    EP(ALU_F_T2N),
+    EP(ALU_F_T2R),
+    EP(ALU_F_N2T),
+    EP(ALU_F_R2P)
 };
 
 const char* DELTA[] = {
-       "d+1",
-       "d-1",
-       "d-2",
-       "r+1",
-       "r-1",
-       "r-2"
+    "d+1",
+    "d-1",
+    "d-2",
+    "r+1",
+    "r-1",
+    "r-2"
 };
 
 const uint8_t DELTA_CODE[] = { 0x1, 0x2, 0x3, 0x4, 0x8, 0xC };

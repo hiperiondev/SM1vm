@@ -27,17 +27,17 @@
 /////////////////////////////////////////////////////////////////////////////////////
 
 char bWords[100][20];
-int bW = 0;
-int addrC = 0;
-int ifCnt = 1;
-int ifStk[20];
-int ifStkP = -1;
+ int bW = 0;
+ int addrC = 0;
+ int ifCnt = 1;
+ int ifStk[20];
+ int ifStkP = -1;
 bool comment = false;
-int tupleCnt = 0;
+ int tupleCnt = 0;
 char tuple[3][20];
 
 struct Header {
-	int type; /* 0:create, 1: col, 2: var, 3:const */
+	int type; /* 0:create, 1: colon, 2: variable, 3:constant */
 	char name[40];
 	int cfa;
 	bool immediate;
@@ -318,7 +318,7 @@ char* compileTuple() {
 	// literal
 	char *ptr;
 	bool lit = false;
-	int res = (int)strtol(tuple[0], &ptr, 10);
+	 int res = (int)strtol(tuple[0], &ptr, 10);
 	if(tuple[0] != ptr){
 		lit = true;
 	}
@@ -368,16 +368,17 @@ char* compileTuple() {
 /////////////////////////////////////////////////////////////////////////////////////
 
 int sm1_compileFile(char* fileIn, char* fileOut, char* baseWords, char* ramSizeChar) {
-	FILE* fIn;
-	FILE* fOut;
-	FILE* fWords;
+	FILE *fIn;
+	FILE *fOut;
+	FILE *fWords;
 	char buf[80];
 	char lineSplited[40][80];
 	char compiled[50];
+	char *ptr;
+	 int ramSize = (int) strtol(ramSizeChar, &ptr, 10);
+
 	remove(fileOut);
 
-	char *ptr;
-	int ramSize = (int) strtol(ramSizeChar, &ptr, 10);
 	if (ramSizeChar == ptr) {
 		perror("Error: ramSize not integer");
 		return RC_ERROR;

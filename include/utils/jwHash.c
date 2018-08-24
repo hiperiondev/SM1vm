@@ -16,7 +16,7 @@ limitations under the License.
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <utils/hashtable/jwHash.h>
+#include <utils/jwHash.h>
 
 #ifdef HASHTEST
 #include <sys/time.h>

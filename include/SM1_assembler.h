@@ -11,7 +11,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include <utils/hashtable/jwHash.h>
+#include <utils/jwHash.h>
 
 #define UNDER_OVER
 //#define CARRY
@@ -56,10 +56,12 @@ int directives(char* line, char* fileOut, bool pass) {
 	// search macro and insert
 	if (get_str_by_str(macro, lineSplited[0], &hresult) != HASHNOTFOUND) {
 		char macroArgs[10][20];
+		char macroLine[40][80];
 		int macroArgsCnt = words - 1;
+		int macroArgsCnt_ = macroArgsCnt;
 		while (macroArgsCnt != 0) {
-			strcpy(macroArgs[macroArgsCnt], lineSplited[macroArgsCnt]);
-		} //TODO: agregar parametros
+			strcpy(macroArgs[macroArgsCnt_], lineSplited[macroArgsCnt_--]);
+		}
 		macroIndex = 1;
 		strcpy(macroName, lineSplited[0]);
 		printf("[ %s\n", macroName);
@@ -69,6 +71,23 @@ int directives(char* line, char* fileOut, bool pass) {
 			strcat(str, macroName);
 			if (get_str_by_str(macro, str, &hresult) == HASHNOTFOUND)
 				break;
+			words = getWords(hresult, macroLine);
+			strcpy(hresult, "");
+			for (int n = 0; n <= words - 1; n++) {
+				if (macroLine[n][0] == '@') {
+					char *ptr;
+					bool num = false;
+					int res = (int) strtol(macroLine[n][1], &ptr, 10);
+					if (macroLine[n][1] != ptr) {
+						num = true;
+					}
+					if (!num || (res >= macroArgsCnt))
+						break;
+					strcpy(macroLine[n], macroArgs[res]);
+				}
+				sprintf(hresult, "%s %s", hresult, macroLine[n]);
+			}
+
 			sm1_assembleLine(hresult, pass);
 		}
 		printf("]\n");
@@ -176,13 +195,14 @@ int directives(char* line, char* fileOut, bool pass) {
 //////////////////////////////////////////////////////////////
 
 uint16_t sm1_assembleLine(char* line, bool pass) {
-	int words, value, w;
-	bool lit = false;
-	int len = 0;
-	isStr = 0;
-	char lineSplited[40][80], str[40];
-	char * hresult = NULL;
-	words = getWords(line, lineSplited);
+	  int words, value, w;
+	 bool lit = false;
+	  int len = 0;
+	 char *hresult = NULL;
+	 char lineSplited[40][80], str[40];
+
+	 isStr = 0;
+     words = getWords(line, lineSplited);
 
 	char *ptr;
 	value = (int) strtol(lineSplited[1], &ptr, 16);
@@ -327,8 +347,9 @@ uint16_t sm1_assembleLine(char* line, bool pass) {
 int sm1_assembleFile(char* fileIn, char* fileOut) {
 	FILE* fIn;
 	FILE* fOut;
-	char buf[80];
-	int asmResult;
+	 char buf[80];
+	  int asmResult;
+
 	if (equ == NULL) {
 		  equ = create_hash(100);
 		 word = create_hash(100);
