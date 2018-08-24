@@ -110,7 +110,7 @@ const char* ALU[] = {
     EP(ALU_OP_MOD),
     EP(ALU_OP_REG),
     EP(ALU_OP_SRG),
-    EP(ALU_OP_NP0),
+    EP(ALU_OP_CRI),
     EP(ALU_OP_NP1),
     EP(ALU_OP_NP2),
     EP(ALU_OP_BYE)

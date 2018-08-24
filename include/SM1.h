@@ -128,7 +128,7 @@ enum {
         ALU_OP_RCV = 0x19, /* receive t */
         ALU_OP_UMD = 0x1a, /* u/mod */
         ALU_OP_MOD = 0x1b, /* /mod */
-        ALU_OP_NP0 = 0x1c, /* not defined */
+        ALU_OP_CRI = 0x1c, /* compare top and snd element of return stack. If not eq increment snd */
         ALU_OP_NP1 = 0x1d, /* not defined */
         ALU_OP_NP2 = 0x1e, /* not defined */
         ALU_OP_BYE = 0x1f  /* return */
@@ -635,6 +635,17 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                         if (t > vm->reg_size - 1) return RC_REG_UNKNOWN;
                         vm->reg[t] = n;
                         break;
+                case ALU_OP_CRI:
+#ifdef DEBUG
+                   DBG_PRINT("ALU_OP_CRI) ");
+#endif
+                   if (r == vm->rs[vm->rp+1]){
+                        alu = 0;
+                        break;
+                   }
+                   alu = 1;
+                   ++vm->rs[vm->rp+1];
+                   break;
                 case ALU_OP_BYE:
 #ifdef DEBUG
                     DBG_PRINT("ALU_OP_BYE) ");
