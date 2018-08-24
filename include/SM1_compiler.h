@@ -286,7 +286,7 @@ char* compileTuple() {
 				beginStk[beginStkP] = beginCnt++;
 				--tupleCnt;
 				break;
-            cases("again")
+           cases("again")
 				if (beginStkP == -1) {
 					printf("ERROR: again without begin\n");
 					strcpy(compiledTuple, "!!ERROR!!");
@@ -298,37 +298,49 @@ char* compileTuple() {
 				--beginStkP;
 				--tupleCnt;
 				break;
-            cases("until")
+           cases("until")
 				if (beginStkP == -1) {
 					printf("ERROR: again without begin\n");
 					strcpy(compiledTuple, "!!ERROR!!");
 					--tupleCnt;
 					break;
 				}
-				sprintf(compiledTuple, "    jmz begin_%04x",
-						beginStk[beginStkP]);
+				sprintf(compiledTuple, "    jmz begin_%04x\n.label begin_%04x_end",
+						beginStk[beginStkP], beginStk[beginStkP]);
 				--beginStkP;
 				--tupleCnt;
 				break;
-            cases("while")
+           cases("while")
 				if (beginStkP == -1) {
 					printf("ERROR: while without begin\n");
 					strcpy(compiledTuple, "!!ERROR!!");
 					--tupleCnt;
 					break;
 				}
-				sprintf(compiledTuple, "    jmz begin_%04x_repeat",
+				sprintf(compiledTuple, "    jmz begin_%04x_end",
 						beginStk[beginStkP]);
 				--tupleCnt;
 				break;
-            cases("repeat")
+           cases("repeat")
 				if (beginStkP == -1) {
 					printf("ERROR: repeat without begin\n");
 					strcpy(compiledTuple, "!!ERROR!!");
 					--tupleCnt;
 					break;
 				}
-				sprintf(compiledTuple, "    jmp begin_%04x\n.label begin_%04x_repeat",
+				sprintf(compiledTuple, "    jmp begin_%04x\n.label begin_%04x_end",
+						beginStk[beginStkP], beginStk[beginStkP]);
+				--beginStkP;
+				--tupleCnt;
+				break;
+            cases("leave")
+				if (beginStkP == -1) {
+					printf("ERROR: leave without begin\n");
+					strcpy(compiledTuple, "!!ERROR!!");
+					--tupleCnt;
+					break;
+				}
+				sprintf(compiledTuple, "    jmp begin_%04x_end",
 						beginStk[beginStkP], beginStk[beginStkP]);
 				--beginStkP;
 				--tupleCnt;
@@ -346,7 +358,7 @@ char* compileTuple() {
 					--tupleCnt;
 					break;
 				}
-				sprintf(compiledTuple, "    cri\n    jmz do_%04x",
+				sprintf(compiledTuple, "    cri\n    jmz do_%04x\n   dropr\n   dropr",
 						beginStk[beginStkP]);
 				--beginStkP;
 				--tupleCnt;
