@@ -32,14 +32,17 @@ char bWords[100][20];
  int ifCnt = 1;
  int ifStk[20];
  int ifStkP = -1;
+ int beginCnt = 1;
+ int beginStk[20];
+ int beginStkP = -1;
 bool comment = false;
  int tupleCnt = 0;
 char tuple[3][20];
 
 struct Header {
-	int type; /* 0:create, 1: colon, 2: variable, 3:constant */
+	 int type; /* 0:create, 1: colon, 2: variable, 3:constant */
 	char name[40];
-	int cfa;
+	 int cfa;
 	bool immediate;
 	bool compileOnly;
 	bool included;
@@ -274,6 +277,59 @@ char* compileTuple() {
 				ifStk[++ifStkP] = 0;
 				--tupleCnt;
 				break;
+            cases("begin")
+				sprintf(compiledTuple, ".label begin_%04x", beginCnt);
+				beginStkP++;
+				beginStk[beginStkP] = beginCnt++;
+				--tupleCnt;
+				break;
+            cases("again")
+				if (beginStkP == -1) {
+					printf("ERROR: again without begin\n");
+					strcpy(compiledTuple, "!!ERROR!!");
+					--tupleCnt;
+					break;
+				}
+				sprintf(compiledTuple, "    jmp begin_%04x",
+						beginStk[beginStkP]);
+				--beginStkP;
+				--tupleCnt;
+				break;
+            cases("until")
+				if (beginStkP == -1) {
+					printf("ERROR: again without begin\n");
+					strcpy(compiledTuple, "!!ERROR!!");
+					--tupleCnt;
+					break;
+				}
+				sprintf(compiledTuple, "    jmz begin_%04x",
+						beginStk[beginStkP]);
+				--beginStkP;
+				--tupleCnt;
+				break;
+            cases("while")
+				if (beginStkP == -1) {
+					printf("ERROR: while without begin\n");
+					strcpy(compiledTuple, "!!ERROR!!");
+					--tupleCnt;
+					break;
+				}
+				sprintf(compiledTuple, "    jmz begin_%04x_repeat",
+						beginStk[beginStkP]);
+				--tupleCnt;
+				break;
+            cases("repeat")
+				if (beginStkP == -1) {
+					printf("ERROR: repeat without begin\n");
+					strcpy(compiledTuple, "!!ERROR!!");
+					--tupleCnt;
+					break;
+				}
+				sprintf(compiledTuple, "    jmp begin_%04x\n.label begin_%04x_repeat",
+						beginStk[beginStkP], beginStk[beginStkP]);
+				--beginStkP;
+				--tupleCnt;
+				break;
 			defaults
 			}switchs_end;
 
@@ -448,9 +504,8 @@ int sm1_compileFile(char* fileIn, char* fileOut, char* baseWords, char* ramSizeC
 
 	listHeaders(header);
 	fclose(fIn);
-	fclose(fOut);
-
 	// TODO: compile dictionary map
+	fclose(fOut);
 
 	return RC_OK;
 }

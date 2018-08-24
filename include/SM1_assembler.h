@@ -197,14 +197,13 @@ int directives(char* line, char* fileOut, bool pass) {
 uint16_t sm1_assembleLine(char* line, bool pass) {
 	  int words, value, w;
 	 bool lit = false;
-	  int len = 0;
 	 char *hresult = NULL;
 	 char lineSplited[40][80], str[40];
+	  int len = 0;
+	 char *ptr;
 
-	 isStr = 0;
-     words = getWords(line, lineSplited);
-
-	char *ptr;
+	isStr = 0;
+	words = getWords(line, lineSplited);
 	value = (int) strtol(lineSplited[1], &ptr, 16);
 	if (lineSplited[1] != ptr) {
 		lit = true;
@@ -345,10 +344,10 @@ uint16_t sm1_assembleLine(char* line, bool pass) {
 
 
 int sm1_assembleFile(char* fileIn, char* fileOut) {
-	FILE* fIn;
-	FILE* fOut;
-	 char buf[80];
-	  int asmResult;
+    FILE *fIn;
+    FILE *fOut;
+    char buf[80];
+    int asmResult;
 
 	if (equ == NULL) {
 		  equ = create_hash(100);
