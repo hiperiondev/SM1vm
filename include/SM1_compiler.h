@@ -23,6 +23,8 @@
 //#define CARRY
 #define EXTRAREGS
 //#define EXTBITS
+//#define AUTOINCR
+//#define INDIRECT
 
 /////////////////////////////////////////////////////////////////////////////////////
 
@@ -43,7 +45,7 @@ bool comment = false;
 char tuple[3][20];
 
 struct Header {
-     int type; /* 0:create, 1: colon, 2: variable, 3:constant */
+     int type; /* 0:create, 1: colon, 2: variable, 3:constant, 4:baseword */
     char name[40];
      int cfa;
     bool immediate;
@@ -180,6 +182,10 @@ char* doLit(int number) {
     return resultStr;
 }
 
+void doExpose(char *name) {
+    doHeader(&header, name);
+    lastHeader->type = 4;
+}
 
 /////////////////////////////////////////////////////////////////////////////////////
 
@@ -190,6 +196,14 @@ char* compileTuple() {
 
     switchs(tuple[0])
             {
+            cases("expose")
+                if (searchBwords(tuple[1]) != RC_OK) {
+                    printf("ERROR: (expose) base word not exist\n");
+                    strcpy(compiledTuple, "!!ERROR!!");
+                }
+                doExpose(tuple[1]);
+                tupleCnt -=2;
+                break;
             cases("(")
                 comment = true;
                 --tupleCnt;
