@@ -34,7 +34,8 @@ These conditional functions are:
 ## Assembler
  The assembler accept these directives:
 ```
-    .equ: Assigns a value to a label. Value $HERE$ represent actual address pointer, can be offsetted ex: .equ label $HERE + 3.
+    .equ: Assigns a value to a label. Value $HERE$ represent actual address pointer, 
+          can be offsetted ex: .equ label $HERE + 3.
   .macro: Start of a macro. Takes the name as parameter.
           When the name of the macro is written later in the program, 
           the macro definition is expanded at the place it was used. 
@@ -48,7 +49,8 @@ These conditional functions are:
 .comment: Comment line.
     .org: Set the location counter to an absolute value. Only accept decimal number. 
           If number is preceded by "offset" location counter is incremented by this value. 
-   .data: Insert uint_16 value. 
+   .data: Insert uint_16 value. Value $HERE$ represent actual address pointer, 
+          can be offsetted ex: .data $HERE + 3. 
  .string: Insert string text.
 ```
 NOTE: Directives can't be used inside macro.

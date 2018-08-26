@@ -98,21 +98,21 @@ int directives(char* line, char* fileOut, bool pass) {
         return 0;
     }
     if (opCmp(lineSplited[0], ".equ") == 0) {
-        if (opCmp(lineSplited[1], "$HERE$") == 0) {
+        if (opCmp(lineSplited[2], "$HERE$") == 0) {
             int offsetHere = 0;
             char *ptr;
-            if (strcmp(lineSplited[2], '+') == 0) {
-                int res = (int) strtol(lineSplited[3], &ptr, 10);
-                if (lineSplited[3] == ptr) {
-                    printf("ASSEMBLER ERROR: $HERE offset not number\n");
+            if (strcmp(lineSplited[3], "+") == 0) {
+                int res = (int) strtol(lineSplited[4], &ptr, 10);
+                if (lineSplited[4] == ptr) {
+                    printf("ASSEMBLER ERROR: $HERE$ offset not number\n");
                     exit(1);
                 }
                 offsetHere += res;
             }
-            if (strcmp(lineSplited[2], '-') == 0) {
-                int res = (int) strtol(lineSplited[3], &ptr, 10);
+            if (strcmp(lineSplited[3], "-") == 0) {
+                int res = (int) strtol(lineSplited[4], &ptr, 10);
                 if (lineSplited[3] == ptr) {
-                    printf("ASSEMBLER ERROR: $HERE offset not number\n");
+                    printf("ASSEMBLER ERROR: $HERE$ offset not number\n");
                     exit(1);
                 }
                 offsetHere -= res;
@@ -275,6 +275,27 @@ uint16_t sm1_assembleLine(char* line, bool pass) {
     }
 
     if (opCmp(lineSplited[0], ".data") == 0) {
+        if (opCmp(lineSplited[1], "$HERE$") == 0) {
+            int offsetHere = 0;
+            char *ptr;
+            if (strcmp(lineSplited[2], "+") == 0) {
+                int res = (int) strtol(lineSplited[3], &ptr, 10);
+                if (lineSplited[3] == ptr) {
+                    printf("ASSEMBLER ERROR: $HERE$ offset not number\n");
+                    exit(1);
+                }
+                offsetHere += res;
+            }
+            if (strcmp(lineSplited[2], "-") == 0) {
+                int res = (int) strtol(lineSplited[3], &ptr, 10);
+                if (lineSplited[3] == ptr) {
+                    printf("ASSEMBLER ERROR: $HERE$ offset not number\n");
+                    exit(1);
+                }
+                offsetHere -= res;
+            }
+            value = addr + offsetHere;
+        }
         if (value < 65536) {
             return value;
         }
