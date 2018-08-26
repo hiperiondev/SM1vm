@@ -45,7 +45,7 @@ bool comment = false;
 char tuple[3][20];
 
 struct Header {
-     int type; /* 0:create, 1: colon, 2: variable, 3:constant, 4:baseword */
+     int type; /* 0:create, 1: colon, 2:constant, 3:baseword */
     char name[40];
      int cfa;
     bool immediate;
@@ -124,6 +124,7 @@ int readTuple(FILE* fIn) {
 
 void doCreate(char *name) {
     doHeader(&header, name);
+    lastHeader->type = 0;
 }
 
 void doCol(char *name) {
@@ -132,17 +133,15 @@ void doCol(char *name) {
     lastHeader->cfa = addrC;
 }
 
-void doVar(char *name) {
-    int value = 0;
+void doConst(char *name, int value) {
     doHeader(&header, name);
     lastHeader->type = 2;
     utarray_push_back(lastHeader->headerReg, &value);
 }
 
-void doConst(char *name, int value) {
+void doExpose(char *name) {
     doHeader(&header, name);
     lastHeader->type = 3;
-    utarray_push_back(lastHeader->headerReg, &value);
 }
 
 char* doTick(char *word) {
@@ -182,11 +181,80 @@ char* doLit(int number) {
     return resultStr;
 }
 
-void doExpose(char *name) {
-    doHeader(&header, name);
-    lastHeader->type = 4;
+/////////////////////////////////////////////////////////////////////////////////////
+
+void createDictionary_Create(struct Header *node, FILE *fDict) {
+    char nameLen = strlen(node->name);
+    if (node->immediate)
+        nameLen |= 0x80;
+    fprintf(fDict, ".string %x%s\n", nameLen, node->name);
+    int regLen = utarray_len(node->headerReg);
+    fprintf(fDict, ".data $HERE$ + %d\n", regLen + 3);
+    fprintf(fDict, "    lit $HERE$ + 2\n    exit\n");
+    int cnt = 0;
+    while (regLen != cnt) {
+        fprintf(fDict, ".data %04x\n", node->headerReg[cnt++]);
+    }
 }
 
+void createDictionary_ColonDef(struct Header *node, FILE *fDict) {
+    char nameLen = strlen(node->name);
+    if (node->immediate)
+        nameLen |= 0x80;
+    fprintf(fDict, ".string %x%s\n", nameLen, node->name);
+    fprintf(fDict, ".data $HERE$ + 3\n");
+    fprintf(fDict, "    cll %04x\n    exit\n", node->cfa);
+
+}
+
+void createDictionary_Constant(struct Header *node, FILE *fDict) {
+    char nameLen = strlen(node->name);
+    if (node->immediate)
+        nameLen |= 0x80;
+    fprintf(fDict, ".string %x%s\n", nameLen, node->name);
+    char litStr[20] = doLit(node->headerReg[0]);
+    int offst = node->headerReg[0] < 0x8000 ? 3 : 4;
+    fprintf(fDict, ".data $HERE$ + %d\n", offst);
+    fprintf(fDict, "%s\n    exit\n", litStr);
+}
+
+void createDictionary_Expose(struct Header *node, FILE *fDict) {
+
+}
+
+void createDictionary(struct Header *node, char *fileName) {
+    FILE *fDict;
+
+    strcat(fileName, ".dictionary");
+    if ((fDict = fopen(fileName, "r")) == NULL) {
+        perror("Error: can't open source-file");
+        exit(1);
+    }
+
+    while (node != NULL) {
+        if (!node->included)
+            continue;
+        switch (node->type) {
+        case 0:
+            createDictionary_Create(node, fDict);
+            break;
+        case 1:
+            createDictionary_ColonDef(node, fDict);
+            break;
+        case 2:
+            createDictionary_Constant(node, fDict);
+            break;
+        case 3:
+            createDictionary_Expose(node, fDict);
+            break;
+        default:
+            printf("ERROR: dictionary type not exist\n");
+            exit(1);
+            node = node->next;
+        }
+    }
+    fclose(fDict);
+}
 /////////////////////////////////////////////////////////////////////////////////////
 
 char* compileTuple() {
@@ -234,7 +302,8 @@ char* compileTuple() {
                 break;
             cases("variable")
                 sprintf(compiledTuple, ".comment doVar %s", tuple[1]);
-                doVar(tuple[1]);
+                doCreate(tuple[1]);
+                doComma(0);
                 tupleCnt -= 2;
                 break;
             cases("constant")
@@ -315,7 +384,7 @@ char* compileTuple() {
                 break;
             cases("until")
                 if (beginStkP == -1) {
-                    printf("ERROR: again without begin\n");
+                    printf("ERROR: until without begin\n");
                     strcpy(compiledTuple, "!!ERROR!!");
                     --tupleCnt;
                     break;
@@ -358,7 +427,7 @@ char* compileTuple() {
                     break;
                 }
                 sprintf(compiledTuple, "    jmp begin_%04x_end",
-                        beginStk[beginStkP], beginStk[beginStkP]);
+                        beginStk[beginStkP]);
                 --beginStkP;
                 --tupleCnt;
                 break;
@@ -485,8 +554,8 @@ int sm1_compileFile(char* fileIn, char* fileOut, char* baseWords, char* ramSizeC
 
     remove(fileOut);
 
-    if (ramSizeChar == ptr) {
-        perror("Error: ramSize not integer");
+    if ((ramSizeChar == ptr) || ramSize < 1) {
+        perror("Error: ramSize invalid");
         return RC_ERROR;
     }
 
@@ -552,10 +621,10 @@ int sm1_compileFile(char* fileIn, char* fileOut, char* baseWords, char* ramSizeC
 
     ///////////////////////////////////////
 
-    listHeaders(header);
     fclose(fIn);
-    // TODO: compile dictionary map
+    createDictionary(header, fileOut);
     fclose(fOut);
+    listHeaders(header);
 
     return RC_OK;
 }
