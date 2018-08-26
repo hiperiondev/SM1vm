@@ -99,7 +99,25 @@ int directives(char* line, char* fileOut, bool pass) {
     }
     if (opCmp(lineSplited[0], ".equ") == 0) {
         if (opCmp(lineSplited[1], "$HERE$") == 0) {
-            sprintf(lineSplited[2], "%04x", addr);
+            int offsetHere = 0;
+            char *ptr;
+            if (strcmp(lineSplited[2], '+') == 0) {
+                int res = (int) strtol(lineSplited[3], &ptr, 10);
+                if (lineSplited[3] == ptr) {
+                    printf("ASSEMBLER ERROR: $HERE offset not number\n");
+                    exit(1);
+                }
+                offsetHere += res;
+            }
+            if (strcmp(lineSplited[2], '-') == 0) {
+                int res = (int) strtol(lineSplited[3], &ptr, 10);
+                if (lineSplited[3] == ptr) {
+                    printf("ASSEMBLER ERROR: $HERE offset not number\n");
+                    exit(1);
+                }
+                offsetHere -= res;
+            }
+            sprintf(lineSplited[2], "%04x", addr+offsetHere);
         }
         if (pass) {
             add_str_by_str(equ, lineSplited[1], lineSplited[2]);
