@@ -191,9 +191,10 @@ void createDictionary_Create(struct Header *node, FILE *fDict) {
     int regLen = utarray_len(node->headerReg);
     fprintf(fDict, ".data $HERE$ + %d\n", regLen + 3);
     fprintf(fDict, "    lit $HERE$ + 2\n    exit\n");
-    int cnt = 0;
-    while (regLen != cnt) {
-        fprintf(fDict, ".data %04x\n", node->headerReg[cnt++]);
+    int *p;
+    for (p = (int*) utarray_front(node->headerReg); p != NULL; p =
+            (int*) utarray_next(node->headerReg, p)) {
+        fprintf(fDict, ".data %04x\n", *p);
     }
 }
 
@@ -212,8 +213,11 @@ void createDictionary_Constant(struct Header *node, FILE *fDict) {
     if (node->immediate)
         nameLen |= 0x80;
     fprintf(fDict, ".string %x%s\n", nameLen, node->name);
-    char litStr[20] = doLit(node->headerReg[0]);
-    int offst = node->headerReg[0] < 0x8000 ? 3 : 4;
+    int *p;
+    p = (int*) utarray_front(node->headerReg);
+    char litStr[20];
+    strcpy(litStr, doLit(*p));
+    int offst = *p < 0x8000 ? 3 : 4;
     fprintf(fDict, ".data $HERE$ + %d\n", offst);
     fprintf(fDict, "%s\n    exit\n", litStr);
 }
