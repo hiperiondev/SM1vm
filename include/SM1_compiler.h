@@ -69,6 +69,7 @@ void doHeader(struct Header** head_ref, char *name) {
     new_header->compileOnly = false;
     new_header->cfa = 0;
     new_header->next = (*head_ref);
+    new_header->included = true;
     lastHeader = new_header;
     (*head_ref) = new_header;
 }
@@ -83,7 +84,7 @@ struct Header* searchHeader(struct Header *header, char *name) {
 }
 
 void listHeaders(struct Header *node) {
-    char typeHeader[][10] = { "create", "colon", "variable", "constant" };
+    char typeHeader[][10] = { "create", "colon", "constant", "baseword" };
     printf("\nHeaders:\n");
     while (node != NULL) {
         printf("[%s]\n", node->name);
@@ -159,8 +160,8 @@ void doAllot(int qty) {
         utarray_push_back(lastHeader->headerReg, &val);
 }
 
-void doComma(int res) {
-    utarray_push_back(lastHeader->headerReg, &res);
+void doComma(int value) {
+    utarray_push_back(lastHeader->headerReg, &value);
 }
 
 char* doLit(int number) {
@@ -187,7 +188,7 @@ void createDictionary_Create(struct Header *node, FILE *fDict) {
     char nameLen = strlen(node->name);
     if (node->immediate)
         nameLen |= 0x80;
-    fprintf(fDict, ".string %x%s\n", nameLen, node->name);
+    fprintf(fDict, ".string %c%s\n", nameLen, node->name);
     int regLen = utarray_len(node->headerReg);
     fprintf(fDict, ".data $HERE$ + %d\n", regLen + 3);
     fprintf(fDict, "    lit $HERE$ + 2\n    exit\n");
@@ -202,17 +203,16 @@ void createDictionary_ColonDef(struct Header *node, FILE *fDict) {
     char nameLen = strlen(node->name);
     if (node->immediate)
         nameLen |= 0x80;
-    fprintf(fDict, ".string %x%s\n", nameLen, node->name);
+    fprintf(fDict, ".string %c%s\n", nameLen, node->name);
     fprintf(fDict, ".data $HERE$ + 3\n");
     fprintf(fDict, "    cll %04x\n    exit\n", node->cfa);
-
 }
 
 void createDictionary_Constant(struct Header *node, FILE *fDict) {
     char nameLen = strlen(node->name);
     if (node->immediate)
         nameLen |= 0x80;
-    fprintf(fDict, ".string %x%s\n", nameLen, node->name);
+    fprintf(fDict, ".string %c%s\n", nameLen, node->name);
     int *p;
     p = (int*) utarray_front(node->headerReg);
     char litStr[20];
@@ -230,7 +230,7 @@ void createDictionary(struct Header *node, char *fileName) {
     FILE *fDict;
 
     strcat(fileName, ".dictionary");
-    if ((fDict = fopen(fileName, "r")) == NULL) {
+    if ((fDict = fopen(fileName, "w")) == NULL) {
         perror("Error: can't open source-file");
         exit(1);
     }
@@ -238,6 +238,7 @@ void createDictionary(struct Header *node, char *fileName) {
     while (node != NULL) {
         if (!node->included)
             continue;
+        printf (" Insert word: %s\n",node->name);
         switch (node->type) {
         case 0:
             createDictionary_Create(node, fDict);
@@ -254,8 +255,8 @@ void createDictionary(struct Header *node, char *fileName) {
         default:
             printf("ERROR: dictionary type not exist\n");
             exit(1);
-            node = node->next;
         }
+        node = node->next;
     }
     fclose(fDict);
 }
@@ -626,10 +627,9 @@ int sm1_compileFile(char* fileIn, char* fileOut, char* baseWords, char* ramSizeC
     ///////////////////////////////////////
 
     fclose(fIn);
+    listHeaders(header);
     createDictionary(header, fileOut);
     fclose(fOut);
-    listHeaders(header);
-
     return RC_OK;
 }
 

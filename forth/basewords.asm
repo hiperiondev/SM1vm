@@ -71,3 +71,9 @@
          execute
        then
  .endm
+
+ .macro -
+        invert
+        +
+ .endm
+
