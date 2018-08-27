@@ -214,7 +214,7 @@ void createDictionary_ColonDef(struct Header *node, FILE *fDict,
     } else {
         fprintf(fDict, ".data 0x0000\n");
     }
-    fprintf(fDict, "    cll %04x\n    exit\n", node->cfa);
+    fprintf(fDict, "    jmp doCol_%s\n", node->name);
 }
 
 void createDictionary_Constant(struct Header *node, FILE *fDict,
@@ -239,16 +239,9 @@ void createDictionary_Expose(struct Header *node, FILE *fDict, char *previousWor
 
 }
 
-void createDictionary(struct Header *node, char *fileName) {
-    FILE *fDict;
+void createDictionary(struct Header *node, FILE *fDict) {
     char previousWord[128];
     strcpy(previousWord, "");
-
-    strcat(fileName, ".dictionary");
-    if ((fDict = fopen(fileName, "w")) == NULL) {
-        perror("Error: can't open source-file");
-        exit(1);
-    }
 
     while (node != NULL) {
         if (!node->included)
@@ -639,16 +632,16 @@ int sm1_compileFile(char* fileIn, char* fileOut, char* baseWords, char* ramSizeC
         printf("Compile Error: not main\n");
         return RC_ERROR;
     }
-    fprintf(fOut, "\n.include %s.dictionary\n", fileOut);
+    //fprintf(fOut, "\n.include %s.dictionary\n", fileOut);
     printf("--- end compiling %s\n", fileIn);
 
     ///////////////////////////////////////
 
+    listHeaders(header);
+    createDictionary(header, fOut);
+
     fclose(fIn);
     fclose(fOut);
-    listHeaders(header);
-    createDictionary(header, fileOut);
-
     return RC_OK;
 }
 
