@@ -117,7 +117,7 @@ int directives(char* line, char* fileOut, bool pass) {
                 }
                 offsetHere -= res;
             }
-            sprintf(lineSplited[2], "%04x", addr+offsetHere);
+            sprintf(lineSplited[2], "%04x", addr + offsetHere);
         }
         if (pass) {
             add_str_by_str(equ, lineSplited[1], lineSplited[2]);
@@ -211,7 +211,7 @@ int directives(char* line, char* fileOut, bool pass) {
 
 uint16_t sm1_assembleLine(char* line, bool pass) {
       int words, value, w;
-     bool lit = false;
+     //bool lit = false;
      char *hresult = NULL;
      char lineSplited[40][80], str[40];
       int len = 0;
@@ -220,9 +220,9 @@ uint16_t sm1_assembleLine(char* line, bool pass) {
     isStr = 0;
     words = getWords(line, lineSplited);
     value = (int) strtol(lineSplited[1], &ptr, 16);
-    if (lineSplited[1] != ptr) {
-        lit = true;
-    }
+    //if (lineSplited[1] != ptr) {
+        //lit = true;
+    //}
 
     addr++;
     if (!pass) {
@@ -241,11 +241,11 @@ uint16_t sm1_assembleLine(char* line, bool pass) {
         if (hresult != NULL) {
             value = (int) strtol(hresult, NULL, 16);
             printf("             ^_ (%04x)\n", value);
-        } else {
-            if (!lit && !pass) {
-                printf("             ^_ ERROR: unknown value\n");
-            }
-        }
+        } //else {
+          //  if (!lit && !pass) {
+          //      printf("             ^_ ERROR: unknown value\n");
+          //  }
+        //}
     }
 
     if (opCmp(lineSplited[0], "lit") == 0) {
@@ -304,11 +304,14 @@ uint16_t sm1_assembleLine(char* line, bool pass) {
     }
     if (opCmp(lineSplited[0], ".string") == 0) {
         strcpy(str, "");
-        for (int cnt = 1; cnt < words - 1; cnt++) {
+        int cnt = 1;
+        do {
             strcat(str, lineSplited[cnt]);
             strcat(str, " ");
-        }
-        strcat(str, lineSplited[words - 1]);
+            cnt++;
+        } while (cnt < words - 1);
+        if (words > 1)
+            strcat(str, lineSplited[words - 1]);
         len = strlen(str);
         if ((len % 2) == 1) {
             strcat(str, "\0");
@@ -316,7 +319,7 @@ uint16_t sm1_assembleLine(char* line, bool pass) {
         }
         strcpy(stringResult, "");
         char tmpStr[20];
-        int cnt = 0;
+        cnt = 0;
         while (cnt < len) {
             sprintf(tmpStr, "%02x%02x\n", str[cnt], str[cnt + 1]);
             cnt += 2;

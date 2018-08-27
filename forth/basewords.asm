@@ -66,14 +66,3 @@
        exit
 .endm
 
-.macro @execute
-       @ dup if
-         execute
-       then
- .endm
-
- .macro -
-        invert
-        +
- .endm
-
