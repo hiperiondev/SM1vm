@@ -184,13 +184,17 @@ char* doLit(int number) {
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-void createDictionary_Create(struct Header *node, FILE *fDict) {
+void createDictionary_Create(struct Header *node, FILE *fDict,
+        char *previousWord) {
     char nameLen = strlen(node->name);
     if (node->immediate)
         nameLen |= 0x80;
     fprintf(fDict, ".string %c%s\n", nameLen, node->name);
-    int regLen = utarray_len(node->headerReg);
-    fprintf(fDict, ".data $HERE$ + %d\n", regLen + 3);
+    if (strcmp(previousWord, "") != 0) {
+        fprintf(fDict, ".data _word_%s_\n", previousWord);
+    } else {
+        fprintf(fDict, ".data 0x0000\n");
+    }
     fprintf(fDict, "    lit $HERE$ + 2\n    exit\n");
     int *p;
     for (p = (int*) utarray_front(node->headerReg); p != NULL; p =
@@ -199,16 +203,22 @@ void createDictionary_Create(struct Header *node, FILE *fDict) {
     }
 }
 
-void createDictionary_ColonDef(struct Header *node, FILE *fDict) {
+void createDictionary_ColonDef(struct Header *node, FILE *fDict,
+        char *previousWord) {
     char nameLen = strlen(node->name);
     if (node->immediate)
         nameLen |= 0x80;
     fprintf(fDict, ".string %c%s\n", nameLen, node->name);
-    fprintf(fDict, ".data $HERE$ + 3\n");
+    if (strcmp(previousWord, "") != 0) {
+        fprintf(fDict, ".data _word_%s_\n", previousWord);
+    } else {
+        fprintf(fDict, ".data 0x0000\n");
+    }
     fprintf(fDict, "    cll %04x\n    exit\n", node->cfa);
 }
 
-void createDictionary_Constant(struct Header *node, FILE *fDict) {
+void createDictionary_Constant(struct Header *node, FILE *fDict,
+        char *previousWord) {
     char nameLen = strlen(node->name);
     if (node->immediate)
         nameLen |= 0x80;
@@ -217,17 +227,22 @@ void createDictionary_Constant(struct Header *node, FILE *fDict) {
     p = (int*) utarray_front(node->headerReg);
     char litStr[20];
     strcpy(litStr, doLit(*p));
-    int offst = *p < 0x8000 ? 3 : 4;
-    fprintf(fDict, ".data $HERE$ + %d\n", offst);
+    if (strcmp(previousWord, "") != 0) {
+        fprintf(fDict, ".data _word_%s_\n", previousWord);
+    } else {
+        fprintf(fDict, ".data 0x0000\n");
+    }
     fprintf(fDict, "%s\n    exit\n", litStr);
 }
 
-void createDictionary_Expose(struct Header *node, FILE *fDict) {
+void createDictionary_Expose(struct Header *node, FILE *fDict, char *previousWord) {
 
 }
 
 void createDictionary(struct Header *node, char *fileName) {
     FILE *fDict;
+    char previousWord[128];
+    strcpy(previousWord, "");
 
     strcat(fileName, ".dictionary");
     if ((fDict = fopen(fileName, "w")) == NULL) {
@@ -239,23 +254,25 @@ void createDictionary(struct Header *node, char *fileName) {
         if (!node->included)
             continue;
         printf (" Insert word: %s\n",node->name);
+        fprintf(fDict, ".label _word_%s_\n", node->name);
         switch (node->type) {
         case 0:
-            createDictionary_Create(node, fDict);
+            createDictionary_Create(node, fDict, previousWord);
             break;
         case 1:
-            createDictionary_ColonDef(node, fDict);
+            createDictionary_ColonDef(node, fDict, previousWord);
             break;
         case 2:
-            createDictionary_Constant(node, fDict);
+            createDictionary_Constant(node, fDict, previousWord);
             break;
         case 3:
-            createDictionary_Expose(node, fDict);
+            createDictionary_Expose(node, fDict, previousWord);
             break;
         default:
             printf("ERROR: dictionary type not exist\n");
             exit(1);
         }
+        strcpy(previousWord, node->name);
         node = node->next;
     }
     fclose(fDict);
@@ -622,14 +639,16 @@ int sm1_compileFile(char* fileIn, char* fileOut, char* baseWords, char* ramSizeC
         printf("Compile Error: not main\n");
         return RC_ERROR;
     }
+    fprintf(fOut, "\n.include %s.dictionary\n", fileOut);
     printf("--- end compiling %s\n", fileIn);
 
     ///////////////////////////////////////
 
     fclose(fIn);
+    fclose(fOut);
     listHeaders(header);
     createDictionary(header, fileOut);
-    fclose(fOut);
+
     return RC_OK;
 }
 
