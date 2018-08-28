@@ -66,3 +66,7 @@
        exit
 .endm
 
+.macro -
+       invert
+       +
+.endm

@@ -243,6 +243,7 @@ void createDictionary(struct Header *node, FILE *fDict) {
     char previousWord[128];
     strcpy(previousWord, "");
 
+    fprintf(fDict, "\n.comment dictionary\n");
     while (node != NULL) {
         if (!node->included)
             continue;
@@ -602,7 +603,7 @@ int sm1_compileFile(char* fileIn, char* fileOut, char* baseWords, char* ramSizeC
     }
     fclose(fWords);
     printf("--- end base words %s\n", baseWords);
-    fprintf(fOut, "\n.comment end base words\n");
+    fprintf(fOut, ".comment end base words\n");
     fprintf(fOut, ".comment ---------------------------------\n\n");
 
     //////////////////////////////////////

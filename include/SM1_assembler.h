@@ -84,10 +84,12 @@ int directives(char* line, char* fileOut, bool pass) {
         char macroLine[40][80];
          int macroArgsCnt = words - 1;
          int macroArgsCntTmp = macroArgsCnt;
-        while (macroArgsCntTmp != 0) {
+
+        while (macroArgsCntTmp > 0) {
             strcpy(macroArgs[macroArgsCntTmp], lineSplited[macroArgsCntTmp]);
             --macroArgsCntTmp;
         }
+
         macroIndex = 1;
         strcpy(macroName, lineSplited[0]);
         printf("[ %s\n", macroName);
@@ -98,6 +100,7 @@ int directives(char* line, char* fileOut, bool pass) {
             if (get_str_by_str(macro, str, &hresult) == HASHNOTFOUND)
                 break;
             words = getWords(hresult, macroLine);
+            /*
             strcpy(hresult, "");
             for (int n = 0; n <= words - 1; n++) {
                 if (macroLine[n][0] == '@') {
@@ -108,7 +111,7 @@ int directives(char* line, char* fileOut, bool pass) {
                 strcat(hresult, macroLine[n]);
                 strcat(hresult, " ");
             }
-
+            */
             sm1_assembleLine(hresult, pass);
         }
         printf("]\n");
@@ -138,16 +141,14 @@ int directives(char* line, char* fileOut, bool pass) {
             exit(1);
         }
         macroIndex = 1;
-        if (pass) {
             strcpy(macroName, lineSplited[1]);
             add_str_by_str(macro, macroName, macroName);
             get_str_by_str(macro, macroName, &hresult);
             printf(".macro %s \n", hresult);
-        }
         return 0;
     }
     if (opCmp(lineSplited[0], ".endm") == 0) {
-        if(pass) printf(".endm\n");
+        printf(".endm\n");
         macroIndex = 0;
         return 0;
     }
@@ -165,11 +166,9 @@ int directives(char* line, char* fileOut, bool pass) {
             ptr++;
         }
         get_str_by_str(word, lineSplited[1], &hresult);
-        if (pass) {
-            add_str_by_str(word, lineSplited[1], str);
-            get_str_by_str(word, lineSplited[1], &hresult);
-            printf(".word %s (%s)\n", lineSplited[1], hresult);
-        }
+        add_str_by_str(word, lineSplited[1], str);
+        get_str_by_str(word, lineSplited[1], &hresult);
+        printf(".word %s (%s)\n", lineSplited[1], hresult);
         return 0;
     }
     if (opCmp(lineSplited[0], ".label") == 0) {
@@ -201,8 +200,7 @@ int directives(char* line, char* fileOut, bool pass) {
         sprintf(str, "%d", macroIndex++);
         strcat(str, "#_");
         strcat(str, macroName);
-        if (pass)
-            add_str_by_str(macro, str, line);
+        add_str_by_str(macro, str, line);
     }
 
     return 1;
@@ -212,18 +210,15 @@ int directives(char* line, char* fileOut, bool pass) {
 
 uint16_t sm1_assembleLine(char* line, bool pass) {
       int words, value, w;
-     //bool lit = false;
      char *hresult = NULL;
      char lineSplited[40][80], str[40];
       int len = 0;
      char *ptr;
 
     isStr = 0;
+
     words = getWords(line, lineSplited);
     value = (int) strtol(lineSplited[1], &ptr, 16);
-    //if (lineSplited[1] != ptr) {
-        //lit = true;
-    //}
 
     addr++;
     if (!pass) {
@@ -242,11 +237,7 @@ uint16_t sm1_assembleLine(char* line, bool pass) {
         if (hresult != NULL) {
             value = (int) strtol(hresult, NULL, 16);
             printf("               ^_ (%04x)\n", value);
-        } //else {
-          //  if (!lit && !pass) {
-          //      printf("             ^_ ERROR: unknown value\n");
-          //  }
-        //}
+        }
     }
 
     if (opCmp(lineSplited[0], "lit") == 0) {
@@ -303,29 +294,31 @@ uint16_t sm1_assembleLine(char* line, bool pass) {
         exit(1);
     }
     if (opCmp(lineSplited[0], ".string") == 0) {
-        strcpy(str, "");
-        int cnt = 1;
-        do {
-            strcat(str, lineSplited[cnt]);
-            strcat(str, " ");
-            cnt++;
-        } while (cnt < words - 1);
-        if (words > 1)
-            strcat(str, lineSplited[words - 1]);
+        --addr;
+        strcpy(str,line+8);
+        trim(str);
         len = strlen(str);
-        if ((len % 2) == 1) {
+
+        bool pad = false;
+        if ((len % 2) == 0) {
             strcat(str, "\0");
             len++;
+            pad = true;
         }
         strcpy(stringResult, "");
-        char tmpStr[20];
-        cnt = 0;
-        while (cnt < len) {
-            sprintf(tmpStr, "%02x%02x\n", str[cnt], str[cnt + 1]);
+        char tmpStr[20], tmpStr2[20];
+        strcpy(tmpStr2, "");
+        int cnt = 0;
+        while (cnt <= len) {
+            sprintf(tmpStr, "%02x%02x", str[cnt], str[cnt + 1]);
             cnt += 2;
             isStr++;
             strcat(stringResult, tmpStr);
+            strcat(stringResult, "\n");
+            strcat(tmpStr2, tmpStr);
+            strcat(tmpStr2," ");
         }
+        printf("                 ^_ pad %s: %s\n", pad ? "true" : "false", tmpStr2);
         return 0;
     }
 
@@ -389,11 +382,11 @@ int sm1_assembleFile(char* fileIn, char* fileOut) {
 
     if (equ == NULL) {
           equ = create_hash(100);
-         word = create_hash(100);
         label = create_hash(100);
-        macro = create_hash(1000);
         remove(fileOut);
     }
+    macro = create_hash(1000);
+    word = create_hash(100);
 
     if ((fIn = fopen(fileIn, "r")) == NULL) {
         perror("Error: can't open source-file");
@@ -408,6 +401,8 @@ int sm1_assembleFile(char* fileIn, char* fileOut) {
     printf ("\n\n -- First pass --\n\n");
     while (fgets(buf, sizeof(buf), fIn) != NULL) {
         buf[strlen(buf) - 1] = '\0';
+        trim(buf);
+
         if (strcmp(buf, "") != 0) {
             if (directives(buf, fileOut, true) && !macroIndex) {
                 asmResult = sm1_assembleLine(buf, true);
@@ -463,6 +458,7 @@ int sm1_assembleFile(char* fileIn, char* fileOut) {
     printf ("\n\n -- Second pass --\n\n");
     while (fgets(buf, sizeof(buf), fIn) != NULL) {
         buf[strlen(buf) - 1] = '\0';
+        trim(buf);
         if (strcmp(buf, "") != 0) {
             if (directives(buf, fileOut, false) && !macroIndex) {
                 asmResult = sm1_assembleLine(buf, false);

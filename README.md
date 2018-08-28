@@ -51,6 +51,7 @@ These conditional functions are:
  .string: Insert string text.
 ```
 NOTE 1: Directives can't be used inside macro.
+
 NOTE 2: Value $HERE$ represent actual address pointer, can be 
         offsetted ex: .equ label $HERE + 3
 
