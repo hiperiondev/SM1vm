@@ -49,6 +49,30 @@ int opCmp(char *op, char *value){
     return strcmp(strlwr(op), value);
 }
 
+int doHere(char *item1, char *item2) {
+    int offsetHere = 0;
+    char *ptr;
+    if (strcmp(item1, "+") == 0) {
+        int res = (int) strtol(item2, &ptr, 10);
+        if (item2 == ptr) {
+            printf("ASSEMBLER ERROR: $HERE$ offset not number\n");
+            exit(1);
+        }
+        offsetHere += res;
+    }
+    if (strcmp(item1, "-") == 0) {
+        int res = (int) strtol(item2, &ptr, 10);
+        if (item2 == ptr) {
+            printf("ASSEMBLER ERROR: $HERE$ offset not number\n");
+            exit(1);
+        }
+        offsetHere -= res;
+    }
+    return (addr + offsetHere);
+
+
+}
+
 int directives(char* line, char* fileOut, bool pass) {
     char lineSplited[40][80], str[40] = "";
      int words = getWords(line, lineSplited);
@@ -99,26 +123,7 @@ int directives(char* line, char* fileOut, bool pass) {
     }
     if (opCmp(lineSplited[0], ".equ") == 0) {
         if (opCmp(lineSplited[2], "$here$") == 0) {
-            int offsetHere = 0;
-            char *ptr;
-            if (strcmp(lineSplited[3], "+") == 0) {
-                int res = (int) strtol(lineSplited[4], &ptr, 10);
-                if (lineSplited[4] == ptr) {
-                    printf("ASSEMBLER ERROR: $HERE$ offset not number\n");
-                    exit(1);
-                }
-                offsetHere += res;
-            }
-            if (strcmp(lineSplited[3], "-") == 0) {
-                int res = (int) strtol(lineSplited[4], &ptr, 10);
-                if (lineSplited[3] == ptr) {
-                    printf("ASSEMBLER ERROR: $HERE$ offset not number\n");
-                    exit(1);
-                }
-                offsetHere -= res;
-                printf("     ^_ (%04x)\n", res);
-            }
-            sprintf(lineSplited[2], "%04x", addr + offsetHere);
+            sprintf(lineSplited[2], "%04x", doHere(lineSplited[3],lineSplited[4]));
         }
         if (pass) {
             add_str_by_str(equ, lineSplited[1], lineSplited[2]);
@@ -251,25 +256,7 @@ uint16_t sm1_assembleLine(char* line, bool pass) {
 
     if (opCmp(lineSplited[0], "lit") == 0) {
         if (opCmp(lineSplited[1], "$here$") == 0) {
-            int offsetHere = 0;
-            char *ptr;
-            if (strcmp(lineSplited[2], "+") == 0) {
-                int res = (int) strtol(lineSplited[3], &ptr, 10);
-                if (lineSplited[3] == ptr) {
-                    printf("ASSEMBLER ERROR: $HERE$ offset not number\n");
-                    exit(1);
-                }
-                offsetHere += res;
-            }
-            if (strcmp(lineSplited[2], "-") == 0) {
-                int res = (int) strtol(lineSplited[3], &ptr, 10);
-                if (lineSplited[3] == ptr) {
-                    printf("ASSEMBLER ERROR: $HERE$ offset not number\n");
-                    exit(1);
-                }
-                offsetHere -= res;
-            }
-            value = addr + offsetHere;
+            value = doHere(lineSplited[2], lineSplited[3]);
             printf("             ^_ (%04x)\n", value);
         }
         if (value < 32768)
@@ -299,25 +286,7 @@ uint16_t sm1_assembleLine(char* line, bool pass) {
 
     if (opCmp(lineSplited[0], ".data") == 0) {
         if (opCmp(lineSplited[1], "$here$") == 0) {
-            int offsetHere = 0;
-            char *ptr;
-            if (strcmp(lineSplited[2], "+") == 0) {
-                int res = (int) strtol(lineSplited[3], &ptr, 10);
-                if (lineSplited[3] == ptr) {
-                    printf("ASSEMBLER ERROR: $HERE$ offset not number\n");
-                    exit(1);
-                }
-                offsetHere += res;
-            }
-            if (strcmp(lineSplited[2], "-") == 0) {
-                int res = (int) strtol(lineSplited[3], &ptr, 10);
-                if (lineSplited[3] == ptr) {
-                    printf("ASSEMBLER ERROR: $HERE$ offset not number\n");
-                    exit(1);
-                }
-                offsetHere -= res;
-            }
-            value = addr + offsetHere;
+            value = doHere(lineSplited[2], lineSplited[3]);
             printf("     ^_ (%04x)\n", value);
         }
         if (value < 65536) {
@@ -350,7 +319,6 @@ uint16_t sm1_assembleLine(char* line, bool pass) {
             isStr++;
             strcat(stringResult, tmpStr);
         }
-
         return 0;
     }
 
