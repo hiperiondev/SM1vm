@@ -183,25 +183,20 @@ int directives(char* line, char* fileOut, bool pass) {
     if (opCmp(lineSplited[0], ".org") == 0) {
         char *ptr;
         int value;
-        if (opCmp(lineSplited[1], "offset") == 0) {
-            value = (int) strtol(lineSplited[2], &ptr, 10);
-            if (lineSplited[2] == ptr) {
-                perror("Error: value not decimal integer");
-                return RC_ERROR;
-            }
-            addr += value;
-            return 0;
+        if (opCmp(lineSplited[1], "$here$") == 0) {
+            value = doHere(lineSplited[2], lineSplited[3]);
+            printf("     ^_ (%04x)\n", value);
         } else {
             value = (int) strtol(lineSplited[1], &ptr, 10);
             if (lineSplited[1] == ptr) {
                 perror("Error: value not decimal integer");
                 return RC_ERROR;
             }
-            addr = value;
-            return 0;
         }
-
+        addr = value;
+        return 0;
     }
+
     if (macroIndex) {
         sprintf(str, "%d", macroIndex++);
         strcat(str, "#_");
@@ -266,18 +261,30 @@ uint16_t sm1_assembleLine(char* line, bool pass) {
     }
 
     if (opCmp(lineSplited[0], "jmp") == 0) {
+        if (opCmp(lineSplited[1], "$here$") == 0) {
+            value = doHere(lineSplited[2], lineSplited[3]);
+            printf("             ^_ (%04x)\n", value);
+        }
         if (value < 8192)
             return (0x0000 | value);
         printf("ASSEMBLER ERROR: jmp too long\n");
         exit(1);
     }
     if (opCmp(lineSplited[0], "jmz") == 0) {
+        if (opCmp(lineSplited[1], "$here$") == 0) {
+            value = doHere(lineSplited[2], lineSplited[3]);
+            printf("             ^_ (%04x)\n", value);
+        }
         if (value < 8192)
             return (0x2000 | value);
         printf("ASSEMBLER ERROR: jmz too long\n");
         exit(1);
     }
     if (opCmp(lineSplited[0], "cll") == 0) {
+        if (opCmp(lineSplited[1], "$here$") == 0) {
+            value = doHere(lineSplited[2], lineSplited[3]);
+            printf("             ^_ (%04x)\n", value);
+        }
         if (value < 8192)
             return (0x4000 | value);
         printf("ASSEMBLER ERROR: cll too long\n");
@@ -287,7 +294,7 @@ uint16_t sm1_assembleLine(char* line, bool pass) {
     if (opCmp(lineSplited[0], ".data") == 0) {
         if (opCmp(lineSplited[1], "$here$") == 0) {
             value = doHere(lineSplited[2], lineSplited[3]);
-            printf("     ^_ (%04x)\n", value);
+            printf("       ^_ (%04x)\n", value);
         }
         if (value < 65536) {
             return value;
