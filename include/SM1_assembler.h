@@ -98,7 +98,7 @@ int directives(char* line, char* fileOut, bool pass) {
         return 0;
     }
     if (opCmp(lineSplited[0], ".equ") == 0) {
-        if (opCmp(lineSplited[2], "$HERE$") == 0) {
+        if (opCmp(lineSplited[2], "$here$") == 0) {
             int offsetHere = 0;
             char *ptr;
             if (strcmp(lineSplited[3], "+") == 0) {
@@ -116,6 +116,7 @@ int directives(char* line, char* fileOut, bool pass) {
                     exit(1);
                 }
                 offsetHere -= res;
+                printf("     ^_ (%04x)\n", res);
             }
             sprintf(lineSplited[2], "%04x", addr + offsetHere);
         }
@@ -240,7 +241,7 @@ uint16_t sm1_assembleLine(char* line, bool pass) {
 
         if (hresult != NULL) {
             value = (int) strtol(hresult, NULL, 16);
-            printf("             ^_ (%04x)\n", value);
+            printf("               ^_ (%04x)\n", value);
         } //else {
           //  if (!lit && !pass) {
           //      printf("             ^_ ERROR: unknown value\n");
@@ -249,6 +250,28 @@ uint16_t sm1_assembleLine(char* line, bool pass) {
     }
 
     if (opCmp(lineSplited[0], "lit") == 0) {
+        if (opCmp(lineSplited[1], "$here$") == 0) {
+            int offsetHere = 0;
+            char *ptr;
+            if (strcmp(lineSplited[2], "+") == 0) {
+                int res = (int) strtol(lineSplited[3], &ptr, 10);
+                if (lineSplited[3] == ptr) {
+                    printf("ASSEMBLER ERROR: $HERE$ offset not number\n");
+                    exit(1);
+                }
+                offsetHere += res;
+            }
+            if (strcmp(lineSplited[2], "-") == 0) {
+                int res = (int) strtol(lineSplited[3], &ptr, 10);
+                if (lineSplited[3] == ptr) {
+                    printf("ASSEMBLER ERROR: $HERE$ offset not number\n");
+                    exit(1);
+                }
+                offsetHere -= res;
+            }
+            value = addr + offsetHere;
+            printf("             ^_ (%04x)\n", value);
+        }
         if (value < 32768)
             return (0x8000 | value);
         printf("ASSEMBLER ERROR: lit too long\n");
@@ -275,7 +298,7 @@ uint16_t sm1_assembleLine(char* line, bool pass) {
     }
 
     if (opCmp(lineSplited[0], ".data") == 0) {
-        if (opCmp(lineSplited[1], "$HERE$") == 0) {
+        if (opCmp(lineSplited[1], "$here$") == 0) {
             int offsetHere = 0;
             char *ptr;
             if (strcmp(lineSplited[2], "+") == 0) {
@@ -295,6 +318,7 @@ uint16_t sm1_assembleLine(char* line, bool pass) {
                 offsetHere -= res;
             }
             value = addr + offsetHere;
+            printf("     ^_ (%04x)\n", value);
         }
         if (value < 65536) {
             return value;
