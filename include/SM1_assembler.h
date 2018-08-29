@@ -76,7 +76,7 @@ int doHere(char *item1, char *item2) {
 int directives(char* line, char* fileOut, bool pass) {
     char lineSplited[40][80], str[40] = "";
      int words = getWords(line, lineSplited);
-    char * hresult;
+    char *hresult;
 
     // search macro and insert
     if (get_str_by_str(macro, lineSplited[0], &hresult) != HASHNOTFOUND) {
@@ -100,18 +100,6 @@ int directives(char* line, char* fileOut, bool pass) {
             if (get_str_by_str(macro, str, &hresult) == HASHNOTFOUND)
                 break;
             words = getWords(hresult, macroLine);
-            /*
-            strcpy(hresult, "");
-            for (int n = 0; n <= words - 1; n++) {
-                if (macroLine[n][0] == '@') {
-                    if (!isdigit(macroLine[n][1]) || ((macroLine[n][1] - '0') >= macroArgsCnt))
-                        break;
-                    strcpy(macroLine[n], macroArgs[macroLine[n][1] - '0']);
-                }
-                strcat(hresult, macroLine[n]);
-                strcat(hresult, " ");
-            }
-            */
             sm1_assembleLine(hresult, pass);
         }
         printf("]\n");
@@ -152,12 +140,14 @@ int directives(char* line, char* fileOut, bool pass) {
         macroIndex = 0;
         return 0;
     }
+    /* TODO
     if (opCmp(lineSplited[0], ".include") == 0) {
         printf(".include %s\n", lineSplited[1]);
         sm1_assembleFile(lineSplited[1], fileOut);
         printf(".endinclude\n");
         return 0;
     }
+    */
     if (opCmp(lineSplited[0], ".word") == 0) {
         int ptr = 2;
         while (ptr <= words) {
@@ -318,7 +308,8 @@ uint16_t sm1_assembleLine(char* line, bool pass) {
             strcat(tmpStr2, tmpStr);
             strcat(tmpStr2," ");
         }
-        printf("                 ^_ pad %s: %s\n", pad ? "true" : "false", tmpStr2);
+        trim(tmpStr2);
+        printf("                 ^_ (%s) %s\n", tmpStr2, pad ? "padded" : "");
         return 0;
     }
 

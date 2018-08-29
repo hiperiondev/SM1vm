@@ -40,12 +40,12 @@ char bWords[100][20];
  int doCnt = 1;
  int doStk[20];
  int doStkP = -1;
-bool comment = false;
+ int comment = 0;
  int tupleCnt = 0;
 char tuple[3][20];
 
 struct Header {
-     int type; /* 0:create, 1: colon, 2:constant, 3:baseword */
+     int type; /* 0:create, 1: colon, 2:constant */
     char name[40];
      int cfa;
     bool immediate;
@@ -84,7 +84,7 @@ struct Header* searchHeader(struct Header *header, char *name) {
 }
 
 void listHeaders(struct Header *node) {
-    char typeHeader[][10] = { "create", "colon", "constant", "baseword" };
+    char typeHeader[][10] = { "create", "colon", "constant" };
     printf("\nHeaders:\n");
     while (node != NULL) {
         printf("[%s]\n", node->name);
@@ -235,10 +235,6 @@ void createDictionary_Constant(struct Header *node, FILE *fDict,
     fprintf(fDict, "%s\n    exit\n", litStr);
 }
 
-void createDictionary_Expose(struct Header *node, FILE *fDict, char *previousWord) {
-
-}
-
 void createDictionary(struct Header *node, FILE *fDict) {
     char previousWord[128];
     strcpy(previousWord, "");
@@ -259,9 +255,6 @@ void createDictionary(struct Header *node, FILE *fDict) {
         case 2:
             createDictionary_Constant(node, fDict, previousWord);
             break;
-        case 3:
-            createDictionary_Expose(node, fDict, previousWord);
-            break;
         default:
             printf("ERROR: dictionary type not exist\n");
             exit(1);
@@ -276,25 +269,23 @@ void createDictionary(struct Header *node, FILE *fDict) {
 char* compileTuple() {
     static char compiledTuple[50];
     strcpy(compiledTuple, "");
-    static bool comment = false;
+
+    if (comment > 0 || (tupleCnt < 3))
+            return compiledTuple;
 
     switchs(tuple[0])
             {
-            cases("expose")
-                if (searchBwords(tuple[1]) != RC_OK) {
-                    printf("ERROR: (expose) base word not exist\n");
-                    strcpy(compiledTuple, "!!ERROR!!");
-                }
-                doExpose(tuple[1]);
-                tupleCnt -=2;
-                break;
             cases("(")
-                comment = true;
+                ++comment;
                 --tupleCnt;
                 break;
             cases(")")
-                comment = false;
+                --comment;
                 --tupleCnt;
+                if (comment < 0) {
+                    printf("ERROR: Nested comment incorrect\n");
+                    strcpy(compiledTuple, "!!ERROR!!");
+                }
                 break;
             cases(":")
                 doCol(tuple[1]);
@@ -460,16 +451,13 @@ char* compileTuple() {
                     --tupleCnt;
                     break;
                 }
-                sprintf(compiledTuple, "    cri\n    jmz do_%04x",
+                sprintf(compiledTuple, "    nxt\n    jmz do_%04x",
                         beginStk[beginStkP]);
                 --beginStkP;
                 --tupleCnt;
                 break;
             defaults
             }switchs_end;
-
-    if (comment || (tupleCnt < 3))
-        return compiledTuple;
 
     // base words
     if (searchBwords(tuple[0]) == RC_OK) {
