@@ -168,24 +168,19 @@ void doComma(int value) {
 }
 
 char* doLit(int number) {
-    if ((number > 0xffff) || ((~abs(number)+1) > 0xffff)){
+	uint16_t result = (number < 0)?(uint16_t)~abs(number)+1:(uint16_t)number;
+
+    if (result > 0xffff){
     	printf("ERROR: literal out of range\n");
     	compilerError = 2;
         return "!!ERROR!!";
     }
-    if (number < 0) number = ~abs(number)+1;
 
-    char literal[9];
-    static char resultStr[20];
-    if (number < 0x8000) {
-        sprintf(literal, "%04x", (uint16_t)number);
-        sprintf(resultStr, "    lit ");
-        strcat(resultStr, literal);
+    static char resultStr[30];
+    if (result < 0x8000) {
+    	sprintf(resultStr, "    lit %04x", result);
     } else {
-        sprintf(literal, "%04x", ~(uint16_t)number);
-        sprintf(resultStr, "    lit ");
-        strcat(resultStr, literal);
-        strcat(resultStr, "\n    neg");
+    	sprintf(resultStr, "    lit %04x\n    neg", ~result & 0x0000ffff);
     }
     return resultStr;
 }
@@ -281,6 +276,36 @@ char* compileTuple() {
 
     if (comment > 0 || (tupleCnt < 3))
             return compiledTuple;
+
+    // headers
+       struct Header *search = searchHeader(header, tuple[0]);
+       if (search != NULL) {
+           // colon definition
+           if (search->type == 1) { // colon definition
+               char cfaStr[5];
+               sprintf(cfaStr, "%04x", search->cfa);
+               strcpy(compiledTuple, "    cll doCol_");
+               strcat(compiledTuple, tuple[0]);
+               //strcat(compiledTuple, cfaStr);
+               --tupleCnt;
+               return compiledTuple;
+           }
+           // variable ( .equ position )
+           if (search->type == 2) {
+               strcpy(compiledTuple, "    lit ");
+               strcat(compiledTuple, tuple[0]);
+               --tupleCnt;
+               return compiledTuple;
+           }
+           // constant
+           if (search->type == 3) {
+               int value = *(int*) utarray_front(search->headerReg);
+               strcpy(compiledTuple, doLit(value));
+               --tupleCnt;
+               return compiledTuple;
+           }
+       }
+
     switchs(tuple[0])
             {
             cases("(")
@@ -487,34 +512,6 @@ char* compileTuple() {
         sprintf(compiledTuple, "    %s",tuple[0]);
         --tupleCnt;
         return compiledTuple;
-    }
-
-    // headers
-    struct Header *search = searchHeader(header, tuple[0]);
-    if (search != NULL) {
-        // colon definition
-        if (search->type == 1) { // colon definition
-            char cfaStr[5];
-            sprintf(cfaStr, "%04x", search->cfa);
-            strcpy(compiledTuple, "    cll ");
-            strcat(compiledTuple, cfaStr);
-            --tupleCnt;
-            return compiledTuple;
-        }
-        // variable ( .equ position )
-        if (search->type == 2) {
-            strcpy(compiledTuple, "    lit ");
-            strcat(compiledTuple, tuple[0]);
-            --tupleCnt;
-            return compiledTuple;
-        }
-        // constant
-        if (search->type == 3) {
-            int value = *(int*) utarray_front(search->headerReg);
-            strcpy(compiledTuple, doLit(value));
-            --tupleCnt;
-            return compiledTuple;
-        }
     }
 
     // literal
