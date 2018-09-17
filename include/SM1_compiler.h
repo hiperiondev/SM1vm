@@ -168,19 +168,21 @@ void doComma(int value) {
 }
 
 char* doLit(int number) {
-    if ((number > 0xffff) || (number < 0)){
+    if ((number > 0xffff) || ((~abs(number)+1) > 0xffff)){
     	printf("ERROR: literal out of range\n");
     	compilerError = 2;
         return "!!ERROR!!";
     }
+    if (number < 0) number = ~abs(number)+1;
+
     char literal[9];
     static char resultStr[20];
     if (number < 0x8000) {
-        sprintf(literal, "%04x", (short) number);
+        sprintf(literal, "%04x", (uint16_t)number);
         sprintf(resultStr, "    lit ");
         strcat(resultStr, literal);
     } else {
-        sprintf(literal, "%04x", ~(short) number);
+        sprintf(literal, "%04x", ~(uint16_t)number);
         sprintf(resultStr, "    lit ");
         strcat(resultStr, literal);
         strcat(resultStr, "\n    neg");
@@ -632,7 +634,7 @@ int sm1_compileFile(char* fileIn, char* fileOut, char* baseWords, char* ramSizeC
         strcpy(compiled, compileTuple());
         if (strcmp(compiled, "")) fprintf(fOut, "%s\n", compiled);
         if (!strcmp(strlwr(compiled), "!!error!!")) {
-            printf("ERROR: compiler error (%d)\n", compilerError);
+            printf("ERROR: compiler error (%d) [%s %s %s]\n", compilerError, tuple[0], tuple[1], tuple[2]);
             exit(1);
         }
         if (strcmp(compiled, "")) printf ("%s \n",compiled);
