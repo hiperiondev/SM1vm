@@ -197,12 +197,10 @@ typedef struct {
         uint16_t *reg;         /* register vector */
          uint8_t reg_size;     /* register size */
         uint16_t *RAM;         /* ram vector */
-      //uint16_t *ROM;         /* rom vector */
         uint16_t *rs;          /* return stack vector */
         uint16_t *ds;          /* data stack vector */
 #ifdef UNDER_OVER
         uint16_t RAM_size;     /* ram size */
-      //uint16_t ROM_size;     /* rom size */
          uint8_t ds_size;      /* data stack size */
          uint8_t rs_size;      /* return stack size */
 #endif

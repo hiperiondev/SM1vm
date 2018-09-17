@@ -43,6 +43,7 @@ char bWords[100][20];
  int comment = 0;
  int tupleCnt = 0;
 char tuple[3][20];
+ int compilerError = 0; //17
 
 struct Header {
      int type; /* 0:create, 1: colon, 2:constant */
@@ -152,6 +153,8 @@ char* doTick(char *word) {
         sprintf(resultStr, "    lit %s", word);
         return resultStr;
     }
+    printf("ERROR: doTick incorrect\n");
+    compilerError = 1;
     return "!!ERROR!!";
 }
 void doAllot(int qty) {
@@ -165,8 +168,11 @@ void doComma(int value) {
 }
 
 char* doLit(int number) {
-    if ((number > 0xffff) || (number < 0))
+    if ((number > 0xffff) || (number < 0)){
+    	printf("ERROR: literal out of range\n");
+    	compilerError = 2;
         return "!!ERROR!!";
+    }
     char literal[9];
     static char resultStr[20];
     if (number < 0x8000) {
@@ -257,6 +263,7 @@ void createDictionary(struct Header *node, FILE *fDict) {
             break;
         default:
             printf("ERROR: dictionary type not exist\n");
+            compilerError = 3;
             exit(1);
         }
         strcpy(previousWord, node->name);
@@ -272,7 +279,6 @@ char* compileTuple() {
 
     if (comment > 0 || (tupleCnt < 3))
             return compiledTuple;
-
     switchs(tuple[0])
             {
             cases("(")
@@ -284,6 +290,7 @@ char* compileTuple() {
                 --tupleCnt;
                 if (comment < 0) {
                     printf("ERROR: Nested comment incorrect\n");
+                    compilerError = 4;
                     strcpy(compiledTuple, "!!ERROR!!");
                 }
                 break;
@@ -316,12 +323,14 @@ char* compileTuple() {
             cases("constant")
             cases("*constant")
                 printf("ERROR: constant not initialized\n");
+                compilerError = 5;
                 strcpy(compiledTuple, "!!ERROR!!");
                 --tupleCnt;
                 break;
             cases("'")
                 strcpy(compiledTuple, doTick(tuple[1]));
                 if (!strcmp(compiledTuple, "!!ERROR!!")) {
+                	compilerError = 6;
                     printf("ERROR: doTick - word not found\n");
                 }
                 tupleCnt -= 2;
@@ -329,11 +338,13 @@ char* compileTuple() {
             cases(",")
             cases("c,")
                 printf("ERROR: comma not initialized\n");
+                compilerError = 7;
                 strcpy(compiledTuple, "!!ERROR!!");
                 --tupleCnt;
                 break;
             cases("allot")
                 printf("ERROR: allot not initialized\n");
+                compilerError = 8;
                 strcpy(compiledTuple, "!!ERROR!!");
                 --tupleCnt;
                 break;
@@ -346,6 +357,7 @@ char* compileTuple() {
             cases("then")
                 if (ifStkP == -1) {
                    printf("ERROR: then without if\n");
+                   compilerError = 9;
                    strcpy(compiledTuple, "!!ERROR!!");
                    --tupleCnt;
                    break;
@@ -362,6 +374,7 @@ char* compileTuple() {
             cases("else")
                 if (ifStkP == -1) {
                     printf("ERROR: else without if\n");
+                    compilerError = 10;
                     strcpy(compiledTuple, "!!ERROR!!");
                     --tupleCnt;
                     break;
@@ -380,6 +393,7 @@ char* compileTuple() {
             cases("again")
                 if (beginStkP == -1) {
                     printf("ERROR: again without begin\n");
+                    compilerError = 11;
                     strcpy(compiledTuple, "!!ERROR!!");
                     --tupleCnt;
                     break;
@@ -392,6 +406,7 @@ char* compileTuple() {
             cases("until")
                 if (beginStkP == -1) {
                     printf("ERROR: until without begin\n");
+                    compilerError = 12;
                     strcpy(compiledTuple, "!!ERROR!!");
                     --tupleCnt;
                     break;
@@ -405,6 +420,7 @@ char* compileTuple() {
             cases("while")
                 if (beginStkP == -1) {
                     printf("ERROR: while without begin\n");
+                    compilerError = 13;
                     strcpy(compiledTuple, "!!ERROR!!");
                     --tupleCnt;
                     break;
@@ -416,6 +432,7 @@ char* compileTuple() {
             cases("repeat")
                 if (beginStkP == -1) {
                     printf("ERROR: repeat without begin\n");
+                    compilerError = 14;
                     strcpy(compiledTuple, "!!ERROR!!");
                     --tupleCnt;
                     break;
@@ -429,6 +446,7 @@ char* compileTuple() {
             cases("leave")
                 if (beginStkP == -1) {
                     printf("ERROR: leave without begin\n");
+                    compilerError = 15;
                     strcpy(compiledTuple, "!!ERROR!!");
                     --tupleCnt;
                     break;
@@ -447,6 +465,7 @@ char* compileTuple() {
             cases("loop")
                 if (doStkP == -1) {
                     printf("ERROR: loop without do\n");
+                    compilerError = 16;
                     strcpy(compiledTuple, "!!ERROR!!");
                     --tupleCnt;
                     break;
@@ -458,6 +477,8 @@ char* compileTuple() {
                 break;
             defaults
             }switchs_end;
+
+    if (strcmp(compiledTuple, "") != 0) return compiledTuple;
 
     // base words
     if (searchBwords(tuple[0]) == RC_OK) {
@@ -540,7 +561,8 @@ char* compileTuple() {
         --tupleCnt;
         return doLit(res);
     }
-
+    printf("ERROR: Not known\n");
+    compilerError = 17;
     return "!!ERROR!!";
 }
 
@@ -610,7 +632,7 @@ int sm1_compileFile(char* fileIn, char* fileOut, char* baseWords, char* ramSizeC
         strcpy(compiled, compileTuple());
         if (strcmp(compiled, "")) fprintf(fOut, "%s\n", compiled);
         if (!strcmp(strlwr(compiled), "!!error!!")) {
-            printf("ERROR: compiler error\n");
+            printf("ERROR: compiler error (%d)\n", compilerError);
             exit(1);
         }
         if (strcmp(compiled, "")) printf ("%s \n",compiled);
