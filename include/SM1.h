@@ -129,7 +129,7 @@ enum {
         ALU_OP_UMD = 0x1a, /* u/mod */
         ALU_OP_MOD = 0x1b, /* /mod */
         ALU_OP_NXT = 0x1c, /* compare top and 2nd element of return stack. If not eq increment 2nd else drop top and 2nd*/
-        ALU_OP_NP1 = 0x1d, /* not defined */
+        ALU_OP_GPC = 0x1d, /* PC to t */
         ALU_OP_NP2 = 0x1e, /* not defined */
         ALU_OP_BYE = 0x1f  /* return */
 };
@@ -644,6 +644,12 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                        ++vm->rs[vm->rp + 1];
                    }
                    break;
+                case ALU_OP_GPC:
+#ifdef DEBUG
+                    DBG_PRINT("ALU_OP_GPC) ");
+#endif
+                    alu = vm->pc;
+                    break;
                 case ALU_OP_BYE:
 #ifdef DEBUG
                     DBG_PRINT("ALU_OP_BYE) ");
