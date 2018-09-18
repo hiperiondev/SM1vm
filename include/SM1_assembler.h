@@ -226,14 +226,14 @@ uint16_t sm1_assembleLine(char* line, bool pass) {
 
         if (hresult != NULL) {
             value = (int) strtol(hresult, NULL, 16);
-            printf("               ^_ (%04x)\n", value);
+            if (!pass) printf("               ^_ (%04x)\n", value);
         }
     }
 
     if (opCmp(lineSplited[0], "lit") == 0) {
         if (opCmp(lineSplited[1], "$here$") == 0) {
             value = doHere(lineSplited[2], lineSplited[3]);
-            printf("             ^_ (%04x)\n", value);
+            if (!pass) printf("             ^_ (%04x)\n", value);
         }
         if (value < 32768)
             return (0x8000 | value);
@@ -244,7 +244,7 @@ uint16_t sm1_assembleLine(char* line, bool pass) {
     if (opCmp(lineSplited[0], "jmp") == 0) {
         if (opCmp(lineSplited[1], "$here$") == 0) {
             value = doHere(lineSplited[2], lineSplited[3]);
-            printf("             ^_ (%04x)\n", value);
+            if (!pass) printf("             ^_ (%04x)\n", value);
         }
         if (value < 8192)
             return (0x0000 | value);
@@ -254,7 +254,7 @@ uint16_t sm1_assembleLine(char* line, bool pass) {
     if (opCmp(lineSplited[0], "jmz") == 0) {
         if (opCmp(lineSplited[1], "$here$") == 0) {
             value = doHere(lineSplited[2], lineSplited[3]);
-            printf("             ^_ (%04x)\n", value);
+            if (!pass) printf("             ^_ (%04x)\n", value);
         }
         if (value < 8192)
             return (0x2000 | value);
@@ -264,7 +264,7 @@ uint16_t sm1_assembleLine(char* line, bool pass) {
     if (opCmp(lineSplited[0], "cll") == 0) {
         if (opCmp(lineSplited[1], "$here$") == 0) {
             value = doHere(lineSplited[2], lineSplited[3]);
-            printf("             ^_ (%04x)\n", value);
+            if (!pass) printf("             ^_ (%04x)\n", value);
         }
         if (value < 8192)
             return (0x4000 | value);
@@ -275,7 +275,7 @@ uint16_t sm1_assembleLine(char* line, bool pass) {
     if (opCmp(lineSplited[0], ".data") == 0) {
         if (opCmp(lineSplited[1], "$here$") == 0) {
             value = doHere(lineSplited[2], lineSplited[3]);
-            printf("       ^_ (%04x)\n", value);
+            if (!pass) printf("       ^_ (%04x)\n", value);
         }
         if (value < 65536) {
             return value;
@@ -309,7 +309,7 @@ uint16_t sm1_assembleLine(char* line, bool pass) {
             strcat(tmpStr2," ");
         }
         trim(tmpStr2);
-        printf("                 ^_ (%s) %s\n", tmpStr2, pad ? "padded" : "");
+        if (!pass) printf("                 ^_ (%s) %s\n", tmpStr2, pad ? "padded" : "");
         return 0;
     }
 
@@ -406,14 +406,14 @@ int sm1_assembleFile(char* fileIn, char* fileOut) {
                                 && !(asmPrecedent & 0x1C)) {
                             fprintf(fOut, "%04x\n", asmPrecedent | ALU_F_R2P);
                             isAlu = false;
-                            printf("            ^_  compress R2P\n");
+                            //printf("            ^_  compress R2P\n");
                             addr--;
                             continue;
                         }
                         if ((asmResult == 0x6018) && isCall) {
                             fprintf(fOut, "%04x\n", asmPrecedent);
                             isCall = false;
-                            printf("            ^_  compress CALL/JMP\n");
+                            //printf("            ^_  compress CALL/JMP\n");
                             addr--;
                             continue;
                         }

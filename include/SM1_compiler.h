@@ -273,20 +273,42 @@ void createDictionary(struct Header *node, FILE *fDict) {
 char* compileTuple() {
     static char compiledTuple[50];
     strcpy(compiledTuple, "");
+    //printf("-- tuple: %s %s %s\n", tuple[0], tuple[1], tuple[2]);
+	switchs(tuple[0])
+			{
+			cases("(")
+				++comment;
+				--tupleCnt;
+				return compiledTuple;
+				break;
+		    cases(")")
+				--comment;
+				--tupleCnt;
+				if (comment < 0) {
+					printf("ERROR: Nested comment incorrect\n");
+					compilerError = 4;
+					strcpy(compiledTuple, "!!ERROR!!");
+				}
+				return compiledTuple;
+				break;
+		    defaults
+			}switchs_end;
 
-    if (comment > 0 || (tupleCnt < 3))
-            return compiledTuple;
+	if (comment > 0 || (tupleCnt < 3))
+	{
+		--tupleCnt;
+		return compiledTuple;
+	}
 
     // headers
        struct Header *search = searchHeader(header, tuple[0]);
        if (search != NULL) {
            // colon definition
-           if (search->type == 1) { // colon definition
+           if (search->type == 1) {
                char cfaStr[5];
                sprintf(cfaStr, "%04x", search->cfa);
                strcpy(compiledTuple, "    cll doCol_");
                strcat(compiledTuple, tuple[0]);
-               //strcat(compiledTuple, cfaStr);
                --tupleCnt;
                return compiledTuple;
            }
@@ -308,19 +330,6 @@ char* compileTuple() {
 
     switchs(tuple[0])
             {
-            cases("(")
-                ++comment;
-                --tupleCnt;
-                break;
-            cases(")")
-                --comment;
-                --tupleCnt;
-                if (comment < 0) {
-                    printf("ERROR: Nested comment incorrect\n");
-                    compilerError = 4;
-                    strcpy(compiledTuple, "!!ERROR!!");
-                }
-                break;
             cases(":")
                 doCol(tuple[1]);
                 sprintf(compiledTuple, ".label doCol_%s", tuple[1]);
@@ -342,11 +351,16 @@ char* compileTuple() {
                 }
                 break;
             cases("variable")
-                sprintf(compiledTuple, ".comment doVar %s", tuple[1]);
-                doCreate(tuple[1]);
-                doComma(0);
-                tupleCnt -= 2;
-                break;
+				sprintf(compiledTuple, ".comment doVar %s", tuple[1]);
+				doCreate(tuple[1]);
+				doComma(0);
+				tupleCnt -= 2;
+				break;
+			cases("create")
+				sprintf(compiledTuple, ".comment doCreate %s", tuple[1]);
+				doCreate(tuple[1]);
+				tupleCnt -= 2;
+				break;
             cases("constant")
             cases("*constant")
                 printf("ERROR: constant not initialized\n");
@@ -553,6 +567,10 @@ char* compileTuple() {
                     doComma((uint8_t) res);
                     tupleCnt -= 2;
                     break;
+                cases("allot")
+					doComma(res);
+					tupleCnt -= 2;
+					break;
                 defaults
                 }switchs_end;
         if (tupleCnt < 3)
@@ -623,10 +641,10 @@ int sm1_compileFile(char* fileIn, char* fileOut, char* baseWords, char* ramSizeC
     int res;
     do {
         ++addrC;
-        if (addrC > ramSize) {
-            printf("ERROR: ramSize exceeded!\n");
-            exit(1);
-        }
+        //if (addrC > ramSize) {
+        //    printf("ERROR: ramSize exceeded!\n");
+            //exit(1);
+        //}
         res = readTuple(fIn);
         strcpy(compiled, compileTuple());
         if (strcmp(compiled, "")) fprintf(fOut, "%s\n", compiled);
