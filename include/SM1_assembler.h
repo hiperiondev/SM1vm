@@ -33,10 +33,10 @@ char macroName[40] = "";
 bool isAlu = false;
 bool isCall = false;
 
-jwHashTable*   equ = NULL;
-jwHashTable*  word = NULL;
-jwHashTable* label = NULL;
-jwHashTable* macro = NULL;
+jwHashTable   *equ = NULL;
+jwHashTable  *word = NULL;
+jwHashTable *label = NULL;
+jwHashTable *macro = NULL;
 
 /////////////////////////////////////////////////////////////////////////////////////
 
@@ -74,7 +74,7 @@ int doHere(char *item1, char *item2) {
 }
 
 int directives(char* line, char* fileOut, bool pass) {
-    char lineSplited[40][80], str[40] = "";
+    char lineSplited[40][80], str[60] = "";
      int words = getWords(line, lineSplited);
     char *hresult;
 
@@ -83,29 +83,39 @@ int directives(char* line, char* fileOut, bool pass) {
         char macroArgs[40][80];
         char macroLine[40][80];
          int macroArgsCnt = words - 1;
-         int macroArgsCntTmp = macroArgsCnt;
 
-        while (macroArgsCntTmp > 0) {
-            strcpy(macroArgs[macroArgsCntTmp], lineSplited[macroArgsCntTmp]);
-            --macroArgsCntTmp;
+        int cnt = 0;
+        while(cnt < macroArgsCnt){
+            strcpy(macroArgs[cnt], lineSplited[cnt]);
+            cnt++;
         }
-
         macroIndex = 1;
         strcpy(macroName, lineSplited[0]);
         printf("[ %s\n", macroName);
         while (1) {
-            sprintf(str, "%d", macroIndex++);
-            strcat(str, "#_");
-            strcat(str, macroName);
+            sprintf(str, "%d#_%s", macroIndex++, macroName);
             if (get_str_by_str(macro, str, &hresult) == HASHNOTFOUND)
                 break;
-            words = getWords(hresult, macroLine);
+
+            // substitute macro arguments
+            words = getWords(hresult, macroLine) - 1;
+            strcpy(hresult,"");
+            cnt = 0;
+            while(cnt <= words){
+                if (macroLine[cnt][0] == '$') {
+                    int res = macroLine[cnt][1] - '0';
+                    strcpy(macroLine[cnt], macroArgs[res]);
+                }
+                sprintf(hresult, "%s ",macroLine[cnt]);
+                cnt++;
+            }
+
             sm1_assembleLine(hresult, pass);
         }
         printf("]\n");
         macroIndex = 0;
         return 0;
-    }
+    } // macro
 
     if (opCmp(lineSplited[0], ".comment") == 0) {
         if (pass)
@@ -140,7 +150,7 @@ int directives(char* line, char* fileOut, bool pass) {
         macroIndex = 0;
         return 0;
     }
-    /* TODO
+    /* TODO include
     if (opCmp(lineSplited[0], ".include") == 0) {
         printf(".include %s\n", lineSplited[1]);
         sm1_assembleFile(lineSplited[1], fileOut);
@@ -187,9 +197,7 @@ int directives(char* line, char* fileOut, bool pass) {
     }
 
     if (macroIndex) {
-        sprintf(str, "%d", macroIndex++);
-        strcat(str, "#_");
-        strcat(str, macroName);
+        sprintf(str, "%d#_%s", macroIndex++, macroName);
         add_str_by_str(macro, str, line);
     }
 
@@ -212,8 +220,7 @@ uint16_t sm1_assembleLine(char* line, bool pass) {
 
     addr++;
     if (!pass) {
-        printf("    %04x ", addr);
-        printf("%s\n", line);
+        printf("    %04x %s\n", addr, line);
     }
 
     get_str_by_str(word, lineSplited[0], &hresult);
@@ -364,12 +371,75 @@ uint16_t sm1_assembleLine(char* line, bool pass) {
     return value;
 }
 
+void assemblePass(bool pass, FILE *fIn, FILE *fOut, char *fileOut) {
+    int asmResult;
+   char buf[80];
+
+    while (fgets(buf, sizeof(buf), fIn) != NULL) {
+        buf[strlen(buf) - 1] = '\0';
+        trim(buf);
+        if (strcmp(buf, "") != 0) {
+            if (directives(buf, fileOut, false) && !macroIndex) {
+                asmResult = sm1_assembleLine(buf, false);
+                if (isStr > 0) {
+                    addr += isStr;
+                    if (pass)
+                        fprintf(fOut, stringResult);
+                } else {
+                    // (r2p r-1)|CALL/JMP optimization //
+                    if ((asmResult & OP_ALU) == OP_ALU) {
+                        if ((asmResult == 0x6018) && (isAlu)
+                                && !(asmPrecedent & 0x1C)) {
+                            if (pass)
+                                fprintf(fOut, "%04x\n", asmPrecedent | ALU_F_R2P);
+                            isAlu = false;
+                            printf("            ^_  compress R2P\n");
+                            addr--;
+                            continue;
+                        }
+                        if ((asmResult == 0x6018) && isCall) {
+                            if (pass)
+                                fprintf(fOut, "%04x\n", asmPrecedent);
+                            isCall = false;
+                            printf("            ^_  compress CALL/JMP\n");
+                            addr--;
+                            continue;
+                        }
+                        if (asmResult == 0x6018) {
+                            if (isAlu && pass)
+                                fprintf(fOut, "%04x\n", asmPrecedent);
+                            if (pass)
+                                fprintf(fOut, "%04x\n", asmResult);
+                            isAlu = false;
+                            continue;
+                        }
+                        asmPrecedent = asmResult;
+                        isAlu = true;
+                        continue;
+                    }
+
+                    if ((asmResult & OP_CLL) == OP_CLL) {
+                        asmPrecedent = ARG_OP(asmResult);
+                        isCall = true;
+                        continue;
+                    }
+                    //////////////////////////////////
+
+                    isAlu = false;
+                    isCall = false;
+                    if (pass)
+                        fprintf(fOut, "%04x\n", asmResult);
+                }
+            }
+        }
+    }
+}
 
 int sm1_assembleFile(char* fileIn, char* fileOut) {
     FILE *fIn;
     FILE *fOut;
     char buf[80];
-    int asmResult;
+     int asmResult;
 
     if (equ == NULL) {
           equ = create_hash(100);
@@ -377,7 +447,7 @@ int sm1_assembleFile(char* fileIn, char* fileOut) {
         remove(fileOut);
     }
     macro = create_hash(1000);
-    word = create_hash(100);
+     word = create_hash(100);
 
     if ((fIn = fopen(fileIn, "r")) == NULL) {
         perror("Error: can't open source-file");
@@ -390,117 +460,16 @@ int sm1_assembleFile(char* fileIn, char* fileOut) {
     }
 
     printf ("\n\n -- First pass --\n\n");
-    while (fgets(buf, sizeof(buf), fIn) != NULL) {
-        buf[strlen(buf) - 1] = '\0';
-        trim(buf);
-
-        if (strcmp(buf, "") != 0) {
-            if (directives(buf, fileOut, true) && !macroIndex) {
-                asmResult = sm1_assembleLine(buf, true);
-                if (isStr > 0) {
-                    addr += isStr;
-                }else {
-                    /* (r2p r-1)|CALL/JMP optimization */
-                    if ((asmResult & OP_ALU) == OP_ALU) {
-                        if ((asmResult == 0x6018) && (isAlu)
-                                && !(asmPrecedent & 0x1C)) {
-                            fprintf(fOut, "%04x\n", asmPrecedent | ALU_F_R2P);
-                            isAlu = false;
-                            //printf("            ^_  compress R2P\n");
-                            addr--;
-                            continue;
-                        }
-                        if ((asmResult == 0x6018) && isCall) {
-                            fprintf(fOut, "%04x\n", asmPrecedent);
-                            isCall = false;
-                            //printf("            ^_  compress CALL/JMP\n");
-                            addr--;
-                            continue;
-                        }
-                        if (asmResult == 0x6018) {
-                            if (isAlu)
-                                fprintf(fOut, "%04x\n", asmPrecedent);
-                            fprintf(fOut, "%04x\n", asmResult);
-                            isAlu = false;
-                            continue;
-                        }
-                        asmPrecedent = asmResult;
-                        isAlu = true;
-                        continue;
-                    }
-
-                    if ((asmResult & OP_CLL) == OP_CLL) {
-                        asmPrecedent = ARG_OP(asmResult);
-                        isCall = true;
-                        continue;
-                    }
-                    /***********************/
-
-                     isAlu = false;
-                    isCall = false;
-                    fprintf(fOut, "%04x\n", asmResult);
-                }
-            }
-        }
-    }
+    assemblePass(false, fIn, fOut, fileOut);
 
     addr = -1;
     rewind(fIn);
+
     printf ("\n\n -- Second pass --\n\n");
-    while (fgets(buf, sizeof(buf), fIn) != NULL) {
-        buf[strlen(buf) - 1] = '\0';
-        trim(buf);
-        if (strcmp(buf, "") != 0) {
-            if (directives(buf, fileOut, false) && !macroIndex) {
-                asmResult = sm1_assembleLine(buf, false);
-                if (isStr > 0) {
-                    addr += isStr;
-                    fprintf(fOut, stringResult);
-                } else {
-                    /* (r2p r-1)|CALL/JMP optimization */
-                    if ((asmResult & OP_ALU) == OP_ALU) {
-                        if ((asmResult == 0x6018) && (isAlu)
-                                && !(asmPrecedent & 0x1C)) {
-                            fprintf(fOut, "%04x\n", asmPrecedent | ALU_F_R2P);
-                            isAlu = false;
-                            printf("            ^_  compress R2P\n");
-                            addr--;
-                            continue;
-                        }
-                        if ((asmResult == 0x6018) && isCall) {
-                            fprintf(fOut, "%04x\n", asmPrecedent);
-                            isCall = false;
-                            printf("            ^_  compress CALL/JMP\n");
-                            addr--;
-                            continue;
-                        }
-                        if (asmResult == 0x6018) {
-                            if (isAlu)
-                                fprintf(fOut, "%04x\n", asmPrecedent);
-                            fprintf(fOut, "%04x\n", asmResult);
-                            isAlu = false;
-                            continue;
-                        }
-                        asmPrecedent = asmResult;
-                        isAlu = true;
-                        continue;
-                    }
+    assemblePass(true, fIn, fOut, fileOut);
 
-                    if ((asmResult & OP_CLL) == OP_CLL) {
-                        asmPrecedent = ARG_OP(asmResult);
-                        isCall = true;
-                        continue;
-                    }
-                    /***********************/
-
-                    isAlu = false;
-                    isCall = false;
-                    fprintf(fOut, "%04x\n", asmResult);
-                }
-            }
-        }
-    }
     fclose(fIn);
+    fclose(fOut);
 
     return 0;
 }
