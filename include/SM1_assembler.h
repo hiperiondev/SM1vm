@@ -12,7 +12,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <stdbool.h>
-#include <utils/jwHash.h>
+#include "jwHash.h"
 
 #define UNDER_OVER
 //#define CARRY
@@ -438,8 +438,8 @@ void assemblePass(bool pass, FILE *fIn, FILE *fOut, char *fileOut) {
 int sm1_assembleFile(char* fileIn, char* fileOut) {
     FILE *fIn;
     FILE *fOut;
-    char buf[80];
-     int asmResult;
+    //char buf[80];
+    //int asmResult;
 
     if (equ == NULL) {
           equ = create_hash(100);
