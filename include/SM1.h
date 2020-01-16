@@ -29,14 +29,14 @@
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-#define OP(x)       (x & 0xe000)                                     /* operand */
-#define ARG_OP(x)   (x & 0x1fff)                                     /* argument of operand */
-#define ARG_LIT(x)  (x & 0x7fff)                                     /* literal */
+#define OP(x)       (x & 0xe000)                                     // operand
+#define ARG_OP(x)   (x & 0x1fff)                                     // argument of operand
+#define ARG_LIT(x)  (x & 0x7fff)                                     // literal
 
-#define ALU_OP(x)   ((x >> 8) & 0x1F)                                /* alu operation */
-#define ALU_DS(x)   (x & 0x03)                                       /* alu data stack */
-#define ALU_RS(x)   ((x >> 2) & 0x03)                                /* alu return stack */
-#define ALU_EX(x)   ((ALU_DS(x) == 0x03)|((ALU_RS(x) == 0x03) << 1)) /* extended bits */
+#define ALU_OP(x)   ((x >> 8) & 0x1F)                                // alu operation
+#define ALU_DS(x)   (x & 0x03)                                       // alu data stack
+#define ALU_RS(x)   ((x >> 2) & 0x03)                                // alu return stack
+#define ALU_EX(x)   ((ALU_DS(x) == 0x03)|((ALU_RS(x) == 0x03) << 1)) // extended bits
 
 /////////////////////////////////////////////////////////////////////////////////////
 /*
@@ -92,90 +92,90 @@ enum {
 
 // ALU flags
 enum {
-        ALU_F_T2N = 0x80,  /* move T to N */
-        ALU_F_T2R = 0x40,  /* move T to R */
-        ALU_F_N2T = 0x20,  /* move N to T */
-        ALU_F_R2P = 0x10   /* move R to PC */
+        ALU_F_T2N = 0x80,  // move T to N
+        ALU_F_T2R = 0x40,  // move T to R
+        ALU_F_N2T = 0x20,  // move N to T
+        ALU_F_R2P = 0x10   // move R to PC
 };
 
 // ALU operations
 enum {
-        ALU_OP_TOP = 0x00, /* t */
-        ALU_OP_SCN = 0x01, /* n */
-        ALU_OP_TRS = 0x02, /* top of return stack */
-        ALU_OP_GET = 0x03, /* load from address t */
-        ALU_OP_PUT = 0x04, /* store n to address t */
-        ALU_OP_DPL = 0x05, /* double cell addition */
-        ALU_OP_DML = 0x06, /* double cell multiply */
-        ALU_OP_AND = 0x07, /* bitwise and */
-        ALU_OP_BOR = 0x08, /* bitwise or */
-        ALU_OP_XOR = 0x09, /* bitwise xor */
-        ALU_OP_NEG = 0x0a, /* bitwise inversion */
-        ALU_OP_DEC = 0x0b, /* decrement */
-        ALU_OP_EQ0 = 0x0c, /* equal to zero */
-        ALU_OP_EQU = 0x0d, /* equality test */
-        ALU_OP_UCP = 0x0e, /* unsigned comparison (n-t)*/
-        ALU_OP_CMP = 0x0f, /* signed comparison (n<t) */
-        ALU_OP_RSH = 0x10, /* logical right shift */
-        ALU_OP_LSH = 0x11, /* logical left shift */
-        ALU_OP_GSP = 0x12, /* depth of stack */
-        ALU_OP_GRS = 0x13, /* r stack depth */
-        ALU_OP_SSP = 0x14, /* set stack depth */
-        ALU_OP_SRP = 0x15, /* set r stack depth */
-        ALU_OP_REG = 0x16, /* get register t (status == 0xff) */
-        ALU_OP_SRG = 0x17, /* set n on register t (status == 0xff) */
-        ALU_OP_SND = 0x18, /* send t and n */
-        ALU_OP_RCV = 0x19, /* receive t */
-        ALU_OP_UMD = 0x1a, /* u/mod */
-        ALU_OP_MOD = 0x1b, /* /mod */
-        ALU_OP_NXT = 0x1c, /* compare top and 2nd element of return stack. If not eq increment 2nd else drop top and 2nd*/
-        ALU_OP_GPC = 0x1d, /* PC to t */
-        ALU_OP_NP2 = 0x1e, /* not defined */
-        ALU_OP_BYE = 0x1f  /* return */
+        ALU_OP_TOP = 0x00, // t
+        ALU_OP_SCN = 0x01, // n
+        ALU_OP_TRS = 0x02, // top of return stack
+        ALU_OP_GET = 0x03, // load from address t
+        ALU_OP_PUT = 0x04, // store n to address t
+        ALU_OP_DPL = 0x05, // double cell addition
+        ALU_OP_DML = 0x06, // double cell multiply
+        ALU_OP_AND = 0x07, // bitwise and
+        ALU_OP_BOR = 0x08, // bitwise or
+        ALU_OP_XOR = 0x09, // bitwise xor
+        ALU_OP_NEG = 0x0a, // bitwise inversion
+        ALU_OP_DEC = 0x0b, // decrement
+        ALU_OP_EQ0 = 0x0c, // equal to zero
+        ALU_OP_EQU = 0x0d, // equality test
+        ALU_OP_UCP = 0x0e, // unsigned comparison (n-t)
+        ALU_OP_CMP = 0x0f, // signed comparison (n<t)
+        ALU_OP_RSH = 0x10, // logical right shift
+        ALU_OP_LSH = 0x11, // logical left shift
+        ALU_OP_GSP = 0x12, // depth of stack
+        ALU_OP_GRS = 0x13, // r stack depth
+        ALU_OP_SSP = 0x14, // set stack depth
+        ALU_OP_SRP = 0x15, // set r stack depth
+        ALU_OP_REG = 0x16, // get register t (status == 0xff)
+        ALU_OP_SRG = 0x17, // set n on register t (status == 0xff)
+        ALU_OP_SND = 0x18, // send t and n
+        ALU_OP_RCV = 0x19, // receive t
+        ALU_OP_UMD = 0x1a, // u/mod
+        ALU_OP_MOD = 0x1b, // /mod
+        ALU_OP_NXT = 0x1c, // compare top and 2nd element of return stack. If not eq increment 2nd else drop top and 2nd
+        ALU_OP_GPC = 0x1d, // PC to t
+        ALU_OP_NP2 = 0x1e, // not defined
+        ALU_OP_BYE = 0x1f  // return
 };
 
 // Return Condition
 enum {
-        RC_OK            = 0x00, /* ok */
-        RC_DS_UNDER_FLOW = 0x01, /* data stack underflow */
-        RC_DS_OVER_FLOW  = 0x02, /* data stack over flow */
-        RC_RS_OVER_FLOW  = 0x03, /* return stack over flow */
-        RC_RS_UNDER_FLOW = 0x04, /* return stack under flow */
-        RC_PC_OVER_FLOW  = 0x05, /* program counter overflow */
-        RC_OP_UNKNOWN    = 0x06, /* operator unknown */
-        RC_ROM_WRITE     = 0x07, /* rom write */
-        RC_MEM_OVERFLOW  = 0x08, /* out of memory access */
-        RC_IRQ           = 0x09, /* irq execute */
-        RC_REG_UNKNOWN   = 0x0a, /* unknown register */
-        RC_EXPTN         = 0xfd, /* alu exception */
-        RC_ERROR         = 0xfe, /* generic error */
-        RC_BYE           = 0xff  /* exit */
+        RC_OK            = 0x00, // ok
+        RC_DS_UNDER_FLOW = 0x01, // data stack underflow
+        RC_DS_OVER_FLOW  = 0x02, // data stack over flow
+        RC_RS_OVER_FLOW  = 0x03, // return stack over flow
+        RC_RS_UNDER_FLOW = 0x04, // return stack under flow
+        RC_PC_OVER_FLOW  = 0x05, // program counter overflow
+        RC_OP_UNKNOWN    = 0x06, // operator unknown
+        RC_ROM_WRITE     = 0x07, // rom write
+        RC_MEM_OVERFLOW  = 0x08, // out of memory access
+        RC_IRQ           = 0x09, // irq execute
+        RC_REG_UNKNOWN   = 0x0a, // unknown register
+        RC_EXPTN         = 0xfd, // alu exception
+        RC_ERROR         = 0xfe, // generic error
+        RC_BYE           = 0xff  // exit
 };
 
 // Status
 enum {
-        ST_SNDTN    = 0x0001, /* send */
-        ST_RCVTN    = 0x0002, /* receive */
-        ST_CARRY    = 0x0004, /* carry bit */
-        ST_IRQ      = 0x0008, /* interrupt */
-        ST_IMK      = 0x0010, /* interrupt mask */
-        ST_EXPTN    = 0x0040, /* alu exception */
-        ST_RSVD     = 0x0080, /* reserved */
-        ST_AUTOINC0 = 0x0100, /* autoincrement register #0 on every read */
-        ST_AUTOINC1 = 0x0200, /* autoincrement register #1 on every read */
-        ST_AUTOINC2 = 0x0400, /* autoincrement register #2 on every read */
-        ST_INDGET   = 0x0800, /* indirect get on register #t */
-        ST_INDPUT   = 0x1000  /* indirect put on register #t */
+        ST_SNDTN    = 0x0001, // send
+        ST_RCVTN    = 0x0002, // receive
+        ST_CARRY    = 0x0004, // carry bit
+        ST_IRQ      = 0x0008, // interrupt
+        ST_IMK      = 0x0010, // interrupt mask
+        ST_EXPTN    = 0x0040, // alu exception
+        ST_RSVD     = 0x0080, // reserved
+        ST_AUTOINC0 = 0x0100, // autoincrement register #0 on every read
+        ST_AUTOINC1 = 0x0200, // autoincrement register #1 on every read
+        ST_AUTOINC2 = 0x0400, // autoincrement register #2 on every read
+        ST_INDGET   = 0x0800, // indirect get on register #t
+        ST_INDPUT   = 0x1000  // indirect put on register #t
 };
 
 // Registers
 typedef struct {
-         uint8_t dp;          /* data stack pointer */
-         uint8_t rp;          /* return stack pointer */
-        uint16_t pc;          /* program counter */
-        uint16_t t;           /* top of data stack */
-        uint16_t t_ext;       /* external top of data stack */
-        uint16_t n_ext;       /* external second element of data stack */
+         uint8_t dp;          // data stack pointer
+         uint8_t rp;          // return stack pointer
+        uint16_t pc;          // program counter
+        uint16_t t;           // top of data stack
+        uint16_t t_ext;       // external top of data stack
+        uint16_t n_ext;       // external second element of data stack
         uint16_t status;      /* status register
                                *   0=SND        / vm data transmission
                                *   1=RCV        / external data receive
@@ -194,15 +194,16 @@ typedef struct {
                                *  14=NOT USED   / not defined
                                *  15=NOT USED   / not defined
                                */
-        uint16_t *reg;         /* register vector */
-         uint8_t reg_size;     /* register size */
-        uint16_t *RAM;         /* ram vector */
-        uint16_t *rs;          /* return stack vector */
-        uint16_t *ds;          /* data stack vector */
+
+        uint16_t *reg;         // register vector
+         uint8_t reg_size;     // register size
+        uint16_t *RAM;         // ram vector
+        uint16_t *rs;          // return stack vector
+        uint16_t *ds;          // data stack vector
 #ifdef UNDER_OVER
-        uint16_t RAM_size;     /* ram size */
-         uint8_t ds_size;      /* data stack size */
-         uint8_t rs_size;      /* return stack size */
+        uint16_t RAM_size;     // ram size
+         uint8_t ds_size;      // data stack size
+         uint8_t rs_size;      // return stack size
 #endif
 
 } vm_t;

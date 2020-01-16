@@ -7,11 +7,11 @@
 
 #include <ctype.h>
 #include <string.h>
-#define EP(x) [x] = #x  /* enum print */
+#define EP(x) [x] = #x  // enum print
 
-void trim(char * s) {
-    char * p = s;
-    int l = strlen(p);
+void trim(char *s) {
+    char *p = s;
+     int l = strlen(p);
 
     while(isspace(p[l - 1])) p[--l] = 0;
     while(* p && isspace(* p)) ++p, --l;
@@ -19,7 +19,7 @@ void trim(char * s) {
     memmove(s, p, l + 1);
 }
 
-void simplifyWhiteSpace(char * src) {
+void simplifyWhiteSpace(char *src) {
     char *dst = src;
 
     for (; *src; ++dst, ++src) {
@@ -28,7 +28,6 @@ void simplifyWhiteSpace(char * src) {
             while (isspace(*(src + 1)))
                 ++src;
     }
-
     *dst = '\0';
 }
 
@@ -48,12 +47,11 @@ int getWords(char *base, char target[40][80]) {
         if (base[i] == '\0')
             break;
     }
-
     return n;
 }
 
 char* strlwr(char *str) {
-    unsigned char *p = (unsigned char *) str;
+    unsigned char *p = (unsigned char *)str;
     while (*p) {
         *p = tolower((unsigned char) *p);
         p++;
@@ -75,6 +73,7 @@ char *removeSubStr(char *str, const char *substr) {
 
 void removePrefix(char *str) {
     char strLocal[20];
+
     strcpy(strLocal, removeSubStr(str, "ALU_"));
     strcpy(strLocal, removeSubStr(str, "OP_"));
     strcpy(strLocal, removeSubStr(str, "F_"));
@@ -140,4 +139,11 @@ const char* DELTA[] = {
     "r-2"
 };
 
-const uint8_t DELTA_CODE[] = { 0x1, 0x2, 0x3, 0x4, 0x8, 0xC };
+const uint8_t DELTA_CODE[] = {
+        0x1,
+        0x2,
+        0x3,
+        0x4,
+        0x8,
+        0xC
+};
