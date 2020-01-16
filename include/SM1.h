@@ -83,11 +83,11 @@
 
 // Operation types
 enum {
-        OP_JMP  = 0x0000,  /* jump */
-        OP_JMZ  = 0x2000,  /* jump if zero */
-        OP_CLL  = 0x4000,  /* call */
-        OP_ALU  = 0x6000,  /* alu */
-        OP_LIT  = 0x8000   /* literal */
+        OP_JMP  = 0x0000,  // jump
+        OP_JMZ  = 0x2000,  // jump if zero
+        OP_CLL  = 0x4000,  // call
+        OP_ALU  = 0x6000,  // alu
+        OP_LIT  = 0x8000   // literal
 };
 
 // ALU flags
@@ -176,34 +176,33 @@ typedef struct {
         uint16_t t;           // top of data stack
         uint16_t t_ext;       // external top of data stack
         uint16_t n_ext;       // external second element of data stack
-        uint16_t status;      /* status register
-                               *   0=SND        / vm data transmission
-                               *   1=RCV        / external data receive
-                               *   2=CARRY      / carry or overflow
-                               *   3=IRQ        / interrupt (similar to INTR on Intel 8085)
-                               *   4=IMK        / interrupt mask
-                               *   5=NOT USED   / not defined
-                               *   6=EXCEPTION  / alu exception
-                               *   7=RESERVED   / reserved
-                               *   8=AUTOINC0   / autoincrement register #0 on every read
-                               *   9=AUTOINC1   / autoincrement register #1 on every read
-                               *  10=AUTOINC2   / autoincrement register #2 on every read
-                               *  11=INDGET     / indirect get on register #t
-                               *  12=INDPUT     / indirect put on register #t
-                               *  13=NOT USED   / not defined
-                               *  14=NOT USED   / not defined
-                               *  15=NOT USED   / not defined
-                               */
+        uint16_t status;      // status register
+                              //   0=SND        / vm data transmission
+                              //   1=RCV        / external data receive
+                              //   2=CARRY      / carry or overflow
+                              //   3=IRQ        / interrupt (similar to INTR on Intel 8085)
+                              //   4=IMK        / interrupt mask
+                              //   5=NOT USED   / not defined
+                              //   6=EXCEPTION  / alu exception
+                              //   7=RESERVED   / reserved
+                              //   8=AUTOINC0   / autoincrement register #0 on every read
+                              //   9=AUTOINC1   / autoincrement register #1 on every read
+                              //  10=AUTOINC2   / autoincrement register #2 on every read
+                              //  11=INDGET     / indirect get on register #t
+                              //  12=INDPUT     / indirect put on register #t
+                              //  13=NOT USED   / not defined
+                              //  14=NOT USED   / not defined
+                              //  15=NOT USED   / not defined
 
-        uint16_t *reg;         // register vector
-         uint8_t reg_size;     // register size
-        uint16_t *RAM;         // ram vector
-        uint16_t *rs;          // return stack vector
-        uint16_t *ds;          // data stack vector
+        uint16_t *reg;        // register vector
+         uint8_t reg_size;    // register size
+        uint16_t *RAM;        // ram vector
+        uint16_t *rs;         // return stack vector
+        uint16_t *ds;         // data stack vector
 #ifdef UNDER_OVER
-        uint16_t RAM_size;     // ram size
-         uint8_t ds_size;      // data stack size
-         uint8_t rs_size;      // return stack size
+        uint16_t RAM_size;    // ram size
+         uint8_t ds_size;     // data stack size
+         uint8_t rs_size;     // return stack size
 #endif
 
 } vm_t;

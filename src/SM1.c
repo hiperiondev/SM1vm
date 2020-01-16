@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#define EP(x) [x] = #x  /* enum print */
+#define EP(x) [x] = #x  // enum print
 /////////////////////////////////////////////////////////////////////////////////////
 
 //#define DEBUG 1
@@ -31,7 +31,6 @@
 #include "SM1_common.h"
 #include "SM1_assembler.h"
 #include "SM1_disassembler.h"
-//#include "SM1_compiler.h"
 
 uint8_t sm1_mem_put(uint16_t addr, uint16_t value, vm_t* vm) {
     vm->RAM[addr] = value;
@@ -103,11 +102,6 @@ int main(int argc, char **argv) {
         printf("\nUse: SM1 [-d|-a] file.in [file.out] [basewords] [ramSize]\n");
         exit(1);
     }
-
-    //if (!strcmp(argv[1], "-c")) {
-    //    printf("-- COMPILER --\n");
-    //    sm1_compileFile(argv[2], argv[3], argv[4], argv[5]);
-    //}
     else
     if (!strcmp(argv[1], "-d")) { // disassembler
         int add;
@@ -115,11 +109,13 @@ int main(int argc, char **argv) {
             uint16_t word = sm1_mem_get(add, vm);
             printf("%04x %s\n", add, sm1_disassembly(word));
         }
-    } else
+    }
+    else
     if (!strcmp(argv[1], "-a")) { // assembler
         sm1_assembleFile(argv[2], argv[3]);
     }
-    else {                        // run program
+    else
+    {                        // run program
         printf("--RUN\n\n");
 #ifdef DEBUG
         DBG_PRINT("LOAD...\n");
