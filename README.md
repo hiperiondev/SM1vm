@@ -52,15 +52,9 @@ NOTE 1: Directives can't be used inside macro.
 NOTE 2: Value $HERE$ represent actual address pointer, can be 
         offsetted ex: .equ label $HERE + 3
 
-## FORTH
- **Compiler**
-```
-[TODO]
-```
-
 ## Usage example
 ```
-SM1 [-d|-a|-c] file.in [file.out] [basewords] [ramSize]
+SM1 [-d|-a] file.in [file.out] [basewords] [ramSize]
 ```
 
 _For more examples and usage, please refer to the [Wiki][wiki]._
