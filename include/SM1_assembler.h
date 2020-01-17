@@ -14,11 +14,6 @@
 #include <stdbool.h>
 #include "jwHash.h"
 
-#define UNDER_OVER
-//#define CARRY
-#define EXTRAREGS
-//#define EXTBITS
-
 /////////////////////////////////////////////////////////////////////////////////////
 
 const uint8_t  VMFLAGS_POS[] = { ALU_F_T2N, ALU_F_T2R, ALU_F_N2T, ALU_F_R2P };
@@ -69,8 +64,6 @@ int doHere(char *item1, char *item2) {
         offsetHere -= res;
     }
     return (addr + offsetHere);
-
-
 }
 
 int directives(char* line, char* fileOut, bool pass) {
@@ -150,7 +143,7 @@ int directives(char* line, char* fileOut, bool pass) {
         macroIndex = 0;
         return 0;
     }
-    /* TODO include
+    /* TODO add .include
     if (opCmp(lineSplited[0], ".include") == 0) {
         printf(".include %s\n", lineSplited[1]);
         sm1_assembleFile(lineSplited[1], fileOut);

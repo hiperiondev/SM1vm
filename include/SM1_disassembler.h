@@ -7,13 +7,6 @@
  *  Author: Emiliano Augusto Gonzalez (egonzalez.hiperion@gmail.com)
  */
 
-#define UNDER_OVER
-//#define CARRY
-#define EXTRAREGS
-//#define EXTBITS
-
-/////////////////////////////////////////////////////////////////////////////////////
-
 char dis[100];
 
 char* sm1_disassembly(uint16_t word) {

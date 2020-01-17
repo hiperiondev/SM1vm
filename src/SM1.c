@@ -14,12 +14,13 @@
 /////////////////////////////////////////////////////////////////////////////////////
 
 //#define DEBUG 1
-#define KEYBOARD_ENTRY
-#define UNDER_OVER
+//#define KEYBOARD_ENTRY
+//#define UNDER_OVER
 //#define CARRY
 //#define EXTBITS
 //#define AUTOINCR
 //#define INDIRECT
+//#define EXTRAREGS
 #define REG_SIZE 2
 #define DS_SIZE  128
 #define RS_SIZE  128
