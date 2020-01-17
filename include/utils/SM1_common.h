@@ -111,7 +111,7 @@ const char* ALU[] = {
     EP(ALU_OP_SRG),
     EP(ALU_OP_NXT),
     EP(ALU_OP_GPC),
-    EP(ALU_OP_NP2),
+    EP(ALU_OP_EXF),
     EP(ALU_OP_BYE)
 };
 

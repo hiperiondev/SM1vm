@@ -130,7 +130,7 @@ enum {
         ALU_OP_MOD = 0x1b, // /mod
         ALU_OP_NXT = 0x1c, // compare top and 2nd element of return stack. If not eq increment 2nd else drop top and 2nd
         ALU_OP_GPC = 0x1d, // PC to t
-        ALU_OP_NP2 = 0x1e, // not defined
+        ALU_OP_EXF = 0x1e, // Execute external function
         ALU_OP_BYE = 0x1f  // return
 };
 
@@ -204,13 +204,13 @@ typedef struct {
          uint8_t ds_size;     // data stack size
          uint8_t rs_size;     // return stack size
 #endif
-
 } vm_t;
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-static  uint8_t sm1_mem_put  (uint16_t addr, uint16_t value, vm_t*);
-static uint16_t sm1_mem_get  (uint16_t addr, vm_t*);
+static  uint8_t sm1_mem_put (uint16_t addr, uint16_t value, vm_t*);
+static uint16_t sm1_mem_get (uint16_t addr, vm_t*);
+       uint16_t (*ext_funcs[EXTERNAL_FUNCTIONS])(vm_t *v);   // external functions
 
 static inline vm_t* sm1_init(uint16_t ramSize, uint8_t rsSize, uint8_t dsSize,  uint8_t regQty) {
     vm_t* vm =     (vm_t *) malloc(sizeof(vm_t));
@@ -649,6 +649,12 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                     DBG_PRINT("ALU_OP_GPC) ");
 #endif
                     alu = vm->pc;
+                    break;
+                case ALU_OP_EXF:
+#ifdef DEBUG
+                    DBG_PRINT("ALU_OP_EXF) ");
+#endif
+                    alu = (*ext_funcs[t]) (vm);
                     break;
                 case ALU_OP_BYE:
 #ifdef DEBUG
