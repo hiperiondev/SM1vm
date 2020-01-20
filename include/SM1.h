@@ -124,8 +124,8 @@ enum {
         ALU_OP_SRP = 0x15, // set r stack depth
         ALU_OP_REG = 0x16, // get register t (status == 0xff)
         ALU_OP_SRG = 0x17, // set n on register t (status == 0xff)
-        ALU_OP_SND = 0x18, // send t and n
-        ALU_OP_RCV = 0x19, // receive t
+        ALU_OP_NP0 = 0x18, // not operation
+        ALU_OP_NP1 = 0x19, // not operation
         ALU_OP_UMD = 0x1a, // u/mod
         ALU_OP_MOD = 0x1b, // /mod
         ALU_OP_NXT = 0x1c, // compare top and 2nd element of return stack. If not eq increment 2nd else drop top and 2nd
@@ -562,23 +562,6 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #endif
                     vm->rp = t >> 1;
                     break;
-                case ALU_OP_SND:
-#ifdef DEBUG
-                    DBG_PRINT("ALU_OP_SND) ");
-#endif
-                    vm->t_ext   = t;
-                    vm->n_ext   = n;
-                    vm->status |= ST_SNDTN;
-                    break;
-                case ALU_OP_RCV:
-#ifdef DEBUG
-                    DBG_PRINT("ALU_OP_RCV) ");
-#endif
-                    if (!(vm->status & ST_RCVTN))
-                        break;
-                    alu = vm->t_ext;
-                    vm->status &= ~ST_RCVTN;
-                    break; //TODO: Receive t and n
                 case ALU_OP_UMD:
 #ifdef DEBUG
                     DBG_PRINT("ALU_OP_UMD) ");
