@@ -124,13 +124,13 @@ enum {
         ALU_OP_SRP = 0x15, // set r stack depth
         ALU_OP_REG = 0x16, // get register t (status == 0xff)
         ALU_OP_SRG = 0x17, // set n on register t (status == 0xff)
-        ALU_OP_NP0 = 0x18, // not operation
-        ALU_OP_NP1 = 0x19, // not operation
-        ALU_OP_UMD = 0x1a, // u/mod
-        ALU_OP_MOD = 0x1b, // /mod
-        ALU_OP_NXT = 0x1c, // compare top and 2nd element of return stack. If not eq increment 2nd else drop top and 2nd
-        ALU_OP_GPC = 0x1d, // PC to t
-        ALU_OP_EXF = 0x1e, // Execute external function
+        ALU_OP_UMD = 0x18, // u/mod
+        ALU_OP_MOD = 0x19, // /mod
+        ALU_OP_NXT = 0x1a, // compare top and 2nd element of return stack. If not eq increment 2nd else drop top and 2nd
+        ALU_OP_GPC = 0x1b, // PC to t
+        ALU_OP_EXF = 0x1c, // Execute external function
+        ALU_OP_NP0 = 0x1d, // not operation
+        ALU_OP_NP1 = 0x1e, // not operation
         ALU_OP_BYE = 0x1f  // return
 };
 
