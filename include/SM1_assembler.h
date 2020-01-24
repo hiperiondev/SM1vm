@@ -7,6 +7,9 @@
  *  Author: Emiliano Augusto Gonzalez (egonzalez.hiperion@gmail.com)
  */
 
+#ifndef __SM1_ASSEMBLER_H__
+#define __SM1_ASSEMBLER_H__
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -475,3 +478,5 @@ int sm1_assembleFile(char* fileIn, char* fileOut) {
 
     return 0;
 }
+
+#endif

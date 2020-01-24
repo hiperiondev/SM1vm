@@ -7,11 +7,14 @@
  *  Author: Emiliano Augusto Gonzalez (egonzalez.hiperion@gmail.com)
  */
 
+#ifndef __SM1_DISASSEMBLER_H__
+#define __SM1_DISASSEMBLER_H__
+
 #include "SM1.h"
 
-char dis[100];
-
 char* sm1_disassembly(uint16_t word) {
+    static char dis[100];
+
     int _delta[] = {
              0,
              1,
@@ -82,3 +85,5 @@ char* sm1_disassembly(uint16_t word) {
     removePrefix(dis);
     return strlwr(dis);
 }
+
+#endif
