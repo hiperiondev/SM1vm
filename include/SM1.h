@@ -154,11 +154,12 @@ enum {
 
 // Status
 enum {
-        // ST_XXXX    = 0x0001, // not defined
-        // ST_XXXX    = 0x0002, // not defined
+      // ST_XXXX    = 0x0001, // not defined
+      // ST_XXXX    = 0x0002, // not defined
         ST_CARRY    = 0x0004, // carry bit
         ST_IRQ      = 0x0008, // interrupt
         ST_IMK      = 0x0010, // interrupt mask
+     // ST_XXXX     = 0x0020, // not defined
         ST_EXPTN    = 0x0040, // alu exception
         ST_RSVD     = 0x0080, // reserved
         ST_AUTOINC0 = 0x0100, // autoincrement register #0 on every read
@@ -166,9 +167,9 @@ enum {
         ST_AUTOINC2 = 0x0400, // autoincrement register #2 on every read
         ST_INDGET   = 0x0800, // indirect get on register #t
         ST_INDPUT   = 0x1000  // indirect put on register #t
-        // ST_XXXX    = 0x2000, // not defined
-        // ST_XXXX    = 0x4000, // not defined
-        // ST_XXXX    = 0x8000, // not defined
+     // ST_XXXX    = 0x2000, // not defined
+     // ST_XXXX    = 0x4000, // not defined
+     // ST_XXXX    = 0x8000, // not defined
 };
 
 // Registers
@@ -177,8 +178,7 @@ typedef struct {
          uint8_t rp;          // return stack pointer
         uint16_t pc;          // program counter
         uint16_t t;           // top of data stack
-        uint16_t t_ext;       // external top of data stack
-        uint16_t n_ext;       // external second element of data stack
+        uint16_t irq_addr;    // irq address
         uint16_t status;      // status register
                               //   0=NOT USED   / not defined
                               //   1=NOT USED   / not defined
@@ -261,7 +261,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                 }
 #endif
                 vm->rs[++vm->rp] = vm->pc + 1;
-                vm->pc           = ARG_OP(vm->t_ext);
+                vm->pc           = ARG_OP(vm->irq_addr);
                 vm->status      &= ~ST_IRQ;
                 vm->status      |= ST_IMK;
                 return RC_IRQ;
