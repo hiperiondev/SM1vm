@@ -7,6 +7,8 @@
  *  Author: Emiliano Augusto Gonzalez (egonzalez.hiperion@gmail.com)
  */
 
+#include "SM1.h"
+
 char dis[100];
 
 char* sm1_disassembly(uint16_t word) {

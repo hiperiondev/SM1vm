@@ -9,7 +9,7 @@ The project is based on a self-contained library that provides everything necess
 
 The only exception is the memory access functions (sm1_mem_put and sm1_mem_get) which must be defined by the user. This allows adaptation to the local implementation access to the program memory, both in hardware and in logic.
 
-It is also possible to build the VM as a library to be used in other projects. As an example see: <https://github.com/hiperiondev/SM1vm-Gambas3>
+It is possible to build the VM as a library to be used in other projects. As an example see: <https://github.com/hiperiondev/SM1vm-Gambas3>
 
 Also have a very simple assembler and disassembler.
 

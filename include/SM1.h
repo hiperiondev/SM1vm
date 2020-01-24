@@ -100,7 +100,7 @@ enum {
 
 // ALU operations
 enum {
-        ALU_OP_TOP = 0x00, // t
+        ALU_OP_TOP = 0x00, // t (ALU_EX == 1 : t++)
         ALU_OP_SCN = 0x01, // n
         ALU_OP_TRS = 0x02, // top of return stack
         ALU_OP_GET = 0x03, // load from address t
@@ -154,19 +154,19 @@ enum {
 
 // Status
 enum {
-     // ST_XXXX     = 0x0001, // not defined
-     // ST_XXXX     = 0x0002, // not defined
-        ST_CARRY    = 0x0004, // carry bit
-        ST_IRQ      = 0x0008, // interrupt
-        ST_IMK      = 0x0010, // interrupt mask
-     // ST_XXXX     = 0x0020, // not defined
-        ST_EXPTN    = 0x0040, // alu exception
-     // ST_XXXX     = 0x0080, // not defined
-        ST_AUTOINC0 = 0x0100, // autoincrement register #0 on every read
-        ST_AUTOINC1 = 0x0200, // autoincrement register #1 on every read
-        ST_AUTOINC2 = 0x0400, // autoincrement register #2 on every read
-        ST_INDGET   = 0x0800, // indirect get on register #t
-        ST_INDPUT   = 0x1000  // indirect put on register #t
+        ST_CARRY    = 0x0001, // carry bit
+        ST_IRQ      = 0x0002, // interrupt
+        ST_IMK      = 0x0004, // interrupt mask
+        ST_EXPTN    = 0x0008, // alu exception
+        ST_AUTOINC0 = 0x0010, // autoincrement register #0 on every read
+        ST_AUTOINC1 = 0x0020, // autoincrement register #1 on every read
+        ST_AUTOINC2 = 0x0040, // autoincrement register #2 on every read
+        ST_INDGET   = 0x0080, // indirect get on register #t
+        ST_INDPUT   = 0x0100  // indirect put on register #t
+     // ST_XXXX     = 0x0200, // not defined
+     // ST_XXXX     = 0x0400, // not defined
+     // ST_XXXX     = 0x0800, // not defined
+     // ST_XXXX     = 0x1000  // not defined
      // ST_XXXX     = 0x2000, // not defined
      // ST_XXXX     = 0x4000, // not defined
      // ST_XXXX     = 0x8000, // not defined
@@ -180,23 +180,6 @@ typedef struct {
         uint16_t t;           // top of data stack
         uint16_t irq_addr;    // irq address
         uint16_t status;      // status register
-                              //   0=NOT USED   / not defined
-                              //   1=NOT USED   / not defined
-                              //   2=CARRY      / carry or overflow
-                              //   3=IRQ        / interrupt (similar to INTR on Intel 8085)
-                              //   4=IMK        / interrupt mask
-                              //   5=NOT USED   / not defined
-                              //   6=EXCEPTION  / alu exception
-                              //   7=NOT USED   / not defined
-                              //   8=AUTOINC0   / autoincrement register #0 on every read
-                              //   9=AUTOINC1   / autoincrement register #1 on every read
-                              //  10=AUTOINC2   / autoincrement register #2 on every read
-                              //  11=INDGET     / indirect get on register #t
-                              //  12=INDPUT     / indirect put on register #t
-                              //  13=NOT USED   / not defined
-                              //  14=NOT USED   / not defined
-                              //  15=NOT USED   / not defined
-
         uint16_t *reg;        // register vector
          uint8_t reg_size;    // register size
         uint16_t *RAM;        // ram vector
@@ -362,6 +345,11 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                 case ALU_OP_TOP:
 #ifdef DEBUG
                     DBG_PRINT("ALU_OP_TOP) ");
+#endif
+#ifdef EXTBITS
+                    if (ALU_EX(word) == 1) {
+                        ++alu;
+                    }
 #endif
                     break;
                 case ALU_OP_SCN:
@@ -598,7 +586,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #endif
                    if (t == 0xff) {
                         alu = vm->status;
-                         break;
+                        break;
                    }
                    if (t > vm->reg_size - 1) return RC_REG_UNKNOWN;
                    alu = vm->reg[t];
