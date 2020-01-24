@@ -154,22 +154,22 @@ enum {
 
 // Status
 enum {
-      // ST_XXXX    = 0x0001, // not defined
-      // ST_XXXX    = 0x0002, // not defined
+     // ST_XXXX     = 0x0001, // not defined
+     // ST_XXXX     = 0x0002, // not defined
         ST_CARRY    = 0x0004, // carry bit
         ST_IRQ      = 0x0008, // interrupt
         ST_IMK      = 0x0010, // interrupt mask
      // ST_XXXX     = 0x0020, // not defined
         ST_EXPTN    = 0x0040, // alu exception
-        ST_RSVD     = 0x0080, // reserved
+     // ST_XXXX     = 0x0080, // not defined
         ST_AUTOINC0 = 0x0100, // autoincrement register #0 on every read
         ST_AUTOINC1 = 0x0200, // autoincrement register #1 on every read
         ST_AUTOINC2 = 0x0400, // autoincrement register #2 on every read
         ST_INDGET   = 0x0800, // indirect get on register #t
         ST_INDPUT   = 0x1000  // indirect put on register #t
-     // ST_XXXX    = 0x2000, // not defined
-     // ST_XXXX    = 0x4000, // not defined
-     // ST_XXXX    = 0x8000, // not defined
+     // ST_XXXX     = 0x2000, // not defined
+     // ST_XXXX     = 0x4000, // not defined
+     // ST_XXXX     = 0x8000, // not defined
 };
 
 // Registers
@@ -187,7 +187,7 @@ typedef struct {
                               //   4=IMK        / interrupt mask
                               //   5=NOT USED   / not defined
                               //   6=EXCEPTION  / alu exception
-                              //   7=RESERVED   / reserved
+                              //   7=NOT USED   / not defined
                               //   8=AUTOINC0   / autoincrement register #0 on every read
                               //   9=AUTOINC1   / autoincrement register #1 on every read
                               //  10=AUTOINC2   / autoincrement register #2 on every read

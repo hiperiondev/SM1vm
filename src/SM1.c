@@ -21,10 +21,10 @@
 //#define AUTOINCR
 //#define INDIRECT
 //#define EXTRAREGS
-#define REG_SIZE 2
-#define DS_SIZE  128
-#define RS_SIZE  128
-#define RAM_SIZE 65535
+#define REG_SIZE           2
+#define DS_SIZE            128
+#define RS_SIZE            128
+#define RAM_SIZE           65535
 #define EXTERNAL_FUNCTIONS 255
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -158,11 +158,12 @@ int main(int argc, char **argv) {
                 exit(1);
             }
 #ifdef KEYBOARD_ENTRY
-            if (kbhit()) {
-                vm->t_ext = getc(stdin);
-                vm->n_ext = 0;
-                vm->status |= ST_RCVTN;
-            }
+            // TODO: Implement external functions for input/output
+            //if (kbhit()) {
+            //    vm->t_ext = getc(stdin);
+            //    vm->n_ext = 0;
+            //    vm->status |= ST_RCVTN;
+            //}
 #endif
         }
     }
