@@ -196,7 +196,7 @@ typedef struct {
 
 static  uint8_t sm1_mem_put (uint16_t addr, uint16_t value, vm_t*);
 static uint16_t sm1_mem_get (uint16_t addr, vm_t*);
-       uint16_t (*ext_funcs[EXTERNAL_FUNCTIONS])(vm_t *v);
+       uint16_t (*ext_funcs[EXT_FUNC])(vm_t *v);
 
 static inline vm_t* sm1_init(uint16_t ramSize, uint8_t rsSize, uint8_t dsSize,  uint8_t regQty) {
     vm_t* vm     =     (vm_t *) malloc(sizeof(vm_t));

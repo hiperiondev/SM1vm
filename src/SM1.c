@@ -21,11 +21,11 @@
 //#define AUTOINCR
 //#define INDIRECT
 //#define EXTRAREGS
-#define REG_SIZE           2
-#define DS_SIZE            128
-#define RS_SIZE            128
-#define RAM_SIZE           65535
-#define EXTERNAL_FUNCTIONS 255
+#define REG_SIZE  2
+#define DS_SIZE   128
+#define RS_SIZE   128
+#define RAM_SIZE  65535
+#define EXT_FUNC  255
 
 /////////////////////////////////////////////////////////////////////////////////////
 

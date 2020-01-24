@@ -5,6 +5,9 @@
  *      Author: egonzalez
  */
 
+#ifndef __SM1_COMMON_H__
+#define __SM1_COMMON_H__
+
 #include <ctype.h>
 #include <string.h>
 #define EP(x) [x] = #x  // enum print
@@ -50,7 +53,7 @@ int getWords(char *base, char target[40][80]) {
     return n;
 }
 
-char* strlwr(char *str) {
+char *strlwr(char *str) {
     unsigned char *p = (unsigned char *)str;
     while (*p) {
         *p = tolower((unsigned char) *p);
@@ -80,7 +83,7 @@ void removePrefix(char *str) {
     strcpy(str, strLocal);
 }
 
-const char* ALU[] = {
+const char *ALU[] = {
     EP(ALU_OP_TOP),
     EP(ALU_OP_SCN),
     EP(ALU_OP_TRS),
@@ -115,7 +118,7 @@ const char* ALU[] = {
     EP(ALU_OP_BYE)
 };
 
-const char* OPTYPE[] = {
+const char *OPTYPE[] = {
     EP(OP_LIT),
     EP(OP_ALU),
     EP(OP_JMP),
@@ -123,14 +126,14 @@ const char* OPTYPE[] = {
     EP(OP_CLL)
 };
 
-const char* VMFLAGS[] = {
+const char *VMFLAGS[] = {
     EP(ALU_F_T2N),
     EP(ALU_F_T2R),
     EP(ALU_F_N2T),
     EP(ALU_F_R2P)
 };
 
-const char* DELTA[] = {
+const char *DELTA[] = {
     "d+1",
     "d-1",
     "d-2",
@@ -140,10 +143,12 @@ const char* DELTA[] = {
 };
 
 const uint8_t DELTA_CODE[] = {
-        0x1,
-        0x2,
-        0x3,
-        0x4,
-        0x8,
-        0xC
+    0x1,
+    0x2,
+    0x3,
+    0x4,
+    0x8,
+    0xC
 };
+
+#endif
