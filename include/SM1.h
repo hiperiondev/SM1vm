@@ -38,7 +38,6 @@
 #define ALU_RS(x)   ((x >> 2) & 0x03)                                // alu return stack
 #define ALU_EX(x)   ((ALU_DS(x) == 0x03)|((ALU_RS(x) == 0x03) << 1)) // extended bits
 
-
 /////////////////////////////////////////////////////////////////////////////////////
 /*
 ## Instruction Set Encoding
@@ -155,8 +154,8 @@ enum {
 
 // Status
 enum {
-        ST_SNDTN    = 0x0001, // send
-        ST_RCVTN    = 0x0002, // receive
+        // ST_XXXX    = 0x0001, // not defined
+        // ST_XXXX    = 0x0002, // not defined
         ST_CARRY    = 0x0004, // carry bit
         ST_IRQ      = 0x0008, // interrupt
         ST_IMK      = 0x0010, // interrupt mask
@@ -167,6 +166,9 @@ enum {
         ST_AUTOINC2 = 0x0400, // autoincrement register #2 on every read
         ST_INDGET   = 0x0800, // indirect get on register #t
         ST_INDPUT   = 0x1000  // indirect put on register #t
+        // ST_XXXX    = 0x2000, // not defined
+        // ST_XXXX    = 0x4000, // not defined
+        // ST_XXXX    = 0x8000, // not defined
 };
 
 // Registers
@@ -178,8 +180,8 @@ typedef struct {
         uint16_t t_ext;       // external top of data stack
         uint16_t n_ext;       // external second element of data stack
         uint16_t status;      // status register
-                              //   0=SND        / vm data transmission
-                              //   1=RCV        / external data receive
+                              //   0=NOT USED   / not defined
+                              //   1=NOT USED   / not defined
                               //   2=CARRY      / carry or overflow
                               //   3=IRQ        / interrupt (similar to INTR on Intel 8085)
                               //   4=IMK        / interrupt mask

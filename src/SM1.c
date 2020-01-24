@@ -147,10 +147,11 @@ int main(int argc, char **argv) {
 #ifdef DEBUG
             DBG_PRINT("step:%d\n", step_counter++);
 #endif
-            if ((vm->status & ST_SNDTN) && (vm->n_ext == 0)) {
-                printf("%c", (char) vm->t_ext);
-                vm->status &= ~ST_SNDTN;
-            }
+            // TODO: Implement external functions for input/output
+            //if ((vm->status & ST_SNDTN) && (vm->n_ext == 0)) {
+            //    printf("%c", (char) vm->t_ext);
+            //    vm->status &= ~ST_SNDTN;
+            //}
 
             if (result != RC_OK) {
                 printf("\nEXCEPTION: %s\n", RET[result]);
