@@ -38,6 +38,7 @@
 #define ALU_RS(x)   ((x >> 2) & 0x03)                                // alu return stack
 #define ALU_EX(x)   ((ALU_DS(x) == 0x03)|((ALU_RS(x) == 0x03) << 1)) // extended bits
 
+
 /////////////////////////////////////////////////////////////////////////////////////
 /*
 ## Instruction Set Encoding
@@ -128,7 +129,7 @@ enum {
         ALU_OP_MOD = 0x19, // /mod
         ALU_OP_NXT = 0x1a, // compare top and 2nd element of return stack. If not eq increment 2nd else drop top and 2nd
         ALU_OP_GPC = 0x1b, // PC to t
-        ALU_OP_EXF = 0x1c, // Execute external function
+        ALU_OP_EXF = 0x1c, // execute external function
         ALU_OP_NP0 = 0x1d, // not operation
         ALU_OP_NP1 = 0x1e, // not operation
         ALU_OP_BYE = 0x1f  // return

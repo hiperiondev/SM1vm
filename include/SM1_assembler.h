@@ -16,8 +16,18 @@
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-const uint8_t  VMFLAGS_POS[] = { ALU_F_T2N, ALU_F_T2R, ALU_F_N2T, ALU_F_R2P };
-const uint8_t VMFLAGS_CODE[] = { 0x80, 0x40, 0x20, 0x10 };
+const uint8_t VMFLAGS_POS[] = {
+        ALU_F_T2N,
+        ALU_F_T2R,
+        ALU_F_N2T,
+        ALU_F_R2P
+};
+const uint8_t VMFLAGS_CODE[] = {
+        0x80,
+        0x40,
+        0x20,
+        0x10
+};
  char stringResult[512];
 
  int macroIndex = 0;

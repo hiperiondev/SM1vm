@@ -10,7 +10,12 @@
 char dis[100];
 
 char* sm1_disassembly(uint16_t word) {
-    int _delta[] = { 0, 1, -1, -2 };
+    int _delta[] = {
+             0,
+             1,
+            -1,
+            -2
+    };
     char hex[6];
     int f = 0;
     strcpy(dis, "");
