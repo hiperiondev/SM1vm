@@ -94,7 +94,7 @@ const char *ALU[] = {
     EP(ALU_OP_AND),
     EP(ALU_OP_BOR),
     EP(ALU_OP_XOR),
-    EP(ALU_OP_NEG),
+    EP(ALU_OP_NOT),
     EP(ALU_OP_DEC),
     EP(ALU_OP_EQ0),
     EP(ALU_OP_EQU),
@@ -106,15 +106,15 @@ const char *ALU[] = {
     EP(ALU_OP_GRS),
     EP(ALU_OP_SSP),
     EP(ALU_OP_SRP),
-    EP(ALU_OP_NP0),
-    EP(ALU_OP_NP1),
-    EP(ALU_OP_UMD),
-    EP(ALU_OP_MOD),
     EP(ALU_OP_REG),
     EP(ALU_OP_SRG),
+    EP(ALU_OP_UMD),
+    EP(ALU_OP_MOD),
     EP(ALU_OP_NXT),
     EP(ALU_OP_GPC),
     EP(ALU_OP_EXF),
+    EP(ALU_OP_LOD),
+    EP(ALU_OP_STR),
     EP(ALU_OP_BYE)
 };
 

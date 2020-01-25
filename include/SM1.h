@@ -110,7 +110,7 @@ enum {
         ALU_OP_AND = 0x07, // bitwise and
         ALU_OP_BOR = 0x08, // bitwise or
         ALU_OP_XOR = 0x09, // bitwise xor
-        ALU_OP_NEG = 0x0a, // bitwise inversion
+        ALU_OP_NOT = 0x0a, // bitwise inversion
         ALU_OP_DEC = 0x0b, // decrement
         ALU_OP_EQ0 = 0x0c, // equal to zero
         ALU_OP_EQU = 0x0d, // equality test
@@ -129,8 +129,8 @@ enum {
         ALU_OP_NXT = 0x1a, // compare top and 2nd element of return stack. If not eq increment 2nd else drop top and 2nd
         ALU_OP_GPC = 0x1b, // PC to t
         ALU_OP_EXF = 0x1c, // execute external function
-        ALU_OP_NP0 = 0x1d, // not operation
-        ALU_OP_NP1 = 0x1e, // not operation
+        ALU_OP_LOD = 0x1d, // load from stack position (like pick)
+        ALU_OP_STR = 0x1e, // store to stack position
         ALU_OP_BYE = 0x1f  // return
 };
 
@@ -460,7 +460,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #endif
                     alu ^= n;
                     break;
-                case ALU_OP_NEG:
+                case ALU_OP_NOT:
 #ifdef DEBUG
                     DBG_PRINT("ALU_OP_NEG) ");
 #endif
@@ -629,6 +629,16 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                     DBG_PRINT("ALU_OP_EXF) ");
 #endif
                     alu = (*ext_funcs[t]) (vm);
+                    break;
+                case ALU_OP_LOD: // TODO: implement
+#ifdef DEBUG
+                    DBG_PRINT("ALU_OP_LOD) ");
+#endif
+                    break;
+                case ALU_OP_STR: // TODO: implement
+#ifdef DEBUG
+                    DBG_PRINT("ALU_OP_STR) ");
+#endif
                     break;
                 case ALU_OP_BYE:
 #ifdef DEBUG
