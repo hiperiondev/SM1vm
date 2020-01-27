@@ -22,6 +22,7 @@ char* sm1_disassembly(uint16_t word) {
             -2
     };
     char hex[6];
+    char tmpstr[6];
     int f = 0;
     strcpy(dis, "");
 
@@ -52,36 +53,43 @@ char* sm1_disassembly(uint16_t word) {
             break;
         case OP_ALU:
             strcpy(dis, ALU[ALU_OP(word)]);
-            strcat(dis, " (");
-            if (word & ALU_F_R2P) {
-                f =1;
-                strcat(dis, VMFLAGS[ALU_F_R2P]);
-            }
-            if (word & ALU_F_T2N) {
-                if (f==1) strcat(dis, "|");
-                f = 1;
-                strcat(dis, VMFLAGS[ALU_F_T2N]);
-            }
-            if (word & ALU_F_T2R) {
-                if (f==1) strcat(dis, "|");
-                f = 1;
-                strcat(dis, VMFLAGS[ALU_F_T2R]);
-            }
-            if (word & ALU_F_N2T) {
-                if (f==1) strcat(dis, "|");
-                strcat(dis, VMFLAGS[ALU_F_N2T]);
-            }
+            if ((strcmp(dis, "ALU_OP_LOD") == 0) || (strcmp(dis, "ALU_OP_STR") == 0)) {
+                sprintf(tmpstr, " %d", ALU_ARG(word));
+                strcat(dis, tmpstr);
+            } else {
+                strcat(dis, " (");
+                if (word & ALU_F_R2P) {
+                    f = 1;
+                    strcat(dis, VMFLAGS[ALU_F_R2P]);
+                }
+                if (word & ALU_F_T2N) {
+                    if (f == 1)
+                        strcat(dis, "|");
+                    f = 1;
+                    strcat(dis, VMFLAGS[ALU_F_T2N]);
+                }
+                if (word & ALU_F_T2R) {
+                    if (f == 1)
+                        strcat(dis, "|");
+                    f = 1;
+                    strcat(dis, VMFLAGS[ALU_F_T2R]);
+                }
+                if (word & ALU_F_N2T) {
+                    if (f == 1)
+                        strcat(dis, "|");
+                    strcat(dis, VMFLAGS[ALU_F_N2T]);
+                }
 
-            strcat(dis, ") [dp:");
-            sprintf(hex, "%*d|", 2, _delta[ALU_DS(word)]);
-            strcat(dis, hex);
-            strcat(dis, "rp:");
-            sprintf(hex, "%*d", 2, _delta[ALU_RS(word)]);
-            strcat(dis, hex);
-            strcat(dis, "]");
+                strcat(dis, ") [dp:");
+                sprintf(hex, "%*d|", 2, _delta[ALU_DS(word)]);
+                strcat(dis, hex);
+                strcat(dis, "rp:");
+                sprintf(hex, "%*d", 2, _delta[ALU_RS(word)]);
+                strcat(dis, hex);
+                strcat(dis, "]");
+            }
         }
     }
-
     removePrefix(dis);
     return strlwr(dis);
 }
