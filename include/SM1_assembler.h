@@ -286,6 +286,22 @@ uint16_t sm1_assembleLine(char* line, bool pass) {
         exit(1);
     }
 
+    if (opCmp(lineSplited[0], "lod") == 0) {
+        if (value < 0x100) {
+            return (OP_ALU | (ALU_OP_LOD << 8) | value);
+        }
+        printf("ASSEMBLER ERROR: lod off range\n");
+        exit(1);
+    }
+
+    if (opCmp(lineSplited[0], "str") == 0) {
+        if (value < 0x100) {
+            return (OP_ALU | (ALU_OP_STR << 8) | value);
+        }
+        printf("ASSEMBLER ERROR: str off range\n");
+        exit(1);
+    }
+
     if (opCmp(lineSplited[0], ".data") == 0) {
         if (opCmp(lineSplited[1], "$here$") == 0) {
             value = doHere(lineSplited[2], lineSplited[3]);
