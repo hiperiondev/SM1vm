@@ -631,29 +631,25 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #endif
                     alu = (*ext_funcs[t]) (vm);
                     break;
-                case ALU_OP_LOD: // TODO: implement
+                case ALU_OP_LOD:
 #ifdef DEBUG
                     DBG_PRINT("ALU_OP_LOD) ");
 #endif
                     if (vm->status & ST_LSDR){
                         t = vm->rs[vm->rs_size - ALU_ARG(word) - 1];
-                        vm->rp++;
                     } else {
                         t = vm->ds[vm->ds_size - ALU_ARG(word) - 1];
-                        vm->dp++;
                     }
                     goto exitvm;
                     break;
-                case ALU_OP_STR: // TODO: implement
+                case ALU_OP_STR:
 #ifdef DEBUG
                     DBG_PRINT("ALU_OP_STR) ");
 #endif
                     if (vm->status & ST_LSDR) {
                         vm->rs[vm->rs_size - ALU_ARG(word) - 1] = t;
-                        vm->rp--;
                     } else {
                         vm->ds[vm->ds_size - ALU_ARG(word) - 1] = t;
-                        vm->dp--;
                     }
                     goto exitvm;
                     break;
