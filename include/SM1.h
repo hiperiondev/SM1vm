@@ -37,6 +37,7 @@
 #define ALU_DS(x)   (x & 0x03)                                       // alu data stack
 #define ALU_RS(x)   ((x >> 2) & 0x03)                                // alu return stack
 #define ALU_EX(x)   ((ALU_DS(x) == 0x03)|((ALU_RS(x) == 0x03) << 1)) // extended bits
+#define ALU_ARG(x)  ((x & 0xFF))                                     // arguments of alu
 
 /////////////////////////////////////////////////////////////////////////////////////
 /*
@@ -118,19 +119,19 @@ enum {
         ALU_OP_CMP = 0x0f, // signed comparison (n<t)
         ALU_OP_RSH = 0x10, // logical right shift
         ALU_OP_LSH = 0x11, // logical left shift
-        ALU_OP_GSP = 0x12, // depth of stack
-        ALU_OP_GRS = 0x13, // r stack depth
-        ALU_OP_SSP = 0x14, // set stack depth
-        ALU_OP_SRP = 0x15, // set r stack depth
-        ALU_OP_REG = 0x16, // get register t (status == 0xff)
-        ALU_OP_SRG = 0x17, // set n on register t (status == 0xff)
+        ALU_OP_GSP = 0x12, // depth of data stack
+        ALU_OP_GRS = 0x13, // depth of return stack
+        ALU_OP_SSP = 0x14, // set data stack depth
+        ALU_OP_SRP = 0x15, // set return stack depth
+        ALU_OP_REG = 0x16, // get register t (status t == 0xff)
+        ALU_OP_SRG = 0x17, // set n on register t (status t == 0xff)
         ALU_OP_UMD = 0x18, // u/mod
         ALU_OP_MOD = 0x19, // /mod
         ALU_OP_NXT = 0x1a, // compare top and 2nd element of return stack. If not eq increment 2nd else drop top and 2nd
         ALU_OP_GPC = 0x1b, // PC to t
         ALU_OP_EXF = 0x1c, // execute external function
-        ALU_OP_LOD = 0x1d, // load from stack position (like pick)
-        ALU_OP_STR = 0x1e, // store to stack position
+        ALU_OP_LOD = 0x1d, // load from stack position (from bottom)
+        ALU_OP_STR = 0x1e, // store to stack position (from bottom)
         ALU_OP_BYE = 0x1f  // return
 };
 
@@ -147,6 +148,7 @@ enum {
         RC_MEM_OVERFLOW  = 0x08, // out of memory access
         RC_IRQ           = 0x09, // irq execute
         RC_REG_UNKNOWN   = 0x0a, // unknown register
+        RC_COLLISION     = 0x0b, // collision stack / local variable
         RC_EXPTN         = 0xfd, // alu exception
         RC_ERROR         = 0xfe, // generic error
         RC_BYE           = 0xff  // exit
@@ -162,8 +164,8 @@ enum {
         ST_AUTOINC1 = 0x0020, // autoincrement register #1 on every read
         ST_AUTOINC2 = 0x0040, // autoincrement register #2 on every read
         ST_INDGET   = 0x0080, // indirect get on register #t
-        ST_INDPUT   = 0x0100  // indirect put on register #t
-     // ST_XXXX     = 0x0200, // not defined
+        ST_INDPUT   = 0x0100, // indirect put on register #t
+        ST_LSDR     = 0x0200, // LOD and STR on data stack (0) or return stack (1)
      // ST_XXXX     = 0x0400, // not defined
      // ST_XXXX     = 0x0800, // not defined
      // ST_XXXX     = 0x1000  // not defined
@@ -185,10 +187,10 @@ typedef struct {
         uint16_t *RAM;        // ram vector
         uint16_t *rs;         // return stack vector
         uint16_t *ds;         // data stack vector
-#ifdef UNDER_OVER
-        uint16_t RAM_size;    // ram size
          uint8_t ds_size;     // data stack size
          uint8_t rs_size;     // return stack size
+#ifdef UNDER_OVER
+        uint16_t RAM_size;    // ram size
 #endif
 } vm_t;
 
@@ -205,12 +207,11 @@ static inline vm_t* sm1_init(uint16_t ramSize, uint8_t rsSize, uint8_t dsSize,  
     vm->ds       = (uint16_t *) malloc(sizeof(uint16_t) * dsSize);
     vm->reg      = (uint16_t *) malloc(sizeof(uint16_t) * regQty);
     vm->reg_size = regQty;
-#ifdef UNDER_OVER
     vm->ds_size  = dsSize;
     vm->rs_size  = rsSize;
+#ifdef UNDER_OVER
     vm->RAM_size = ramSize;
 #endif
-
     vm->pc = 0;
     vm->dp = 0;
     vm->rp = 0;
@@ -634,11 +635,27 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
 #ifdef DEBUG
                     DBG_PRINT("ALU_OP_LOD) ");
 #endif
+                    if (vm->status & ST_LSDR){
+                        t = vm->rs[vm->rs_size - ALU_ARG(word) - 1];
+                        vm->rp++;
+                    } else {
+                        t = vm->ds[vm->ds_size - ALU_ARG(word) - 1];
+                        vm->dp++;
+                    }
+                    goto exitvm;
                     break;
                 case ALU_OP_STR: // TODO: implement
 #ifdef DEBUG
                     DBG_PRINT("ALU_OP_STR) ");
 #endif
+                    if (vm->status & ST_LSDR) {
+                        vm->rs[vm->rs_size - ALU_ARG(word) - 1] = t;
+                        vm->rp--;
+                    } else {
+                        vm->ds[vm->ds_size - ALU_ARG(word) - 1] = t;
+                        vm->dp--;
+                    }
+                    goto exitvm;
                     break;
                 case ALU_OP_BYE:
 #ifdef DEBUG
@@ -719,6 +736,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t* vm) {
                 return RC_RS_UNDER_FLOW;
         }
 #endif
+exitvm:
         return RC_OK;
 }
 
