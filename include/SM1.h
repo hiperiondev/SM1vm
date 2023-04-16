@@ -227,7 +227,6 @@ static inline vm_t* sm1_init(uint16_t ramSize, uint8_t rsSize, uint8_t dsSize,  
 }
 
 static inline uint8_t sm1_step(uint16_t word, vm_t *vm) {
-    uint16_t jmp_to;
 #ifdef DEBUG
     DBG_PRINT("[pc:%04x/dp:%02x/rp:%02x/rs[rp]:%04x/t:%04x/n:%04x/n-1:%04x/n-2:%04x] step(%04x):", vm->pc, vm->dp, vm->rp, vm->rs[vm->rp], vm->t,
             vm->ds[vm->dp], vm->ds[vm->dp - 1], vm->ds[vm->dp - 2], word);
@@ -299,6 +298,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t *vm) {
                 return RC_DS_UNDER_FLOW;
             }
 #endif
+            uint16_t jmp_to;
             if (ARG_IND(word)) {
                 if (ARG_ADDR(word) > vm->reg_size)
                     return RC_REG_UNKNOWN;
@@ -324,10 +324,9 @@ static inline uint8_t sm1_step(uint16_t word, vm_t *vm) {
             if (ARG_IND(word)) {
                 if (ARG_ADDR(word) > vm->reg_size)
                     return RC_REG_UNKNOWN;
-                jmp_to = vm->reg[ARG_ADDR(word)];
+                vm->pc = vm->reg[ARG_ADDR(word)];
             } else
-                jmp_to = ARG_ADDR(word);
-            vm->pc = jmp_to;
+                vm->pc = ARG_ADDR(word);
             break;
 ////////// Call
         case OP_CLL:
@@ -342,14 +341,13 @@ static inline uint8_t sm1_step(uint16_t word, vm_t *vm) {
                 return RC_RS_OVER_FLOW;
             }
 #endif
+            vm->rs[++vm->rp] = vm->pc << 1;
             if (ARG_IND(word)) {
                 if (ARG_ADDR(word) > vm->reg_size)
                     return RC_REG_UNKNOWN;
-                jmp_to = vm->reg[ARG_ADDR(word)];
+                vm->pc = vm->reg[ARG_ADDR(word)];
             } else
-                jmp_to = ARG_ADDR(word);
-            vm->rs[++vm->rp] = vm->pc << 1;
-            vm->pc = jmp_to;
+                vm->pc = ARG_ADDR(word);
             break;
         case OP_ALU: {
 ////////// ALU
