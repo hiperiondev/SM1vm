@@ -300,7 +300,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t *vm) {
 #endif
             uint16_t jmp_to;
             if (ARG_IND(word)) {
-                if (ARG_ADDR(word) > vm->reg_size)
+                if (ARG_ADDR(word) > vm->reg_size - 1)
                     return RC_REG_UNKNOWN;
                 jmp_to = vm->reg[ARG_ADDR(word)];
             } else
@@ -322,7 +322,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t *vm) {
             DBG_PRINT("OP_JMP (%04x)\n", ARG_OP(word));
 #endif
             if (ARG_IND(word)) {
-                if (ARG_ADDR(word) > vm->reg_size)
+                if (ARG_ADDR(word) > vm->reg_size - 1)
                     return RC_REG_UNKNOWN;
                 vm->pc = vm->reg[ARG_ADDR(word)];
             } else
@@ -343,7 +343,7 @@ static inline uint8_t sm1_step(uint16_t word, vm_t *vm) {
 #endif
             vm->rs[++vm->rp] = vm->pc << 1;
             if (ARG_IND(word)) {
-                if (ARG_ADDR(word) > vm->reg_size)
+                if (ARG_ADDR(word) > vm->reg_size - 1)
                     return RC_REG_UNKNOWN;
                 vm->pc = vm->reg[ARG_ADDR(word)];
             } else
