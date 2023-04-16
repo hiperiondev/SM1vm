@@ -115,7 +115,7 @@ const char *ALU[] = {
     EP(ALU_OP_EXF),
     EP(ALU_OP_LOD),
     EP(ALU_OP_STR),
-    EP(ALU_OP_BYE)
+    EP(ALU_OP_MOV)
 };
 
 const char *OPTYPE[] = {
@@ -139,7 +139,8 @@ const char *DELTA[] = {
     "d-2",
     "r+1",
     "r-1",
-    "r-2"
+    "r-2",
+    "ext"
 };
 
 const uint8_t DELTA_CODE[] = {

@@ -21,14 +21,109 @@ These conditional functions are:
     DEBUG information printing  
 #define UNDER_OVER  
     Add control on OVERFLOW and UNDERFLOW of stack pointers and PC  
-#define AUTOINCR
-    Define autoincremental registers (0, 1 and 2) on read (and get/put if defined indirect)
-#define INDIRECT
-    Add indirect address PUT/GET on registers
 #define CARRY  
     EXPERIMENTAL: Adds CARRY functions in the addition, subtraction, multiplication and division primitives  
 #define EXTBITS  
     EXPERIMENTAL: Uses the -2 bits of the delta of the stack pointers for added functions
+```
+
+## Instruction Encoding
+```
+        +---------------------------------------------------------------+
+        | F | E | D | C | B | A | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+        +---------------------------------------------------------------+
+        | 1 |                    LITERAL VALUE                          |
+        +---------------------------------------------------------------+
+        | 0 | 0 | 0 | i |        BRANCH TARGET ADDRESS                  |
+        +---------------------------------------------------------------+
+        | 0 | 0 | 1 | i |        CONDITIONAL BRANCH TARGET ADDRESS      |
+        +--------------------------------------------------------------+
+        | 0 | 1 | 0 | i |        CALL TARGET ADDRESS                    |
+        +---------------------------------------------------------------+
+        | 0 | 1 | 1 |   ALU OPERATION   |T2N|T2R|N2T|R2P| RSTACK| DSTACK|
+        +---------------------------------------------------------------+
+        | F | E | D | C | B | A | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+        +---------------------------------------------------------------+
+
+        T   : Top of data stack
+        N   : Next on data stack
+        PC  : Program Counter
+
+        i : indirect from register
+
+        LITERAL VALUES : push a value onto the data stack
+        CONDITIONAL    : BRANCHS pop and test the T
+        CALLS          : PC+1 onto the return stack
+
+        T2N : Move T to N
+        T2R : Move T to top of return stack
+        N2T : Move the new value of T (or D) to N
+        R2P : Move top of return stack to PC
+
+        RSTACK and DSTACK :
+        00 = 0
+        01 = +1
+        10 = -1
+        11 = -2 or
+             extended bit (not modify stack pointers. used for alu extended operations)
+             (depend on compilation flag EXTBITS)
+```
+
+## Instruction Set
+```
+### BRANCH / LITERAL
+ JMP: jump
+ JMZ: jump if zero
+ CLL: call
+ LIT: literal
+
+### ALU INSTRUCTIONS
+ TOP: t (ALU_EX == 1 : t++)
+ SCN: n
+ TRS: top of return stack
+ GET: load from address t
+ PUT: store n to address t
+ DPL: double cell addition
+ DML: double cell multiply
+ AND: bitwise and
+ BOR: bitwise or
+ XOR: bitwise xor
+ NOT: bitwise inversion
+ DEC: decrement
+ EQ0: equal to zero
+ EQU: equality test
+ UCP: unsigned comparison (n-t)
+ CMP: signed comparison (n<t)
+ RSH: logical right shift
+ LSH: logical left shift
+ GSP: depth of data stack
+ GRS: depth of return stack
+ SSP: set data stack depth
+ SRP: set return stack depth
+ REG: get register t (status t == 0xff)
+ SRG: set n on register t (status t == 0xff)
+ UMD: u/mod
+ MOD: /mod
+ NXT: compare top and 2nd element of return stack and put comparison to t. If not eq increment 2nd else drop top and 2nd
+ GPC: PC to t
+ EXF: execute external function
+ LOD: load from stack position (from bottom)
+ STR: store to stack position (from bottom)
+ MOV: copy register t to register n
+ 
+### ALU MODIFIERS
+ T2N: move t to n
+ T2R: move t to r
+ N2T: move n to t
+ R2P: move r to pc
+
+### ALU DELTA
+ d+1: dp + 1
+ d-1: dp - 1
+ d-2: dp - 2 (or extended bit) 
+ r+1: rp + 1
+ r-1: rp - 1
+ r-2: rp - 2 (or extended bit)
 ```
 
 ## Assembler
@@ -48,7 +143,6 @@ These conditional functions are:
  .string: Insert string text.
 ```
 NOTE 1: Directives can't be used inside macro.
-
 NOTE 2: Value $HERE$ represent actual address pointer, can be 
         offsetted ex: .equ label $HERE + 3
 

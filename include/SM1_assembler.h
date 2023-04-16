@@ -219,6 +219,7 @@ uint16_t sm1_assembleLine(char* line, bool pass) {
      char lineSplited[40][80], str[40];
       int len = 0;
      char *ptr;
+     uint16_t indirect = 0;
 
     isStr = 0;
 
@@ -255,13 +256,17 @@ uint16_t sm1_assembleLine(char* line, bool pass) {
         exit(1);
     }
 
+    if (opCmp(lineSplited[0], "jmpi") == 0 || opCmp(lineSplited[0], "jmzi") == 0 || opCmp(lineSplited[0], "clli") == 0) {
+        lineSplited[0][3] = '\0';
+        indirect = 0x1000;
+    }
     if (opCmp(lineSplited[0], "jmp") == 0) {
         if (opCmp(lineSplited[1], "$here$") == 0) {
             value = doHere(lineSplited[2], lineSplited[3]);
             if (!pass) printf("             ^_ (%04x)\n", value);
         }
-        if (value < 8192)
-            return (0x0000 | value);
+        if (value < 4096)
+            return (0x0000 | value | indirect);
         printf("ASSEMBLER ERROR: jmp too long\n");
         exit(1);
     }
@@ -270,8 +275,8 @@ uint16_t sm1_assembleLine(char* line, bool pass) {
             value = doHere(lineSplited[2], lineSplited[3]);
             if (!pass) printf("             ^_ (%04x)\n", value);
         }
-        if (value < 8192)
-            return (0x2000 | value);
+        if (value < 4096)
+            return (0x2000 | value | indirect);
         printf("ASSEMBLER ERROR: jmz too long\n");
         exit(1);
     }
@@ -280,11 +285,12 @@ uint16_t sm1_assembleLine(char* line, bool pass) {
             value = doHere(lineSplited[2], lineSplited[3]);
             if (!pass) printf("             ^_ (%04x)\n", value);
         }
-        if (value < 8192)
-            return (0x4000 | value);
+        if (value < 4096)
+            return (0x4000 | value | indirect);
         printf("ASSEMBLER ERROR: cll too long\n");
         exit(1);
     }
+    indirect = 0;
 
     if (opCmp(lineSplited[0], "lod") == 0) {
         if (value < 0x100) {
